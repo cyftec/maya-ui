@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    ".vscode": false,
+    "brahma-cli": false,
+    "cli-sample": false,
+    "legacy": false,
+    "maya-deno": false,
+    "no-npm": false
+  }
+}
