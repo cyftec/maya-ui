@@ -1,4 +1,4 @@
-import type { IndexedArraySignal } from "@ckzero/maya/signal";
+import type { Signal } from "@maya/core";
 
 export type Task = {
   text: string;
@@ -7,7 +7,7 @@ export type Task = {
 
 export type AppStoreAsProps = {
   searchText: string;
-  tasks: IndexedArraySignal<Task>;
+  tasks: Task[];
   setSearchText: (value: string) => void;
   addTodo: () => void;
   onDelete: (tileIndex: number) => void;

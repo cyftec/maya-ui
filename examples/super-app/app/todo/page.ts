@@ -1,4 +1,4 @@
-import { Component, m } from "@maya/core";
+import { Component, defaultHtmlPageNode, m } from "@maya/core";
 import { Button, Header, TextBox } from "../_elements";
 import { Todos } from "./_components";
 import type { AppStoreAsProps } from "./types";
@@ -6,6 +6,15 @@ import { getTodoAppStore } from "./context";
 
 const TodoApp = Component<AppStoreAsProps>(
   ({ searchText, tasks, setSearchText, addTodo, onDelete, onDoneChange }) => {
+    const onTextChange = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        addTodo();
+        return;
+      }
+
+      setSearchText(e.key);
+    };
+
     return m.Div({
       class: "ph3",
       children: [
@@ -16,8 +25,7 @@ const TodoApp = Component<AppStoreAsProps>(
             TextBox({
               classNames: "mr3 pa3 flex-grow-1",
               value: searchText,
-              onTextChange: (textBoxTex) => setSearchText(textBoxTex),
-              onSubmit: addTodo,
+              onkeypress: onTextChange,
             }),
             Button({
               classNames: "pa3",
@@ -37,4 +45,6 @@ const TodoApp = Component<AppStoreAsProps>(
   }
 );
 
-export const app = () => TodoApp(getTodoAppStore());
+const app = () => TodoApp(getTodoAppStore());
+
+export const page = () => defaultHtmlPageNode("Todo app", app);

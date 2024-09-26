@@ -1,5 +1,4 @@
-import { m } from "@maya/core";
-import { camel } from "case";
+import { defaultHtmlPageNode, m } from "@maya/core";
 import { Header } from "./_elements";
 
 const HomePage = () => {
@@ -40,4 +39,4 @@ const HomePage = () => {
   });
 };
 
-export const app = HomePage;
+export const page = () => defaultHtmlPageNode("Home Page", HomePage);

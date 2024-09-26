@@ -1,10 +1,9 @@
-import { indexedArraySignal, signal } from "@ckzero/maya/signal";
-import type { SureSignalProps } from "@maya/core";
-import type { AppStoreAsProps, Task } from "./types";
+import { signal, type SureSignalProps } from "@maya/core";
+import type { AppStoreAsProps } from "./types";
 
 export const getTodoAppStore = (): SureSignalProps<AppStoreAsProps> => {
   const searchText = signal("");
-  const tasks = indexedArraySignal<Task>([
+  const tasks = signal([
     { text: "woke up @7am already", isDone: false },
     { text: "was about to bathe, but skipped it", isDone: false },
     { text: "devoured a lot of food", isDone: false },

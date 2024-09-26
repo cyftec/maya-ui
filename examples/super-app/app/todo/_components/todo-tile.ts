@@ -1,6 +1,5 @@
-import { derived, signal } from "@ckzero/maya/signal";
+import { derived, signal } from "@maya/core";
 import { Component, m } from "@maya/core";
-import { Divider } from "../../_elements";
 
 type TodoTileProps = {
   index: number;
@@ -28,20 +27,24 @@ export const TodoTile = Component<TodoTileProps>(
     return m.Div({
       children: [
         m.Div({
-          class: () =>
-            `flex items-center mv1 ph1 pv1 pointer ${bgColor.value} ${textColor.value}`,
+          class: derived(
+            () =>
+              `flex items-center mv1 ph1 pv1 pointer ${bgColor.value} ${textColor.value}`
+          ),
           onclick: () => onDoneChange(index.value),
           onunmount: () => console.log(`tile ${index.value + 1} unmounted`),
           children: [
             m.Span({
-              class: () => `flex-grow-1 ${isDone.value ? "strike" : ""}`,
+              class: derived(
+                () => `flex-grow-1 ${isDone.value ? "strike" : ""}`
+              ),
               onunmount: () =>
                 console.log(
                   `SPAN inside tile no. ${index.value + 1} with text "${
                     task.value
                   }" unmounted :(`
                 ),
-              children: m.Texttask,
+              children: m.Text(task.value),
             }),
             m.Div({
               class: "flex items-center",
@@ -65,8 +68,8 @@ export const TodoTile = Component<TodoTileProps>(
             }),
           ],
         }),
-        Divider({
-          classNames: derived(() => (isLast.value ? "b--transparent" : "")),
+        m.Div({
+          class: derived(() => (isLast.value ? "b--transparent" : "")),
         }),
       ],
     });

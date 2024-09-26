@@ -1,4 +1,4 @@
 import { runScript } from "@maya/core";
-import { app } from "./app.ts";
+import { page } from "./page.ts";
 
-runScript(app);
+runScript(page);

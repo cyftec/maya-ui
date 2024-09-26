@@ -1,4 +1,4 @@
 import { runScript } from "@maya/core";
-import { app } from "./app";
+import { page } from "./page";
 
-runScript(app);
+runScript(page);

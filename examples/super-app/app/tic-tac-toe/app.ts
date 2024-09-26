@@ -1,4 +1,4 @@
-import { derived, signal } from "@ckzero/maya/signal";
+import { derived, signal } from "@maya/core";
 import { m } from "@maya/core";
 import { Button, Loader } from "../_elements";
 import { GridBoard } from "./_components/GridBoard";
@@ -85,7 +85,9 @@ const TicTacToeApp = () => {
         class: "flex items-center",
         children: [
           m.Div({
-            class: () => `f2 mb1 ${playerXsTurn.value ? "green" : "pink"}`,
+            class: derived(
+              () => `f2 mb1 ${playerXsTurn.value ? "green" : "pink"}`
+            ),
             children: derived(() =>
               m.Text(
                 `${playerXsTurn.value ? "X" : "O"}${

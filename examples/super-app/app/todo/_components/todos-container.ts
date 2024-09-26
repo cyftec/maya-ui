@@ -1,12 +1,11 @@
+import { Component, derived, m } from "@maya/core";
 import { Header } from "../../_elements";
-import type { Task } from "../types";
+import type { AppStoreAsProps } from "../types";
 import { TodoTile } from "./todo-tile";
-import { derived, type IndexedArraySignal } from "@ckzero/maya/signal";
-import { Component, m } from "@maya/core";
 
 type TodosProps = {
   classNames?: string;
-  tasks: IndexedArraySignal<Task>;
+  tasks: AppStoreAsProps["tasks"];
   onDelete: (tileIndex: number) => void;
   onDoneChange: (tileIndex: number) => void;
 };
@@ -15,9 +14,9 @@ let TodoContainerRenderCount = 0;
 export const Todos = Component<TodosProps>(
   ({ classNames, tasks, onDelete, onDoneChange }) => {
     console.log(`Todo Container rendered ${++TodoContainerRenderCount} times`);
-    const totalTasksTitle = derived(() => `total task: ${tasks().length}`);
+    const totalTasksTitle = derived(() => `total task: ${tasks.value.length}`);
     const doneTasksTitle = derived(
-      () => `done: ${tasks().filter((t) => t.isDone).length}`
+      () => `done: ${tasks.value.filter((t) => t.isDone).length}`
     );
 
     return m.Div({
@@ -36,18 +35,23 @@ export const Todos = Component<TodosProps>(
             console.log(`Div containing all Todo-Tiles unmounted`),
           children: [
             m.Div({
-              children: tasks.map((task, i) => {
-                const textSig = derived(() => task.value.text);
-                const isDoneSig = derived(() => task.value.isDone);
-                const isLastSig = derived(() => i.value === tasks().length - 1);
-                return TodoTile({
-                  task: textSig,
-                  index: i,
-                  isDone: isDoneSig,
-                  onDoneChange,
-                  onDelete,
-                  isLast: isLastSig,
-                });
+              children: m.For({
+                subject: tasks,
+                map: (task, i) => {
+                  const textSig = derived(() => task.value.text);
+                  const isDoneSig = derived(() => task.value.isDone);
+                  const isLastSig = derived(
+                    () => i.value === tasks.value.length - 1
+                  );
+                  return TodoTile({
+                    task: textSig,
+                    index: i,
+                    isDone: isDoneSig,
+                    onDoneChange,
+                    onDelete,
+                    isLast: isLastSig,
+                  });
+                },
               }),
             }),
             m.P({

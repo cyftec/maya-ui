@@ -1,4 +1,4 @@
-import { derived, signal } from "@ckzero/maya/signal";
+import { derived, signal } from "@maya/core";
 import { m } from "@maya/core";
 import { Button } from "../_elements";
 import { Bulb, PhotoFrame } from "./_components";
