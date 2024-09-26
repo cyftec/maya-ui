@@ -1,5 +1,5 @@
 import { Component, derived, m } from "@maya/core";
-import { Header } from "../../_elements";
+import { Header } from "../../@elements";
 import type { AppStoreAsProps } from "../types";
 import { TodoTile } from "./todo-tile";
 

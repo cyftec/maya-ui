@@ -1,5 +1,5 @@
 import { defaultHtmlPageNode, m } from "@maya/core";
-import { Header } from "./_elements";
+import { Header } from "./@elements";
 
 const HomePage = () => {
   return m.Div({

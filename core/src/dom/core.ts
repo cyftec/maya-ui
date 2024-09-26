@@ -134,13 +134,10 @@ const handleAttributeProps = (
         maybeSignalAttrVal as Signal<string>;
       return;
     }
-    if (window.isDomAccessPhase) return;
     setAttribute(htmlNode, attrKey, maybeSignalAttrVal);
   });
 
   const attrSignalsEffect = () => {
-    if (window.isDomAccessPhase) return;
-
     Object.entries(attribSignals).forEach(([attrKey, attrValue]) => {
       console.log(attrKey, attrValue);
       setAttribute(htmlNode, attrKey, attrValue as Signal<string>);
@@ -210,8 +207,6 @@ const handleChildrenProps = (parentNode: HtmlNode, children?: Children) => {
     if (fixedSignalNodes.length) {
       fixedSignalNodes.forEach(({ index, signalNode }) => {
         const updateSignalledNodes = () => {
-          if (window.isDomAccessPhase) return;
-
           const newChildNode = signalNode.value;
           if (!newChildNode) return;
           const prevChildNode = parentNode.childNodes[index];

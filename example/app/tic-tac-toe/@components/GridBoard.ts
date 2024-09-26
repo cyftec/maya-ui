@@ -20,7 +20,9 @@ export const GridBoard = Component<GridBoardProps>(
     const getColorsCss = (player: Player) =>
       `${getTextColor(player)} ${getBgColor(player)}`;
     const cellText = (index: number) =>
-      moves.value.find((move) => move.index === index)?.player || "•";
+      derived(
+        () => moves.value.find((move) => move.index === index)?.player || "•"
+      );
 
     return m.Div({
       class: derived(
@@ -47,7 +49,7 @@ export const GridBoard = Component<GridBoardProps>(
                 }`
             ),
             onclick: () => onMove(index),
-            children: derived(() => m.Text(cellText(index))),
+            children: m.Text(cellText(index)),
           })
         ),
       ],

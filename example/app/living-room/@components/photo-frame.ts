@@ -1,6 +1,4 @@
-import { Component, m } from "@maya/core";
-
-let photFrameRenderCount = 0;
+import { derived, Component, m } from "@maya/core";
 
 type PhotoFrameProps = {
   frameSrc: string;
@@ -9,20 +7,20 @@ type PhotoFrameProps = {
 };
 
 export const PhotoFrame = Component<PhotoFrameProps>(
-  ({ frameSrc, photoSrc, isBulbOn }) => {
-    console.log(`photo frame rendered ${++photFrameRenderCount} times`);
-
-    return m.Div({
+  ({ frameSrc, photoSrc, isBulbOn }) =>
+    m.Div({
       class: "flex justify-center",
       children: [
         m.Div({
           class: "absolute",
           children: [
             m.Div({
-              class: () =>
-                `absolute z-3 ${
-                  isBulbOn.value ? "bg-transparent" : "bg-black-90"
-                }`,
+              class: derived(
+                () =>
+                  `absolute z-3 ${
+                    isBulbOn.value ? "bg-transparent" : "bg-black-90"
+                  }`
+              ),
               style: "height: 300px; width: 250px; ",
             }),
             m.Img({
@@ -32,10 +30,12 @@ export const PhotoFrame = Component<PhotoFrameProps>(
               src: frameSrc.value,
             }),
             m.Div({
-              class: () =>
-                `absolute z-1 ${
-                  isBulbOn.value ? "bg-transparent" : "bg-black-90"
-                }`,
+              class: derived(
+                () =>
+                  `absolute z-1 ${
+                    isBulbOn.value ? "bg-transparent" : "bg-black-90"
+                  }`
+              ),
               style: "height: 300px; width: 250px; ",
             }),
             m.Img({
@@ -47,6 +47,5 @@ export const PhotoFrame = Component<PhotoFrameProps>(
           ],
         }),
       ],
-    });
-  }
+    })
 );

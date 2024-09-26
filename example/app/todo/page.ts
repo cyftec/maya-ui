@@ -1,5 +1,5 @@
 import { Component, defaultHtmlPageNode, m } from "@maya/core";
-import { Button, Header, TextBox } from "../_elements";
+import { Button, Header, TextBox } from "../@elements";
 import { Todos } from "./_components";
 import type { AppStoreAsProps } from "./types";
 import { getTodoAppStore } from "./context";

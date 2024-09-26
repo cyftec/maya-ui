@@ -1,8 +1,9 @@
-import { derived, signal } from "@maya/core";
+import { defaultMetaTags, derived, signal } from "@maya/core";
 import { m } from "@maya/core";
-import { Button, Loader } from "../_elements";
-import { GridBoard } from "./_components/GridBoard";
+import { Button, Loader, Page } from "../@elements";
+import { GridBoard } from "./@components/GridBoard";
 import type { Move, Player } from "./types";
+import stylesSrc from "../@assets/styles.css";
 
 const TicTacToeApp = () => {
   const blankMoves = () =>
@@ -88,29 +89,28 @@ const TicTacToeApp = () => {
             class: derived(
               () => `f2 mb1 ${playerXsTurn.value ? "green" : "pink"}`
             ),
-            children: derived(() =>
-              m.Text(
-                `${playerXsTurn.value ? "X" : "O"}${
-                  winner.value ? " won!!!" : "'s turn"
-                }`
+            children: m.Text(
+              derived(
+                () =>
+                  `${playerXsTurn.value ? "X" : "O"}${
+                    winner.value ? " won!!!" : "'s turn"
+                  }`
               )
             ),
           }),
-          derived(() =>
-            m.Span({
-              class: "ml3",
-              children: [
-                derived(() =>
-                  isBusy.value
-                    ? Loader({})
-                    : m.Span({
-                        class: "f2",
-                        children: m.Text("✓"),
-                      })
-                ),
-              ],
-            })
-          ),
+          m.Span({
+            class: "ml3",
+            children: [
+              derived(() =>
+                isBusy.value
+                  ? Loader({})
+                  : m.Span({
+                      class: "f2",
+                      children: m.Text("✓"),
+                    })
+              ),
+            ],
+          }),
         ],
       }),
       GridBoard({
@@ -130,4 +130,36 @@ const TicTacToeApp = () => {
   });
 };
 
-export const app = TicTacToeApp;
+export const page = () =>
+  m.Html({
+    lang: "en",
+    children: [
+      m.Head({
+        children: [
+          ...defaultMetaTags(),
+          m.Title({
+            children: m.Text("Living Room"),
+          }),
+          m.Link({
+            rel: "stylesheet",
+            href: "https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css",
+          }),
+          m.Link({
+            rel: "stylesheet",
+            href: stylesSrc,
+          }),
+        ],
+      }),
+      m.Body({
+        children: [
+          m.Script({
+            src: "main.js",
+            defer: "true",
+          }),
+          Page({
+            children: TicTacToeApp(),
+          }),
+        ],
+      }),
+    ],
+  });
