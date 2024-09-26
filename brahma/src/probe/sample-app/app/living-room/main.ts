@@ -1,4 +1,4 @@
-import { runScript } from "@ckzero/maya/web";
+import { runScript } from "@maya/core";
 import { page } from "./page";
 
 runScript(page);

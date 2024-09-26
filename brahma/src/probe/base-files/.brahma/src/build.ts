@@ -1,4 +1,4 @@
-import { generateStaticHtml } from "@ckzero/maya/web";
+import { buildStaticHtml } from "@maya/core";
 import bun from "bun";
 import { exists, lstat, readdir, rmdir } from "fs/promises";
 
@@ -39,7 +39,7 @@ const getFileAndDirNames = async (
 
 const buildHtml = async (srcHtmlPath: string, destHtmlPath: string) => {
   const { page } = await import(srcHtmlPath);
-  const pageHtml = generateStaticHtml(page);
+  const pageHtml = buildStaticHtml(page);
   const html = `<!DOCTYPE html>\n${pageHtml}`;
   if (!html) throw new Error(NO_HTML_ERROR);
 

@@ -1,0 +1,30 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "files.exclude": {
+    "node_modules": true,
+    ".vscode": true,
+    ".brahma": false,
+    ".gitignore": true,
+    "tsconfig.json": true,
+    "global.d.ts": true,
+    "stage": false,
+    "public": false
+  },
+  "liveServer.settings.root": "/stage",
+  "liveServer.settings.port": 5555,
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "karma.mjs",
+        "isAsync": false,
+        "cmd": "brahma install"
+      },
+      {
+        "match": ".*",
+        "isAsync": false,
+        "cmd": "brahma stage"
+      }
+    ]
+  }
+}

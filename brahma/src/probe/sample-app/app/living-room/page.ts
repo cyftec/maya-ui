@@ -1,5 +1,4 @@
-import { derived, signal } from "@ckzero/maya/signal";
-import { defaultMetaTags, m } from "@ckzero/maya/web";
+import { defaultMetaTags, m, derived, signal } from "@maya/core";
 import { Button } from "../@elements";
 import { Bulb, PhotoFrame } from "./@components";
 import frameSrc from "./@sample-assets/photo-frame.webp";
@@ -13,10 +12,12 @@ export const LivingRoomApp = () => {
   );
 
   return m.Div({
-    class: () =>
-      `absolute--fill vh-100 ${
-        isBulbOn.value ? "bg-light-yellow" : "bg-dark-gray"
-      }`,
+    class: derived(
+      () =>
+        `absolute--fill vh-100 ${
+          isBulbOn.value ? "bg-light-yellow" : "bg-dark-gray"
+        }`
+    ),
     children: [
       Bulb({
         isOn: isBulbOn,
@@ -49,7 +50,7 @@ export const page = () =>
         children: [
           ...defaultMetaTags(),
           m.Title({
-            innerText: "Living Room",
+            children: m.Text("Living Room"),
           }),
           m.Link({
             rel: "stylesheet",

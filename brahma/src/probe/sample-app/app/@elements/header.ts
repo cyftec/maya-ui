@@ -1,26 +1,26 @@
-import { m } from "@ckzero/maya/web";
+import { m } from "@maya/core";
 
 export const Header = () =>
   m.Div({
     children: [
       m.A({
         href: "/",
-        innerText: "Home",
+        children: m.Text("Home"),
       }),
-      m.Span({ innerText: " | " }),
+      m.Span({ children: m.Text(" | ") }),
       m.A({
         href: "/about",
-        innerText: "About",
+        children: m.Text("About"),
       }),
-      m.Span({ innerText: " | " }),
+      m.Span({ children: m.Text(" | ") }),
       m.A({
         href: "/contact",
-        innerText: "Contact",
+        children: m.Text("Contact"),
       }),
-      m.Span({ innerText: " | " }),
+      m.Span({ children: m.Text(" | ") }),
       m.A({
         href: "/living-room",
-        innerText: "Living Room app",
+        children: m.Text("Living Room app"),
       }),
     ],
   });

@@ -1,4 +1,4 @@
-import { defaultHtmlPageNode, m } from "@ckzero/maya/web";
+import { defaultHtmlPageNode, m } from "@maya/core";
 import { Header } from "./@elements";
 
 const app = () =>
@@ -6,7 +6,7 @@ const app = () =>
     children: [
       Header(),
       m.H1({
-        innerText: "Home Page",
+        children: m.Text("Home Page"),
       }),
     ],
   });

@@ -1,4 +1,4 @@
-import { Component, m } from "@ckzero/maya/web";
+import { derived, Component, m } from "@maya/core";
 
 type ButtonProps = {
   label: string;
@@ -10,11 +10,13 @@ type ButtonProps = {
 export const Button = Component<ButtonProps>(
   ({ classNames, onTap, label, color }) =>
     m.Button({
-      class: () =>
-        `pa2 b br3 ba bw1 b--gray pointer ${
-          color?.value || "bg-green  white"
-        } ${classNames?.value || ""}`,
+      class: derived(
+        () =>
+          `pa2 b br3 ba bw1 b--gray pointer ${
+            color?.value || "bg-green  white"
+          } ${classNames?.value || ""}`
+      ),
       onclick: onTap,
-      innerText: label,
+      children: m.Text(label.value),
     })
 );
