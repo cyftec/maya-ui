@@ -14,8 +14,8 @@ export const Header = () =>
       }),
       m.Span({ children: m.Text(" | ") }),
       m.A({
-        href: "/contact",
-        children: m.Text("Contact"),
+        href: "/contacts.html",
+        children: m.Text("Contacts"),
       }),
       m.Span({ children: m.Text(" | ") }),
       m.A({

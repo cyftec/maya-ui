@@ -5,16 +5,50 @@ import { exists, lstat, readdir, rmdir } from "fs/promises";
 let buildSrcDir: string;
 let buildDestDir: string;
 
-const SRC_HTML_FILENAME = "page.ts";
-const SRC_JS_FILENAME = "main.ts";
-const DEST_HTML_FILENAME = "index.html";
-const DEST_JS_FILENAME = "main.js";
+const SRC_FILENAME = "main.ts";
+const DEST_HTML_DEFAULT_FILENAME = "index";
+const DEST_JS_DEFAULT_FILENAME = "main";
+const DEST_HTML_FILE_EXT = ".html";
+const DEST_JS_FILE_EXT = ".js";
 
 const NO_HTML_ERROR = "no html";
 const NO_JS_ERROR = "no js";
 
+const runScriptText = `
+var runScript = (page) => {
+  mountUnmountObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+  setTimeout(() => {
+    if (window)
+      window.isDomAccessPhase = true;
+    idGen.resetIdCounter();
+    page();
+    idGen.resetIdCounter();
+    if (window)
+      window.isDomAccessPhase = false;
+  });
+};
+runScript(page);`;
+
 export const getJoinedPath = (rootDir: string, relativePath: string) =>
   `${rootDir}/${relativePath}`.replace("//", "/");
+
+const isMainFile = (fileName: string) => fileName.split("main.ts")[1] === "";
+
+const getDestFileNames = (fileName: string) => {
+  if (!isMainFile(fileName)) throw new Error(`Not main file: ${fileName}`);
+
+  const name = fileName.split("main.ts")[0];
+  const isPrefixed = name.endsWith(".");
+  const destHtmlFileName =
+    (isPrefixed ? name.slice(0, -1) : DEST_HTML_DEFAULT_FILENAME) +
+    DEST_HTML_FILE_EXT;
+  const destJsFileName =
+    (isPrefixed ? name : "") + DEST_JS_DEFAULT_FILENAME + DEST_JS_FILE_EXT;
+  return { destHtmlFileName, destJsFileName };
+};
 
 const getFileAndDirNames = async (
   currentRelativePath: string
@@ -46,23 +80,18 @@ const buildHtml = async (srcHtmlPath: string, destHtmlPath: string) => {
   await bun.write(destHtmlPath, html);
 };
 
-const buildJs = async (
-  srcJsPath: string,
-  destJsPath: string,
-  destDirPath: string
-) => {
+const buildJs = async (srcJsPath: string, destJsPath: string) => {
   const jsBuild = await bun.build({
     entrypoints: [srcJsPath],
-    outdir: destDirPath,
-    splitting: true,
   });
   const js = await jsBuild.outputs.map(async (o) => await o.text())[0];
   if (!js) {
     console.log(jsBuild);
     throw new Error(NO_JS_ERROR);
   }
+  const jsScript = js.split("export {")[0] + "\n" + runScriptText;
 
-  await bun.write(destJsPath, js);
+  await bun.write(destJsPath, jsScript);
 };
 
 const buildFiles = async (relativePath: string, fileNames: string[]) => {
@@ -71,17 +100,15 @@ const buildFiles = async (relativePath: string, fileNames: string[]) => {
 
   const fileExtRegex = /(?:\.([^.]+))?$/;
   for await (const fileName of fileNames) {
-    if (fileName === SRC_HTML_FILENAME) {
-      const srcHtmlPath = getJoinedPath(srcDirPath, SRC_HTML_FILENAME);
-      const destHtmlPath = getJoinedPath(destDirPath, DEST_HTML_FILENAME);
-      await buildHtml(srcHtmlPath, destHtmlPath);
-      continue;
-    }
-
-    if (fileName === SRC_JS_FILENAME) {
-      const srcJsPath = getJoinedPath(srcDirPath, SRC_JS_FILENAME);
-      const destJsPath = getJoinedPath(destDirPath, DEST_JS_FILENAME);
-      await buildJs(srcJsPath, destJsPath, destDirPath);
+    if (isMainFile(fileName)) {
+      const { destHtmlFileName, destJsFileName } = getDestFileNames(fileName);
+      // if (relativePath === "/living-room")
+      //   throw JSON.stringify(destHtmlFileName);
+      const srcPath = getJoinedPath(srcDirPath, fileName);
+      const destHtmlPath = getJoinedPath(destDirPath, destHtmlFileName);
+      const destJsPath = getJoinedPath(destDirPath, destJsFileName);
+      await buildHtml(srcPath, destHtmlPath);
+      await buildJs(srcPath, destJsPath);
       continue;
     }
 
@@ -103,6 +130,7 @@ const buildDir = async (currentRelativePath: string) => {
 
   for await (const dirName of dirNames) {
     const childDirRelativePath = getJoinedPath(currentRelativePath, dirName);
+    // throw JSON.stringify(childDirRelativePath);
     buildDir(childDirRelativePath);
   }
 };

@@ -15,7 +15,8 @@ export const defaultMetaTags: () => HtmlNode[] = () => [
 
 export const defaultHtmlPageNode = (
   pageTitle: string,
-  appNode: () => HtmlNode
+  appNode: () => HtmlNode,
+  pageNamePrefix = ""
 ): HtmlNode => {
   return m.Html({
     lang: "en",
@@ -29,7 +30,7 @@ export const defaultHtmlPageNode = (
       m.Body({
         children: [
           m.Script({
-            src: "main.js",
+            src: (pageNamePrefix ? `./${pageNamePrefix}.` : "./") + "main.js",
             defer: "true",
           }),
           appNode(),

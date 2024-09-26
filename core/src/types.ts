@@ -95,3 +95,11 @@ export type MaybeSignalProps<P> = {
 export type MaybeSignalsComponentFn<P> = (
   props: MaybeSignalProps<P>
 ) => HtmlNode;
+
+/**
+ * ID generator method
+ */
+export type IDGen = {
+  getNewId: () => number;
+  resetIdCounter: () => number;
+};

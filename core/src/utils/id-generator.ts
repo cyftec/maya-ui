@@ -1,3 +1,5 @@
+import type { IDGen } from "../types";
+
 const idGenerator = () => {
   let nodeId = 0;
   return {
@@ -6,4 +8,4 @@ const idGenerator = () => {
   };
 };
 
-export const idGen = idGenerator();
+export const idGen: IDGen = idGenerator();
