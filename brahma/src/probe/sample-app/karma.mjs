@@ -19,6 +19,7 @@ const config = {
     ignore: [
       "node_modules",
       ".brahma",
+      ".vscode",
       ".env",
       ".DS_Store",
       `${STAGING_DIRNAME}`,

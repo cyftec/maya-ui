@@ -1,4 +1,5 @@
 import {
+  derived,
   effect,
   valueIsSignal,
   type MaybeSignal,
@@ -32,6 +33,7 @@ import type {
   HtmlTagName,
   MaybeArray,
   Node,
+  TextComponent,
   TextNode,
 } from "../types";
 
@@ -132,14 +134,12 @@ const handleAttributeProps = (
         maybeSignalAttrVal as Signal<string>;
       return;
     }
-    // if (window.isDomAccessPhase) return;
+    if (window.isDomAccessPhase) return;
     setAttribute(htmlNode, attrKey, maybeSignalAttrVal);
   });
-  console.log(attribSignals);
 
   const attrSignalsEffect = () => {
-    console.log(window.isDomAccessPhase);
-    // if (window.isDomAccessPhase) return;
+    if (window.isDomAccessPhase) return;
 
     Object.entries(attribSignals).forEach(([attrKey, attrValue]) => {
       console.log(attrKey, attrValue);
@@ -161,9 +161,7 @@ const handleChildrenProps = (parentNode: HtmlNode, children?: Children) => {
   if (!children) return;
 
   if (valueIsChildrenSignal(children)) {
-    const updateSignalledChildren = () => {
-      if (window.isDomAccessPhase) return;
-
+    effect(() => {
       const childrenSignal = children as Signal<MaybeArray<Node>>;
       const childrenSignalValue = childrenSignal.value;
       const childNodes = valueIsArray(childrenSignalValue)
@@ -173,9 +171,9 @@ const handleChildrenProps = (parentNode: HtmlNode, children?: Children) => {
         const prevChildNode = parentNode.childNodes[index];
         const newChildNode = node;
         if (prevChildNode && newChildNode) {
-          node.replaceChild(newChildNode, prevChildNode);
+          parentNode.replaceChild(newChildNode, prevChildNode);
         } else if (newChildNode) {
-          node.appendChild(newChildNode);
+          parentNode.appendChild(newChildNode);
         } else {
           console.error(
             `No child found for node with tagName: ${parentNode.tagName}`
@@ -186,9 +184,7 @@ const handleChildrenProps = (parentNode: HtmlNode, children?: Children) => {
         const childNode = parentNode.childNodes[i];
         if (childNode) parentNode.removeChild(childNode);
       }
-    };
-
-    effect(updateSignalledChildren);
+    });
   }
 
   if (valueIsChildren(children)) {
@@ -288,26 +284,17 @@ export const createHtmlNode = (
   return htmlNode;
 };
 
-export const createTextNode = (text: string): TextNode => {
-  const textNode = document.createTextNode(text) as TextNode;
-  textNode.nodeId = 0;
-  textNode.unmountListener = undefined;
-  return textNode;
+export const createTextNode: TextComponent = (text) => {
+  const getTextNode = (textValue: string) => {
+    const textNode = document.createTextNode(textValue) as TextNode;
+    textNode.nodeId = 0;
+    textNode.unmountListener = undefined;
+    return textNode;
+  };
+
+  if (valueIsSignal(text)) {
+    return derived(() => getTextNode((text as Signal<string>).value));
+  } else {
+    return getTextNode(text as string);
+  }
 };
-
-// export const createTextNode = (
-//   text: MaybeSignal<string>
-// ): MaybeSignal<TextNode> => {
-//   const getTextNode = (textValue: string) => {
-//     const textNode = document.createTextNode(textValue) as TextNode;
-//     textNode.nodeId = 0;
-//     textNode.unmountListener = undefined;
-//     return textNode;
-//   };
-
-//   if (valueIsSignal(text)) {
-//     return derived(() => getTextNode((text as Signal<string>).value));
-//   } else {
-//     return getTextNode(text as string);
-//   }
-// };

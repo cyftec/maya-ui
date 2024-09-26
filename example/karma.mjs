@@ -1,4 +1,4 @@
-export const APP_NAME = "my-first-maya-app";
+export const APP_NAME = "maya-super-app";
 export const APP_SRC_DIRNAME = "app";
 export const STAGING_DIRNAME = "stage";
 export const PUBLISH_DIRNAME = "public";
@@ -19,6 +19,7 @@ const config = {
     ignore: [
       "node_modules",
       ".brahma",
+      ".vscode",
       ".env",
       ".DS_Store",
       `${STAGING_DIRNAME}`,
