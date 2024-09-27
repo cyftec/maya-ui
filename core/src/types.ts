@@ -59,7 +59,7 @@ export type HtmlNodesMap = {
   [key in NodeTagName]: (props: HtmlNodeProps) => HtmlNode;
 };
 
-export type TextComponent = (
+export type TextCustomNode = (
   text: MaybeSignal<string>
 ) => MaybeSignal<TextNode>;
 export type ForMapFn<T> = (
@@ -70,11 +70,11 @@ export type ForProps<T> = {
   subject: Signal<T[]>;
   map: ForMapFn<T>;
 };
-export type ForComponent = <T>(props: ForProps<T>) => Signal<Node[]>;
+export type ForCustomNode = <T>(props: ForProps<T>) => Signal<Node[]>;
 
 export type CustomNodesMap = {
-  Text: TextComponent;
-  For: ForComponent;
+  Text: TextCustomNode;
+  For: ForCustomNode;
 };
 
 export type NodesMap = HtmlNodesMap & CustomNodesMap;

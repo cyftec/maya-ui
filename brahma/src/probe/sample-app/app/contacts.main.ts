@@ -7,7 +7,9 @@ const app = () => {
     children: [
       Header(),
       m.H1({
-        style: derived(() => `color: ${toggled.value ? "red" : "green"}`),
+        style: derived(
+          () => `color: ${toggled.value ? "red" : "green"}; user-select: none;`
+        ),
         onclick: () => (toggled.value = !toggled.value),
         children: m.Text("Contact Page"),
       }),

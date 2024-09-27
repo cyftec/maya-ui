@@ -1,10 +1,36 @@
-import { getArrUpdateOps, derived, signal } from "../imported/index";
-import { createTextNode } from "../dom/index";
-import type { ForProps } from "../types";
+import {
+  derived,
+  getArrUpdateOps,
+  signal,
+  valueIsSignal,
+  type Signal,
+} from "../imported/index";
+import type {
+  ForCustomNode,
+  ForProps,
+  TextCustomNode,
+  TextNode,
+} from "../types";
 
-export const TextNode = createTextNode;
+export const textCustomNode: TextCustomNode = (text) => {
+  const getTextNode = (textValue: string) => {
+    const textNode = document.createTextNode(textValue) as TextNode;
+    textNode.nodeId = 0;
+    textNode.unmountListener = undefined;
+    return textNode;
+  };
 
-export const ForNode = <T>({ subject, map }: ForProps<T>) => {
+  if (valueIsSignal(text)) {
+    return derived(() => getTextNode((text as Signal<string>).value));
+  } else {
+    return getTextNode(text as string);
+  }
+};
+
+export const forCustomNode: ForCustomNode = <T>({
+  subject,
+  map,
+}: ForProps<T>) => {
   let oldList: T[] = subject.value;
   const list = derived((oldVal: T[] | null) => {
     oldList = oldVal || oldList;
@@ -24,8 +50,8 @@ export const ForNode = <T>({ subject, map }: ForProps<T>) => {
     subject.value.map((item, index) => {
       const itemSignal = signal(item);
       const indexSignal = signal(index);
-      const node = map(itemSignal, indexSignal);
-      return node;
+
+      return map(itemSignal, indexSignal);
     })
   );
 

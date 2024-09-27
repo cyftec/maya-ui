@@ -1,22 +1,9 @@
 import {
-  derived,
   effect,
   valueIsSignal,
   type MaybeSignal,
   type Signal,
 } from "../imported/index";
-import {
-  valueIsArray,
-  valueIsChildren,
-  valueIsChildrenProp,
-  valueIsChildrenSignal,
-  valueIsNode,
-  valueIsSignalNode,
-  customEventKeys,
-  eventKeys,
-  htmlEventKeys,
-  idGen,
-} from "../utils/index";
 import type {
   AttributeKey,
   AttributeSignalsMap,
@@ -33,9 +20,19 @@ import type {
   HtmlTagName,
   MaybeArray,
   Node,
-  TextComponent,
-  TextNode,
 } from "../types";
+import {
+  customEventKeys,
+  eventKeys,
+  htmlEventKeys,
+  idGen,
+  valueIsArray,
+  valueIsChildren,
+  valueIsChildrenProp,
+  valueIsChildrenSignal,
+  valueIsNode,
+  valueIsSignalNode,
+} from "../utils/index";
 
 const attributeIsChildren = (
   propKey: string,
@@ -277,19 +274,4 @@ export const createHtmlNode = (
   // console.log("\n\n");
 
   return htmlNode;
-};
-
-export const createTextNode: TextComponent = (text) => {
-  const getTextNode = (textValue: string) => {
-    const textNode = document.createTextNode(textValue) as TextNode;
-    textNode.nodeId = 0;
-    textNode.unmountListener = undefined;
-    return textNode;
-  };
-
-  if (valueIsSignal(text)) {
-    return derived(() => getTextNode((text as Signal<string>).value));
-  } else {
-    return getTextNode(text as string);
-  }
 };
