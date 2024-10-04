@@ -12,7 +12,7 @@ import type {
   SureSignalsComponentFn,
 } from "../types";
 import { htmlTagNames } from "../utils/index";
-import { forCustomNode, textCustomNode } from "./custom-nodes";
+import { forCustomNode, textCustomNode } from "./custom-nodes/index";
 
 const htmlNodesMap: HtmlNodesMap = htmlTagNames.reduce((map, htmlTagName) => {
   const nodeTagName = htmlTagName

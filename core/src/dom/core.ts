@@ -41,7 +41,11 @@ const attributeIsChildren = (
 ): boolean => {
   if (propKey === "children") {
     if (valueIsChildrenProp(propValue)) return true;
-    throw new Error(`Invalid children prop for node with tagName: ${tagName}`);
+    throw new Error(
+      `Invalid children prop for node with tagName: ${tagName}\n\n ${JSON.stringify(
+        propValue
+      )}`
+    );
   }
   return false;
 };

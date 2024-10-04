@@ -1,4 +1,4 @@
-import { m } from "./nodes";
+import { m } from "./html-nodes";
 import type { HtmlNode } from "../types";
 
 export const defaultMetaTags: () => HtmlNode[] = () => [

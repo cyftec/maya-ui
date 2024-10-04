@@ -62,13 +62,17 @@ export type HtmlNodesMap = {
 export type TextCustomNode = (
   text: MaybeSignal<string>
 ) => MaybeSignal<TextNode>;
-export type ForMapFn<T> = (
+export type MapFn<T> = (item: T, index: number) => Node;
+export type MutableMapFn<T extends object> = (
   itemSignal: Signal<T>,
   indexSignal: Signal<number>
 ) => Node;
+export type SureObject<T> = T extends object ? T : never;
 export type ForProps<T> = {
-  subject: Signal<T[]>;
-  map: ForMapFn<T>;
+  items: Signal<T[]>;
+  itemIdKey?: string;
+  map?: MapFn<T>;
+  mutableMap?: MutableMapFn<SureObject<T>>;
 };
 export type ForCustomNode = <T>(props: ForProps<T>) => Signal<Node[]>;
 

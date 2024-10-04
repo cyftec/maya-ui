@@ -8,7 +8,8 @@ export const valueIsHtmlNode = (value: any): boolean =>
 export const valueIsTextNode = (value: any): boolean =>
   !isNaN(value?.nodeId) && value?.nodeId === 0;
 
-export const valueIsNode = (value: any): boolean => !isNaN(value?.nodeId);
+export const valueIsNode = (value: any): boolean =>
+  typeof value?.nodeId === "number" && isFinite(value?.nodeId);
 
 export const valueIsSignalNode = (value: any): boolean =>
   valueIsSignal(value) && !isNaN(value.value?.nodeId);
@@ -19,9 +20,10 @@ export const valueIsChildrenSignal = (value: any) => {
     if (valueIsNode(children)) return true;
     if (
       valueIsArray(children) &&
-      value.every((child: any) => valueIsNode(child))
-    )
+      children.every((child: any) => valueIsNode(child))
+    ) {
       return true;
+    }
   }
   return false;
 };
