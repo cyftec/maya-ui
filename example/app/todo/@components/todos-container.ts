@@ -36,8 +36,9 @@ export const Todos = Component<TodosProps>(
           children: [
             m.Div({
               children: m.For({
-                subject: tasks,
-                map: (task, i) => {
+                items: tasks,
+                itemIdKey: "id",
+                mutableMap: (task, i) => {
                   const textSig = derived(() => task.value.text);
                   const isDoneSig = derived(() => task.value.isDone);
                   const isLastSig = derived(

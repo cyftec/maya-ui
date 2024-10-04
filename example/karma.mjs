@@ -31,7 +31,7 @@ const config = {
     "files.exclude": {
       node_modules: true,
       ".vscode": true,
-      ".brahma": false,
+      ".brahma": true,
       ".gitignore": true,
       "tsconfig.json": true,
       [TS_GLOBALS_FILENAME]: true,

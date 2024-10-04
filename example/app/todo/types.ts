@@ -1,6 +1,7 @@
 import type { Signal } from "@maya/core";
 
 export type Task = {
+  id: number;
   text: string;
   isDone: boolean;
 };

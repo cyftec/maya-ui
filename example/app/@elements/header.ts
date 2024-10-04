@@ -1,7 +1,7 @@
 import { Component, derived, m, signal } from "@maya/core";
 
 type HeaderProps = {
-  classNames: string;
+  classNames?: string;
   title: string;
   variant?: "large" | "small";
 };
@@ -17,7 +17,8 @@ export const Header = Component<HeaderProps>(
 
     return hTag({
       class: derived(
-        () => `${toggle.value ? "pl3 red" : "pl3 black"} ${classNames.value}`
+        () =>
+          `${toggle.value ? "pl3 red" : "pl3 black"} ${classNames?.value || ""}`
       ),
       onclick: onTap,
       children: m.Text(title.value),
