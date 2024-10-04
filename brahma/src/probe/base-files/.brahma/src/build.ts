@@ -35,12 +35,12 @@ runScript(page);`;
 export const getJoinedPath = (rootDir: string, relativePath: string) =>
   `${rootDir}/${relativePath}`.replace("//", "/");
 
-const isMainFile = (fileName: string) => fileName.split("main.ts")[1] === "";
+const isMainFile = (fileName: string) => fileName.split(SRC_FILENAME)[1] === "";
 
 const getDestFileNames = (fileName: string) => {
   if (!isMainFile(fileName)) throw new Error(`Not main file: ${fileName}`);
 
-  const name = fileName.split("main.ts")[0];
+  const name = fileName.split(SRC_FILENAME)[0];
   const isPrefixed = name.endsWith(".");
   const destHtmlFileName =
     (isPrefixed ? name.slice(0, -1) : DEST_HTML_DEFAULT_FILENAME) +
