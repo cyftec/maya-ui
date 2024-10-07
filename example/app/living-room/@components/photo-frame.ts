@@ -1,4 +1,4 @@
-import { derived, Component, m } from "@maya/core";
+import { Component, dString, m } from "@maya/core";
 
 type PhotoFrameProps = {
   frameSrc: string;
@@ -15,12 +15,8 @@ export const PhotoFrame = Component<PhotoFrameProps>(
           class: "absolute",
           children: [
             m.Div({
-              class: derived(
-                () =>
-                  `absolute z-3 ${
-                    isBulbOn.value ? "bg-transparent" : "bg-black-90"
-                  }`
-              ),
+              class: dString`absolute z-3 ${() =>
+                isBulbOn.value ? "bg-transparent" : "bg-black-90"}`,
               style: "height: 300px; width: 250px; ",
             }),
             m.Img({
@@ -30,12 +26,8 @@ export const PhotoFrame = Component<PhotoFrameProps>(
               src: frameSrc.value,
             }),
             m.Div({
-              class: derived(
-                () =>
-                  `absolute z-1 ${
-                    isBulbOn.value ? "bg-transparent" : "bg-black-90"
-                  }`
-              ),
+              class: dString`absolute z-1 ${() =>
+                isBulbOn.value ? "bg-transparent" : "bg-black-90"}`,
               style: "height: 300px; width: 250px; ",
             }),
             m.Img({

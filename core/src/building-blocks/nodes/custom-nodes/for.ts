@@ -2,15 +2,16 @@ import {
   derived,
   getArrayMutations,
   signal,
+  valueIsSignal,
   type Signal,
-} from "../../imported/index";
+} from "../../../imported/index";
 import type {
-  ForCustomNode,
+  CustomNodeFor,
   ForProps,
   MutableMapFn,
   Node,
   SureObject,
-} from "../../types";
+} from "../../../types";
 
 type SignalledObject<T> = {
   indexSignal: Signal<number>;
@@ -69,21 +70,25 @@ const getSignalledObject = <T extends object>(
  * @param param0 dfsgsdgfsfggs
  * @returns number
  */
-export const forCustomNode: ForCustomNode = <T>({
+export const customeNodeFor: CustomNodeFor = <T>({
   items,
   itemIdKey,
   map,
   mutableMap,
 }: ForProps<T>) => {
+  const list = valueIsSignal(items)
+    ? (items as Signal<T[]>)
+    : signal(items as T[]);
+
   if (map) {
     if (itemIdKey || mutableMap)
       throw new Error(
         "if 'map' is provided, 'itemIdKey' and 'mutableMap' is uncessary."
       );
-    return derived(() => items.value.map(map));
+    return derived(() => list.value.map(map));
   }
 
-  const itemsValue = items.value;
+  const itemsValue = list.value;
   if (!mutableMap) throw new Error("mutableMap is missing");
   if (itemsValue.length && typeof itemsValue[0] !== "object")
     throw new Error("for mutable map, item in the list must be an object");
@@ -91,7 +96,7 @@ export const forCustomNode: ForCustomNode = <T>({
   let oldList: SureObject<T>[] | null = null;
   const newList = derived((oldVal: SureObject<T>[] | null) => {
     oldList = oldVal || oldList;
-    return (items as Signal<SureObject<T>[]>).value;
+    return (list as Signal<SureObject<T>[]>).value;
   });
 
   const signalledItemsMap = derived<SignalledObject<T>[]>((oldMap) => {
@@ -109,7 +114,7 @@ export const forCustomNode: ForCustomNode = <T>({
       console.assert(
         (mut.type === "add" && mut.oldIndex === -1 && !oldObject) ||
           (mut.oldIndex > -1 && !!oldObject),
-        "In case of mutation type 'add' oldIndex should be '-1', otherwise oldIndex should be non-negative integer."
+        "In case of mutation type 'add' oldIndex should be '-1', or else oldIndex should always be a non-negative integer."
       );
 
       if (oldObject) {

@@ -1,2 +1,2 @@
-export * from "./html-nodes";
+export * from "./nodes/index";
 export * from "./components";

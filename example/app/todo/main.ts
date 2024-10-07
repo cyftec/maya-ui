@@ -1,8 +1,8 @@
-import { Component, defaultHtmlPageNode, defaultMetaTags, m } from "@maya/core";
+import { Component, defaultMetaTags, m } from "@maya/core";
 import { Button, Header, TextBox } from "../@elements";
 import { Todos } from "./@components";
-import type { AppStoreAsProps } from "./types";
 import { getTodoAppStore } from "./context";
+import type { AppStoreAsProps } from "./types";
 
 const TodoApp = Component<AppStoreAsProps>(
   ({ searchText, tasks, setSearchText, addTodo, onDelete, onDoneChange }) => {

@@ -140,7 +140,6 @@ const handleAttributeProps = (
 
   const attrSignalsEffect = () => {
     Object.entries(attribSignals).forEach(([attrKey, attrValue]) => {
-      console.log(attrKey, attrValue);
       setAttribute(htmlNode, attrKey, attrValue as Signal<string>);
     });
   };

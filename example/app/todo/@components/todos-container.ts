@@ -30,7 +30,6 @@ export const Todos = Component<TodosProps>(
           ],
         }),
         m.Div({
-          class: ``,
           onunmount: () =>
             console.log(`Div containing all Todo-Tiles unmounted`),
           children: [

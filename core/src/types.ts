@@ -7,6 +7,7 @@ import type {
 } from "./utils/constants";
 
 export type MaybeArray<T> = T | T[];
+export type SureObject<T> = T extends object ? T : never;
 
 /**
  * Event type-defs
@@ -59,26 +60,46 @@ export type HtmlNodesMap = {
   [key in NodeTagName]: (props: HtmlNodeProps) => HtmlNode;
 };
 
-export type TextCustomNode = (
-  text: MaybeSignal<string>
+export type CustomNodeText = (
+  text: MaybeSignal<string> | TemplateStringsArray,
+  ...exprs: (() => string)[]
 ) => MaybeSignal<TextNode>;
+
 export type MapFn<T> = (item: T, index: number) => Node;
 export type MutableMapFn<T extends object> = (
   itemSignal: Signal<T>,
   indexSignal: Signal<number>
 ) => Node;
-export type SureObject<T> = T extends object ? T : never;
 export type ForProps<T> = {
-  items: Signal<T[]>;
+  items: MaybeSignal<T[]>;
   itemIdKey?: string;
   map?: MapFn<T>;
   mutableMap?: MutableMapFn<SureObject<T>>;
 };
-export type ForCustomNode = <T>(props: ForProps<T>) => Signal<Node[]>;
+export type CustomNodeFor = <T>(props: ForProps<T>) => Signal<Node[]>;
+
+export type IfProps = {
+  condition: MaybeSignal<unknown>;
+  then: MaybeSignal<Node>;
+  otherwise: MaybeSignal<Node>;
+};
+export type CustomNodeIf = (props: IfProps) => MaybeSignal<Node>[];
+
+export type SwitchCase = string | number;
+export type SwitchProps = {
+  subject: MaybeSignal<SwitchCase>;
+  defaultCase?: MaybeSignal<Node>;
+  cases: {
+    [x in SwitchCase]: MaybeSignal<Node>;
+  };
+};
+export type CustomNodeSwitch = (props: SwitchProps) => MaybeSignal<Node>[];
 
 export type CustomNodesMap = {
-  Text: TextCustomNode;
-  For: ForCustomNode;
+  Text: CustomNodeText;
+  For: CustomNodeFor;
+  If: CustomNodeIf;
+  Switch: CustomNodeSwitch;
 };
 
 export type NodesMap = HtmlNodesMap & CustomNodesMap;

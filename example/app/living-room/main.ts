@@ -1,4 +1,4 @@
-import { defaultMetaTags, m, derived, signal } from "@maya/core";
+import { defaultMetaTags, m, derived, signal, dString } from "@maya/core";
 import { Button } from "../@elements";
 import { Bulb, PhotoFrame } from "./@components";
 
@@ -9,12 +9,8 @@ export const LivingRoomApp = () => {
   );
 
   return m.Div({
-    class: derived(
-      () =>
-        `absolute--fill vh-100 ${
-          isBulbOn.value ? "bg-light-yellow" : "bg-dark-gray"
-        }`
-    ),
+    class: dString`absolute--fill vh-100 ${() =>
+      isBulbOn.value ? "bg-light-yellow" : "bg-dark-gray"}`,
     children: [
       Bulb({
         isOn: isBulbOn,

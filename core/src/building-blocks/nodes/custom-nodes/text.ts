@@ -1,7 +1,12 @@
-import { derived, valueIsSignal, type Signal } from "../../imported/index";
-import type { TextCustomNode, TextNode } from "../../types";
+import {
+  derived,
+  dString,
+  valueIsSignal,
+  type Signal,
+} from "../../../imported/index";
+import type { CustomNodeText, TextNode } from "../../../types";
 
-export const textCustomNode: TextCustomNode = (text) => {
+export const customeNodeText: CustomNodeText = (text, ...exprs) => {
   const getTextNode = (textValue: string) => {
     const textNode = document.createTextNode(textValue) as TextNode;
     textNode.nodeId = 0;
@@ -11,6 +16,8 @@ export const textCustomNode: TextCustomNode = (text) => {
 
   if (valueIsSignal(text)) {
     return derived(() => getTextNode((text as Signal<string>).value));
+  } else if (Array.isArray(text) && exprs.length) {
+    return customeNodeText(dString(text as TemplateStringsArray, ...exprs));
   } else {
     return getTextNode(text as string);
   }

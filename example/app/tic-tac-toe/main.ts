@@ -1,4 +1,4 @@
-import { defaultMetaTags, derived, signal } from "@maya/core";
+import { defaultMetaTags, derived, dString, signal } from "@maya/core";
 import { m } from "@maya/core";
 import { Button, Loader } from "../@elements";
 import { GridBoard } from "./@components/GridBoard";
@@ -79,35 +79,59 @@ const TicTacToeApp = () => {
     class: "ph3 mw6",
     children: [
       m.H1({
+        class: "mb0",
         children: m.Text("Tic Tac Toe"),
       }),
       m.Div({
-        class: "flex items-center",
+        class: "flex items-center justify-between",
         children: [
           m.Div({
-            class: derived(
-              () => `f2 mb1 ${playerXsTurn.value ? "green" : "pink"}`
-            ),
-            children: m.Text(
-              derived(
-                () =>
-                  `${playerXsTurn.value ? "X" : "O"}${
-                    winner.value ? " won!!!" : "'s turn"
-                  }`
-              )
-            ),
-          }),
-          m.Span({
-            class: "ml3",
+            class: "flex items-center",
             children: [
-              derived(() =>
-                isBusy.value
-                  ? Loader({})
-                  : m.Span({
-                      class: "f2",
-                      children: m.Text("✓"),
-                    })
-              ),
+              m.Div({
+                class: dString`f3 ${() =>
+                  playerXsTurn.value ? "green" : "pink"}`,
+                children: m.Text`${() =>
+                  playerXsTurn.value ? "X" : "O"}${() =>
+                  winner.value ? " won!!!" : "'s turn"}`,
+              }),
+              m.Span({
+                class: "ml3 db",
+                children: m.If({
+                  condition: isBusy,
+                  then: Loader({}),
+                  otherwise: m.Span({
+                    class: "f2",
+                    children: m.Text("✓"),
+                  }),
+                }),
+              }),
+            ],
+          }),
+          m.Div({
+            children: [
+              ...m.If({
+                condition: winner,
+                then: m.H2({ class: "mr2", children: m.Text("in") }),
+                otherwise: m.Text(""),
+              }),
+              ...m.Switch({
+                subject: derived(
+                  () => moves.value.filter((m) => m.player).length
+                ),
+                defaultCase: m.H2({ children: m.Text("0 moves") }),
+                cases: {
+                  1: m.H2({ children: m.Text("1 move") }),
+                  2: m.H2({ children: m.Text("2 moves") }),
+                  3: m.H2({ children: m.Text("3 moves") }),
+                  4: m.H2({ children: m.Text("4 moves") }),
+                  5: m.H2({ children: m.Text("5 moves") }),
+                  6: m.H2({ children: m.Text("6 moves") }),
+                  7: m.H2({ children: m.Text("7 moves") }),
+                  8: m.H2({ children: m.Text("8 moves") }),
+                  9: m.H2({ children: m.Text("9 moves") }),
+                },
+              }),
             ],
           }),
         ],
@@ -137,7 +161,7 @@ export const page = () =>
         children: [
           ...defaultMetaTags(),
           m.Title({
-            children: m.Text("Living Room"),
+            children: m.Text("Tic Tac Toe"),
           }),
           m.Link({
             rel: "stylesheet",

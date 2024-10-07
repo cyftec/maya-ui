@@ -1,5 +1,5 @@
-import { derived, valueIsSignal } from "../imported/index";
-import { createHtmlNode } from "../dom/index";
+import { derived, valueIsSignal } from "../../imported/index";
+import { createHtmlNode } from "../../dom/index";
 import type {
   HtmlNode,
   HtmlNodeProps,
@@ -10,9 +10,14 @@ import type {
   NodeTagName,
   SureSignalProps,
   SureSignalsComponentFn,
-} from "../types";
-import { htmlTagNames } from "../utils/index";
-import { forCustomNode, textCustomNode } from "./custom-nodes/index";
+} from "../../types";
+import { htmlTagNames } from "../../utils/index";
+import {
+  customeNodeIf,
+  customeNodeFor,
+  customeNodeText,
+  customeNodeSwitch,
+} from "./custom-nodes/index";
 
 const htmlNodesMap: HtmlNodesMap = htmlTagNames.reduce((map, htmlTagName) => {
   const nodeTagName = htmlTagName
@@ -26,8 +31,10 @@ const htmlNodesMap: HtmlNodesMap = htmlTagNames.reduce((map, htmlTagName) => {
 
 export const m: NodesMap = {
   ...htmlNodesMap,
-  Text: textCustomNode,
-  For: forCustomNode,
+  Text: customeNodeText,
+  For: customeNodeFor,
+  If: customeNodeIf,
+  Switch: customeNodeSwitch,
 };
 
 export function Component<P>(
