@@ -1,4 +1,4 @@
-import { defaultMetaTags, derived, dString, signal } from "@maya/core";
+import { defaultMetaTags, derived, drstr, signal } from "@maya/core";
 import { m } from "@maya/core";
 import { Button, Loader } from "../@elements";
 import { GridBoard } from "./@components/GridBoard";
@@ -89,7 +89,7 @@ const TicTacToeApp = () => {
             class: "flex items-center",
             children: [
               m.Div({
-                class: dString`f3 ${() =>
+                class: drstr`f3 ${() =>
                   playerXsTurn.value ? "green" : "pink"}`,
                 children: m.Text`${() =>
                   playerXsTurn.value ? "X" : "O"}${() =>
@@ -153,7 +153,7 @@ const TicTacToeApp = () => {
   });
 };
 
-export const page = () =>
+export default () =>
   m.Html({
     lang: "en",
     children: [

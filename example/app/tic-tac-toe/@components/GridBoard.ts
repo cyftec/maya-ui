@@ -1,4 +1,4 @@
-import { Component, derived, dString, m } from "@maya/core";
+import { Component, derived, drstr, m } from "@maya/core";
 import type { Move, Player } from "../types";
 
 type GridBoardProps = {
@@ -25,7 +25,7 @@ export const GridBoard = Component<GridBoardProps>(
       );
 
     return m.Div({
-      class: dString`grid3x3 br4 pa4 ${() =>
+      class: drstr`grid3x3 br4 pa4 ${() =>
         !winner.value
           ? playerXsTurn.value
             ? "bg-light-green"
@@ -34,7 +34,7 @@ export const GridBoard = Component<GridBoardProps>(
       children: [
         ...blocks.map((_, index) =>
           m.Div({
-            class: dString`flex items-center mid-gray justify-center tc br3 ba b--gray bg-white f1 b h5 ${() =>
+            class: drstr`flex items-center mid-gray justify-center tc br3 ba b--gray bg-white f1 b h5 ${() =>
               winner.value ? "banned" : "pointer"} ${() =>
               winCombo.value?.includes(index)
                 ? getColorsCss(winner.value as Player)

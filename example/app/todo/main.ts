@@ -45,7 +45,7 @@ const TodoApp = Component<AppStoreAsProps>(
   }
 );
 
-export const page = () =>
+export default () =>
   m.Html({
     lang: "en",
     children: [

@@ -14,8 +14,8 @@ const DEST_JS_FILE_EXT = ".js";
 const NO_HTML_ERROR = "no html";
 const NO_JS_ERROR = "no js";
 
-const runScriptText = `
-var runScript = (page) => {
+const runScriptText = (filename: string) => `
+var runScript = () => {
   mountUnmountObserver.observe(document.body, {
     childList: true,
     subtree: true
@@ -24,13 +24,20 @@ var runScript = (page) => {
     if (window)
       window.isDomAccessPhase = true;
     idGen.resetIdCounter();
-    page();
+    ${getPageMethodName(filename)}();
     idGen.resetIdCounter();
     if (window)
       window.isDomAccessPhase = false;
   });
 };
-runScript(page);`;
+runScript();`;
+
+const getPageMethodName = (filename: string) => {
+  const words = filename.replace("-", ".").split(".");
+  words.pop();
+  return words.join("_") + "_default";
+};
+const getFileNameFromPath = (path: string) => path.split("/").pop();
 
 export const getJoinedPath = (rootDir: string, relativePath: string) =>
   `${rootDir}/${relativePath}`.replace("//", "/");
@@ -72,7 +79,7 @@ const getFileAndDirNames = async (
 };
 
 const buildHtml = async (srcHtmlPath: string, destHtmlPath: string) => {
-  const { page } = await import(srcHtmlPath);
+  const { default: page } = await import(srcHtmlPath);
   const pageHtml = buildStaticHtml(page);
   const html = `<!DOCTYPE html>\n${pageHtml}`;
   if (!html) throw new Error(NO_HTML_ERROR);
@@ -89,7 +96,10 @@ const buildJs = async (srcJsPath: string, destJsPath: string) => {
     console.log(jsBuild);
     throw new Error(NO_JS_ERROR);
   }
-  const jsScript = js.split("export {")[0] + "\n" + runScriptText;
+  const jsScript =
+    js.split("export {")[0] +
+    "\n" +
+    runScriptText(getFileNameFromPath(srcJsPath));
 
   await bun.write(destJsPath, jsScript);
 };
@@ -102,8 +112,6 @@ const buildFiles = async (relativePath: string, fileNames: string[]) => {
   for await (const fileName of fileNames) {
     if (isMainFile(fileName)) {
       const { destHtmlFileName, destJsFileName } = getDestFileNames(fileName);
-      // if (relativePath === "/living-room")
-      //   throw JSON.stringify(destHtmlFileName);
       const srcPath = getJoinedPath(srcDirPath, fileName);
       const destHtmlPath = getJoinedPath(destDirPath, destHtmlFileName);
       const destJsPath = getJoinedPath(destDirPath, destJsFileName);
@@ -111,6 +119,8 @@ const buildFiles = async (relativePath: string, fileNames: string[]) => {
       await buildJs(srcPath, destJsPath);
       continue;
     }
+
+    console.log(fileName);
 
     const fileExtension = fileExtRegex.exec(fileName)?.[1];
     if (fileExtension === "ts") continue;

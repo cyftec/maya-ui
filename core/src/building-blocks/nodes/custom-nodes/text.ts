@@ -1,6 +1,6 @@
 import {
   derived,
-  dString,
+  drstr,
   valueIsSignal,
   type Signal,
 } from "../../../imported/index";
@@ -17,7 +17,7 @@ export const customeNodeText: CustomNodeText = (text, ...exprs) => {
   if (valueIsSignal(text)) {
     return derived(() => getTextNode((text as Signal<string>).value));
   } else if (Array.isArray(text) && exprs.length) {
-    return customeNodeText(dString(text as TemplateStringsArray, ...exprs));
+    return customeNodeText(drstr(text as TemplateStringsArray, ...exprs));
   } else {
     return getTextNode(text as string);
   }

@@ -17,5 +17,4 @@ const app = () => {
   });
 };
 
-export const page = () =>
-  defaultHtmlPageNode("My app | Contact", app, "contacts");
+export default () => defaultHtmlPageNode("My app | Contact", app, "contacts");

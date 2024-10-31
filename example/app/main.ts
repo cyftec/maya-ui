@@ -1,7 +1,7 @@
 import { defaultHtmlPageNode, m } from "@maya/core";
 import { Header } from "./@elements";
 
-export const page = () =>
+export default () =>
   defaultHtmlPageNode("Home Page", () => {
     return m.Div({
       children: [

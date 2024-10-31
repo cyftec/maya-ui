@@ -1,4 +1,4 @@
-import { Component, dString, m, signal } from "@maya/core";
+import { Component, drstr, m, signal } from "@maya/core";
 
 type HeaderProps = {
   classNames?: string;
@@ -16,7 +16,7 @@ export const Header = Component<HeaderProps>(
     };
 
     return hTag({
-      class: dString`${() => (toggle.value ? "pl3 red" : "pl3 black")} ${() =>
+      class: drstr`${() => (toggle.value ? "pl3 red" : "pl3 black")} ${() =>
         classNames?.value || ""}`,
       onclick: onTap,
       children: m.Text(title.value),

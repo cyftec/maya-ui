@@ -11,4 +11,4 @@ const app = () =>
     ],
   });
 
-export const page = () => defaultHtmlPageNode("My app", app);
+export default () => defaultHtmlPageNode("My app", app);

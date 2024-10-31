@@ -10,8 +10,8 @@
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
   "dependencies": {
-    "@cyftec/immutjs": "^0.2.2",
-    "@cyftec/signal": "^0.3.1"
+    "@cyftec/immutjs": "^0.3.0",
+    "@cyftec/signal": "^0.4.1"
   },
   "devDependencies": {
     "tsup": "^8.3.0",

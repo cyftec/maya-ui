@@ -1,4 +1,4 @@
-import { Component, derived, dString, m, signal } from "@maya/core";
+import { Component, derived, drstr, m, signal } from "@maya/core";
 
 type TodoTileProps = {
   index: number;
@@ -26,13 +26,12 @@ export const TodoTile = Component<TodoTileProps>(
     return m.Div({
       children: [
         m.Div({
-          class: dString`flex items-center mv1 ph1 pv1 pointer ${bgColor} ${textColor}`,
+          class: drstr`flex items-center mv1 ph1 pv1 pointer ${bgColor} ${textColor}`,
           onclick: () => onDoneChange(index.value),
           onunmount: () => console.log(`tile ${index.value + 1} unmounted`),
           children: [
             m.Span({
-              class: dString`flex-grow-1 ${() =>
-                isDone.value ? "strike" : ""}`,
+              class: drstr`flex-grow-1 ${() => (isDone.value ? "strike" : "")}`,
               onunmount: () =>
                 console.log(
                   `SPAN inside tile no. ${index.value + 1} with text "${

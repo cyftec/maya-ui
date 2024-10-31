@@ -39,7 +39,7 @@ export const LivingRoomApp = () => {
   });
 };
 
-export const page = () =>
+export default () =>
   m.Html({
     lang: "en",
     children: [
