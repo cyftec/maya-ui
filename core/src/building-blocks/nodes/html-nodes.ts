@@ -11,7 +11,7 @@ import type {
   SureSignalProps,
   SureSignalsComponentFn,
 } from "../../types";
-import { htmlTagNames } from "../../utils/index";
+import { htmlTagNames, valueIsChildren } from "../../utils/index";
 import {
   customeNodeIf,
   customeNodeFor,
@@ -44,7 +44,10 @@ export function Component<P>(
     const allProps: SureSignalProps<P> = Object.entries(props).reduce(
       (map, [key, value]) => {
         map[key as keyof P] = (
-          valueIsSignal(value) || typeof value === "function"
+          valueIsChildren(value) ||
+          valueIsSignal(value) ||
+          value === undefined ||
+          typeof value === "function"
             ? value
             : derived(() => value)
         ) as SureSignalProps<P>[keyof P];

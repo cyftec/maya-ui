@@ -8,11 +8,13 @@ import type {
   AttributeKey,
   AttributeSignalsMap,
   AttributeValue,
+  AttributeValueType,
   AttributesMap,
   Children,
   CustomEventKey,
   CustomEventValue,
   DomEventKey,
+  DomEventValue,
   EventsMap,
   HtmlEventKey,
   HtmlNode,
@@ -50,37 +52,27 @@ const attributeIsChildren = (
   return false;
 };
 
-const attributeIsEvent = (
-  propKey: string,
-  propValue: any,
-  tagName: string
-): boolean => {
-  if (eventKeys.includes(propKey as DomEventKey)) {
-    if (typeof propValue === "function") return true;
-    throw new Error(`Invalid event for node with tagName: ${tagName}`);
-  }
-  return false;
-};
+const attributeIsUndefinedEvent = (propKey: string, propValue: any): boolean =>
+  eventKeys.includes(propKey as DomEventKey) && propValue === undefined;
 
-const attributeIsHtmlEvent = (
-  propKey: string,
-  propValue: any,
-  tagName: string
-): boolean =>
+const attributeIsHtmlEvent = (propKey: string, propValue: any): boolean =>
   htmlEventKeys.includes(propKey as HtmlEventKey) &&
-  attributeIsEvent(propKey, propValue, tagName);
+  typeof propValue === "function";
 
-const attributeIsCustomEvent = (
-  propKey: string,
-  propValue: any,
-  tagName: string
-): boolean =>
+const attributeIsCustomEvent = (propKey: string, propValue: any): boolean =>
   customEventKeys.includes(propKey as CustomEventKey) &&
-  attributeIsEvent(propKey, propValue, tagName);
+  typeof propValue === "function";
+
+const attributeIsEvent = (propKey: string, propValue: any): boolean =>
+  attributeIsUndefinedEvent(propKey, propValue) ||
+  attributeIsHtmlEvent(propKey, propValue) ||
+  attributeIsCustomEvent(propKey, propValue);
 
 const handleEventProps = (htmlNode: HtmlNode, events: EventsMap): void => {
   Object.entries(events).forEach(([eventName, listenerFn]) => {
-    if (attributeIsHtmlEvent(eventName, listenerFn, htmlNode.tagName)) {
+    if (attributeIsUndefinedEvent(eventName, listenerFn)) {
+      // ignore as eventlistener is undefined
+    } else if (attributeIsHtmlEvent(eventName, listenerFn)) {
       const eventKey = eventName.slice(2);
       htmlNode.addEventListener(eventKey, (e: Event) => {
         if (eventKey === "keypress") {
@@ -88,11 +80,9 @@ const handleEventProps = (htmlNode: HtmlNode, events: EventsMap): void => {
         }
         listenerFn(e);
       });
-    } else if (
-      attributeIsCustomEvent(eventName, listenerFn, htmlNode.tagName) &&
-      eventName === "onunmount"
-    ) {
-      htmlNode.unmountListener = listenerFn as CustomEventValue;
+    } else if (attributeIsCustomEvent(eventName, listenerFn)) {
+      if (eventName === "onunmount")
+        htmlNode.unmountListener = listenerFn as CustomEventValue;
     } else {
       console.error(
         `Invalid event key: ${eventName} for node with tagName: ${htmlNode.tagName}`
@@ -107,22 +97,27 @@ const handleAttributeProps = (
 ): void => {
   const attribSignals: AttributeSignalsMap = {};
 
-  const getAttrValueString = (attrValue: MaybeSignal<string>): string =>
-    valueIsSignal(attrValue)
-      ? (attrValue as Signal<string>).value
-      : (attrValue as string);
+  const getAttrValueString = (attrValue: AttributeValue): string => {
+    const attrValueString = valueIsSignal(attrValue)
+      ? (attrValue as Signal<AttributeValueType>).value
+      : (attrValue as AttributeValueType);
+
+    return attrValueString === undefined ? "" : attrValueString;
+  };
 
   const setAttribute = (
     htmlNode: HtmlNode,
     attrKey: string,
-    attrValue: MaybeSignal<string>
+    attrValue: AttributeValue
   ): void => {
+    const attrValueString = getAttrValueString(attrValue);
+
     if (attrKey === "value") {
-      htmlNode.value = getAttrValueString(attrValue);
+      htmlNode.value = attrValueString;
     } else if (attrKey === "classname") {
-      htmlNode.setAttribute("class", getAttrValueString(attrValue));
+      htmlNode.setAttribute("class", attrValueString);
     } else {
-      htmlNode.setAttribute(attrKey, getAttrValueString(attrValue));
+      htmlNode.setAttribute(attrKey, attrValueString);
     }
   };
 
@@ -132,7 +127,7 @@ const handleAttributeProps = (
 
     if (valueIsSignal(maybeSignalAttrVal)) {
       attribSignals[attrKey as AttributeKey] =
-        maybeSignalAttrVal as Signal<string>;
+        maybeSignalAttrVal as Signal<AttributeValueType>;
       return;
     }
     setAttribute(htmlNode, attrKey, maybeSignalAttrVal);
@@ -140,7 +135,7 @@ const handleAttributeProps = (
 
   const attrSignalsEffect = () => {
     Object.entries(attribSignals).forEach(([attrKey, attrValue]) => {
-      setAttribute(htmlNode, attrKey, attrValue as Signal<string>);
+      setAttribute(htmlNode, attrKey, attrValue as Signal<AttributeValueType>);
     });
   };
 
@@ -242,8 +237,8 @@ const getNodesEventsAndAttributes = (
   Object.entries(props).forEach(([propKey, propValue]) => {
     if (attributeIsChildren(propKey, propValue, tagName)) {
       children = propValue as Children;
-    } else if (attributeIsEvent(propKey, propValue, tagName)) {
-      events[propKey as DomEventKey] = propValue as (event: Event) => void;
+    } else if (attributeIsEvent(propKey, propValue)) {
+      events[propKey as DomEventKey] = propValue as DomEventValue;
     } else {
       attributes[propKey as AttributeKey] = propValue as string;
     }

@@ -21,18 +21,19 @@ export type DomEventKey = HtmlEventKey | CustomEventKey;
 export type HtmlEventValue = (event: Event) => void;
 export type CustomEventValue = () => void;
 export type UnmountListener = CustomEventValue | undefined;
-export type DomEventValue = HtmlEventValue | CustomEventValue;
+export type DomEventValue = HtmlEventValue | CustomEventValue | undefined;
 
 /**
  * Attributes type-defs
  */
 export type AttributeKey = `data-${string}` | (typeof htmlAttributes)[number];
-export type AttributeValue = MaybeSignal<string>;
+export type AttributeValueType = string | undefined;
+export type AttributeValue = MaybeSignal<AttributeValueType>;
 export type AttributesMap = Partial<{
   [A in AttributeKey]: AttributeValue;
 }>;
 export type AttributeSignalsMap = Partial<{
-  [A in AttributeKey]: Signal<string>;
+  [A in AttributeKey]: Signal<AttributeValueType>;
 }>;
 
 /**
@@ -108,12 +109,17 @@ export type NodesMap = HtmlNodesMap & CustomNodesMap;
  * Components type-defs
  */
 export type SureSignalProps<P> = {
-  [K in keyof P]: P[K] extends (arg: any) => void ? P[K] : Signal<P[K]>;
+  [K in keyof P]: P[K] extends Children | (((...args: any) => any) | undefined)
+    ? P[K]
+    : Signal<P[K]>;
 };
 export type SureSignalsComponentFn<P> = (props: SureSignalProps<P>) => HtmlNode;
 
 export type MaybeSignalProps<P> = {
-  [K in keyof P]: P[K] extends Signal<any> | ((arg: any) => void)
+  [K in keyof P]: P[K] extends
+    | Signal<any>
+    | Children
+    | (((...args: any) => any) | undefined)
     ? P[K]
     : MaybeSignal<P[K]>;
 };
