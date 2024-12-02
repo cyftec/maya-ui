@@ -61,10 +61,12 @@ export type HtmlNodesMap = {
   [key in NodeTagName]: (props: HtmlNodeProps) => HtmlNode;
 };
 
-export type CustomNodeText = (
-  text: MaybeSignal<string> | TemplateStringsArray,
+export type CustomNodeText = <
+  T extends MaybeSignal<string> | TemplateStringsArray
+>(
+  text: T,
   ...exprs: (() => string)[]
-) => MaybeSignal<TextNode>;
+) => T extends string ? TextNode : MaybeSignal<TextNode>;
 
 export type MapFn<T> = (item: T, index: number) => Node;
 export type MutableMapFn<T extends object> = (
@@ -81,10 +83,10 @@ export type CustomNodeFor = <T>(props: ForProps<T>) => Signal<Node[]>;
 
 export type IfProps = {
   condition: MaybeSignal<unknown>;
-  then: MaybeSignal<Node>;
-  otherwise: MaybeSignal<Node>;
+  then: () => Node;
+  otherwise: () => Node;
 };
-export type CustomNodeIf = (props: IfProps) => MaybeSignal<Node>[];
+export type CustomNodeIf = (props: IfProps) => MaybeSignal<Node>;
 
 export type SwitchCase = string | number;
 export type SwitchProps = {
