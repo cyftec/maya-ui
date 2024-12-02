@@ -172,8 +172,10 @@ const handleChildrenProps = (parentNode: HtmlNode, children?: Children) => {
           );
         }
       });
-      for (let i = childNodes.length; i < parentNode.childNodes.length; i++) {
-        const childNode = parentNode.childNodes[i];
+
+      const newChildNodesCount = childNodes.length;
+      while (newChildNodesCount < parentNode.childNodes.length) {
+        const childNode = parentNode.childNodes[newChildNodesCount];
         if (childNode) parentNode.removeChild(childNode);
       }
     });
