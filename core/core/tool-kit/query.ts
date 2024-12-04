@@ -1,10 +1,10 @@
-import {
-  drpromstate,
-  effect,
-  signal,
-  transmit,
-  type Signal,
-} from "../../signal";
+import { dpromstate, dprops, effect, source } from "../../signal";
+
+type QueryState<D> = {
+  isLoading: boolean;
+  data: D | undefined;
+  error: Error | undefined;
+};
 
 export const query = <T>(
   url: string,
@@ -12,13 +12,19 @@ export const query = <T>(
   runQueryImmediately: boolean = false
 ) => {
   const abortController = new AbortController();
-  const isLoading: Signal<boolean> = signal(runQueryImmediately);
-  const data: Signal<T | undefined> = signal(undefined);
-  const error: Signal<Error | undefined> = signal(undefined);
+  const state = source<QueryState<T>>({
+    isLoading: runQueryImmediately,
+    data: undefined,
+    error: undefined,
+  });
 
   const runFetch = () => {
-    isLoading.value = true;
-
+    const prevData = state.value.data;
+    state.value = {
+      isLoading: true,
+      data: prevData,
+      error: undefined,
+    };
     return fetch(url, {
       signal: abortController.signal,
       ...options,
@@ -30,39 +36,60 @@ export const query = <T>(
     result: fResult,
     error: fError,
     runPromise: runQuery,
-  } = drpromstate(runFetch, runQueryImmediately);
-  transmit(fError, error);
+  } = dpromstate(runFetch, runQueryImmediately);
 
   effect(() => {
+    if (fError.value) {
+      state.value = {
+        ...state.value,
+        isLoading: false,
+        error: fError.value,
+      };
+      return;
+    }
+
     if (fResult.value) {
-      const {
-        isBusy: jIsBusy,
-        result: jResult,
-        error: jError,
-      } = drpromstate<T>(() => (fResult.value as Response).json(), true);
-      transmit(jIsBusy, isLoading);
-      transmit(jResult, data);
-      transmit(jError, error);
+      (fResult.value as Response)
+        .json()
+        .then((data) => {
+          state.value = {
+            isLoading: false,
+            error: undefined,
+            data: data,
+          };
+        })
+        .catch((e) => {
+          state.value = {
+            ...state.value,
+            isLoading: false,
+            error: e,
+          };
+        });
     }
   });
 
   const abortQuery = () => {
     if (abortController) {
       abortController.abort();
+      state.value = {
+        ...state.value,
+        isLoading: false,
+        error: undefined,
+      };
     }
   };
 
   const clearCache = () => {
     abortQuery();
-    isLoading.value = false;
-    data.value = undefined;
-    error.value = undefined;
+    state.value = {
+      isLoading: false,
+      data: undefined,
+      error: undefined,
+    };
   };
 
   return {
-    isLoading,
-    data,
-    error,
+    ...dprops(state),
     runQuery,
     abortQuery,
     clearCache,

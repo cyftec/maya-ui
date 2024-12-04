@@ -261,8 +261,6 @@ export const createHtmlNode = (
   htmlNode.unmountListener = undefined;
   props["data-node-id"] = htmlNode.nodeId.toString();
 
-  // console.log("\n\n");
-  // console.log(htmlNode.tagName);
   const { children, events, attributes } = getNodesEventsAndAttributes(
     props,
     htmlNode.tagName
@@ -270,8 +268,6 @@ export const createHtmlNode = (
   handleEventProps(htmlNode, events);
   handleAttributeProps(htmlNode, attributes);
   handleChildrenProps(htmlNode, children);
-  // console.log("------------------------------");
-  // console.log("\n\n");
 
   return htmlNode;
 };

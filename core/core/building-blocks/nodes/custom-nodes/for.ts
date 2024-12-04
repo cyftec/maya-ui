@@ -1,9 +1,10 @@
 import { getArrayMutations } from "../../../../immutjs";
 import {
-  signal,
+  source,
   derived,
   valueIsSignal,
   type Signal,
+  type SourceSignal,
 } from "../../../../signal";
 import type {
   CustomNodeFor,
@@ -14,8 +15,8 @@ import type {
 } from "../../../types";
 
 type SignalledObject<T> = {
-  indexSignal: Signal<number>;
-  itemSignal: Signal<T>;
+  indexSignal: SourceSignal<number>;
+  itemSignal: SourceSignal<T>;
   mappedNode: Node;
 };
 
@@ -24,8 +25,8 @@ const getSignalledObject = <T extends object>(
   i: number,
   map: MutableMapFn<T>
 ): SignalledObject<T> => {
-  const indexSignal = signal(i);
-  const itemSignal = signal(item);
+  const indexSignal = source(i);
+  const itemSignal = source(item);
 
   return {
     indexSignal,
@@ -78,7 +79,7 @@ export const customeNodeFor: CustomNodeFor = <T>({
 }: ForProps<T>) => {
   const list = valueIsSignal(items)
     ? (items as Signal<T[]>)
-    : signal(items as T[]);
+    : source(items as T[]);
 
   if (map) {
     if (itemIdKey || mutableMap)
@@ -94,13 +95,13 @@ export const customeNodeFor: CustomNodeFor = <T>({
     throw new Error("for mutable map, item in the list must be an object");
 
   let oldList: SureObject<T>[] | null = null;
-  const newList = derived((oldVal: SureObject<T>[] | null) => {
+  const newList = derived((oldVal: SureObject<T>[] | undefined) => {
     oldList = oldVal || oldList;
     return (list as Signal<SureObject<T>[]>).value;
   });
 
   const signalledItemsMap = derived<SignalledObject<T>[]>((oldMap) => {
-    if (oldMap === null || !oldList) {
+    if (!oldMap || !oldList) {
       const initialItems = newList.value;
       return initialItems.map((item, i) =>
         getSignalledObject(item as SureObject<T>, i, mutableMap)

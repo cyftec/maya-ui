@@ -4,18 +4,18 @@ import type {
   HtmlNode,
   HtmlNodeProps,
   HtmlNodesMap,
-  MaybeSignalProps,
-  MaybeSignalsComponentFn,
+  ComponentProps,
+  Component,
   NodesMap,
   NodeTagName,
-  SureSignalProps,
-  SureSignalsComponentFn,
+  SignalledProps,
+  SignalledPropsComponent,
 } from "../../types";
 import { htmlTagNames, valueIsChildren } from "../../utils/index";
 import {
   customeNodeIf,
   customeNodeFor,
-  customeNodeText,
+  customNodeText,
   customeNodeSwitch,
 } from "./custom-nodes/index";
 
@@ -31,17 +31,16 @@ const htmlNodesMap: HtmlNodesMap = htmlTagNames.reduce((map, htmlTagName) => {
 
 export const m: NodesMap = {
   ...htmlNodesMap,
-  Text: customeNodeText,
+  Text: customNodeText,
   For: customeNodeFor,
   If: customeNodeIf,
   Switch: customeNodeSwitch,
 };
 
-export function Component<P>(
-  comp: SureSignalsComponentFn<P>
-): MaybeSignalsComponentFn<P> {
-  return function (props: MaybeSignalProps<P>): HtmlNode {
-    const allProps: SureSignalProps<P> = Object.entries(props).reduce(
+export const component =
+  <P>(signalledPropsComp: SignalledPropsComponent<P>): Component<P> =>
+  (props: ComponentProps<P>): HtmlNode => {
+    const signalledProps: SignalledProps<P> = Object.entries(props).reduce(
       (map, [key, value]) => {
         map[key as keyof P] = (
           valueIsChildren(value) ||
@@ -50,13 +49,12 @@ export function Component<P>(
           typeof value === "function"
             ? value
             : derived(() => value)
-        ) as SureSignalProps<P>[keyof P];
+        ) as SignalledProps<P>[keyof P];
 
         return map;
       },
-      {} as SureSignalProps<P>
+      {} as SignalledProps<P>
     );
 
-    return comp(allProps);
+    return signalledPropsComp(signalledProps);
   };
-}
