@@ -1,8 +1,7 @@
 {
-  "name": "@maya/core",
+  "name": "maya",
   "version": "0.1.0",
   "description": "UI library for devloping MPAs using TypeScript",
-  "main": "src/index.ts",
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "lint": "tsc"

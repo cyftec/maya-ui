@@ -1,4 +1,4 @@
-import { derived, valueIsSignal, type Signal } from "@cyftec/signal";
+import { derived, valueIsSignal, type Signal } from "../../../../signal";
 import type { CustomNodeIf } from "../../../types";
 
 export const customeNodeIf: CustomNodeIf = ({ condition, then, otherwise }) => {

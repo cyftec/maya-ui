@@ -3,7 +3,7 @@ import {
   valueIsSignal,
   type MaybeSignal,
   type Signal,
-} from "../imported/index";
+} from "../../signal";
 import type {
   AttributeKey,
   AttributeSignalsMap,

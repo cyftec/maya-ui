@@ -1,10 +1,10 @@
+import { getArrayMutations } from "../../../../immutjs";
 import {
-  derived,
-  getArrayMutations,
   signal,
+  derived,
   valueIsSignal,
   type Signal,
-} from "../../../imported/index";
+} from "../../../../signal";
 import type {
   CustomNodeFor,
   ForProps,

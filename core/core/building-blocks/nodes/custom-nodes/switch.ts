@@ -1,4 +1,4 @@
-import { derived, valueIsSignal, type Signal } from "@cyftec/signal";
+import { derived, valueIsSignal, type Signal } from "../../../../signal";
 import type { CustomNodeSwitch, SwitchCase } from "../../../types";
 import { m } from "../html-nodes";
 
@@ -23,13 +23,14 @@ export const customeNodeSwitch: CustomNodeSwitch = ({
     derived(() => (switchCase.value === match ? dib : dn));
 
   return [
-    ...m.If({
+    m.If({
       condition: isDefaultCase,
-      then: m.Span({
-        style: defaultCaseStyle,
-        children: defaultCase,
-      }),
-      otherwise: m.Span({ class: dn }),
+      then: () =>
+        m.Span({
+          style: defaultCaseStyle,
+          children: defaultCase,
+        }),
+      otherwise: () => m.Span({ class: dn }),
     }),
     ...caseEntries.map(([match, node]) => {
       return m.Div({

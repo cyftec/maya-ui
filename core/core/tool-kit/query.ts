@@ -4,7 +4,7 @@ import {
   signal,
   transmit,
   type Signal,
-} from "@cyftec/signal";
+} from "../../signal";
 
 export const query = <T>(
   url: string,

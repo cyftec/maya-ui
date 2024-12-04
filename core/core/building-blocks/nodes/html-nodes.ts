@@ -1,4 +1,4 @@
-import { derived, valueIsSignal } from "../../imported/index";
+import { derived, valueIsSignal } from "../../../signal";
 import { createHtmlNode } from "../../dom/index";
 import type {
   HtmlNode,
