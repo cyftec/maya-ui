@@ -83,6 +83,8 @@ export type ForProps<T> = {
   itemIdKey?: string;
   map?: MapFn<T>;
   mutableMap?: MutableMapFn<SureObject<T>>;
+  n?: number;
+  nthNode?: () => Node;
 };
 export type CustomNodeFor = <T>(props: ForProps<T>) => DerivedSignal<Node[]>;
 
@@ -95,7 +97,7 @@ export type CustomNodeIf = (props: IfProps) => DerivedSignal<Node>;
 
 export type SwitchProps = {
   subject: MaybeSignal<string>;
-  defaultCase: () => Node;
+  defaultCase?: () => Node;
   cases: {
     [x in string]: () => Node;
   };

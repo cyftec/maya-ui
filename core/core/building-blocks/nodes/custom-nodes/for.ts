@@ -35,6 +35,19 @@ const getSignalledObject = <T extends object>(
   };
 };
 
+const getNodesListAfterInjection = (
+  nodesList: Node[],
+  n?: number,
+  nthNode?: () => Node
+) => {
+  if (n !== undefined && nthNode) {
+    const injectingIndex = n > nodesList.length ? nodesList.length : n;
+    nodesList.splice(injectingIndex, 0, nthNode());
+    console.log(nodesList);
+  }
+  return nodesList;
+};
+
 /**
  * For the case of 'mutableMap',
  * if 'itemIdKey' is provided, then only any update in item is checked during diff,
@@ -76,7 +89,13 @@ export const customeNodeFor: CustomNodeFor = <T>({
   itemIdKey,
   map,
   mutableMap,
+  n,
+  nthNode,
 }: ForProps<T>) => {
+  if ((nthNode && n === undefined) || (n !== undefined && !nthNode)) {
+    throw new Error("Either both 'n' and 'nthNode' be passed or none of them.");
+  }
+
   const list = valueIsSignal(items)
     ? (items as Signal<T[]>)
     : source(items as T[]);
@@ -86,7 +105,9 @@ export const customeNodeFor: CustomNodeFor = <T>({
       throw new Error(
         "if 'map' is provided, 'itemIdKey' and 'mutableMap' is uncessary."
       );
-    return derived(() => list.value.map(map));
+    return derived(() =>
+      getNodesListAfterInjection(list.value.map(map), n, nthNode)
+    );
   }
 
   const itemsValue = list.value;
@@ -135,9 +156,13 @@ export const customeNodeFor: CustomNodeFor = <T>({
     });
   });
 
-  const nodesSignal = derived(() => {
-    return signalledItemsMap.value.map((ob) => ob.mappedNode);
-  });
+  const nodesSignal = derived(() =>
+    getNodesListAfterInjection(
+      signalledItemsMap.value.map((ob) => ob.mappedNode),
+      n,
+      nthNode
+    )
+  );
 
   return nodesSignal;
 };
