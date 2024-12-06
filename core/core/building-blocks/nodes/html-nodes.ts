@@ -1,10 +1,5 @@
 import { createHtmlNode } from "../../dom/index";
-import type {
-  HtmlNodeProps,
-  HtmlNodesMap,
-  NodesMap,
-  NodeTagName,
-} from "../../types";
+import type { HtmlNodesMap, NodesMap, NodeTagName, Props } from "../../types";
 import { htmlTagNames } from "../../utils/index";
 import {
   customeNodeFor,
@@ -17,8 +12,7 @@ const htmlNodesMap: HtmlNodesMap = htmlTagNames.reduce((map, htmlTagName) => {
     .split("")
     .map((char, index) => (!index ? char.toUpperCase() : char))
     .join("") as NodeTagName;
-  map[nodeTagName] = (props: HtmlNodeProps) =>
-    createHtmlNode(htmlTagName, props);
+  map[nodeTagName] = (props: Props) => createHtmlNode(htmlTagName, props);
   return map;
 }, {} as HtmlNodesMap);
 

@@ -24,6 +24,7 @@ import type {
   HtmlNode,
   HtmlNodeProps,
   HtmlTagName,
+  Props,
 } from "../types";
 import {
   customEventKeys,
@@ -264,7 +265,7 @@ const getNodesEventsAndAttributes = (
 
 export const createHtmlNode = (
   tagName: HtmlTagName,
-  props: HtmlNodeProps
+  props: Props
 ): HtmlNode => {
   const nodeId = idGen.getNewId();
   const htmlNode = window.isDomAccessPhase
@@ -272,10 +273,13 @@ export const createHtmlNode = (
     : (document.createElement(tagName) as HtmlNode);
   htmlNode.nodeId = nodeId;
   htmlNode.unmountListener = undefined;
-  props["data-node-id"] = htmlNode.nodeId.toString();
+  const htmlNodeProps: HtmlNodeProps = valueIsChildrenProp(props)
+    ? { children: props as ChildrenProp }
+    : (props as HtmlNodeProps);
+  htmlNodeProps["data-node-id"] = htmlNode.nodeId.toString();
 
   const { childrenProp, events, attributes } = getNodesEventsAndAttributes(
-    props,
+    htmlNodeProps,
     htmlNode.tagName
   );
   handleEventProps(htmlNode, events);

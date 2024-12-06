@@ -53,9 +53,10 @@ export type Children = MaybeArray<MaybeSignal<Child>>;
 export type ChildrenProp = ChildrenSignal | Children;
 export type ChildrenPropMap = { children?: ChildrenProp };
 export type HtmlNodeProps = EventsMap & AttributesMap & ChildrenPropMap;
+export type Props = ChildrenProp | HtmlNodeProps;
 
 export type HtmlNodesMap = {
-  [key in NodeTagName]: (props: HtmlNodeProps) => HtmlNode;
+  [key in NodeTagName]: (props: Props) => HtmlNode;
 };
 
 export type MapFn<T> = (item: T, index: number) => Child;
