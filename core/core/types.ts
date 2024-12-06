@@ -1,9 +1,4 @@
-import type {
-  DerivedSignal,
-  MaybeSignal,
-  Signal,
-  TemplateLiteralExpressions,
-} from "../signal";
+import type { DerivedSignal, MaybeSignal, Signal } from "../signal";
 import type {
   customEventKeys,
   htmlAttributes,
@@ -51,61 +46,50 @@ export type HtmlNode = HTMLElement & {
   unmountListener: UnmountListener;
   value?: string; // for HTMLInputElement
 };
-export type TextNode = Text & {
-  nodeId: 0; // '0' should be assigned to all text nodes
-  unmountListener: UnmountListener;
-};
-export type Node = TextNode | HtmlNode;
-export type MaybeChildSignal = MaybeSignal<Node>;
-export type ChildSignal = Signal<Node>;
-export type Children = Signal<MaybeArray<Node>> | MaybeArray<MaybeSignal<Node>>;
-export type ChildrenProp = { children?: Children };
-export type HtmlNodeProps = EventsMap & AttributesMap & ChildrenProp;
+export type Child = string | HtmlNode;
+export type ChildSignal = Signal<Child>;
+export type ChildrenSignal = Signal<MaybeArray<Child>>;
+export type Children = MaybeArray<MaybeSignal<Child>>;
+export type ChildrenProp = ChildrenSignal | Children;
+export type ChildrenPropMap = { children?: ChildrenProp };
+export type HtmlNodeProps = EventsMap & AttributesMap & ChildrenPropMap;
 
 export type HtmlNodesMap = {
   [key in NodeTagName]: (props: HtmlNodeProps) => HtmlNode;
 };
 
-export type CustomNodeText = <
-  T extends MaybeSignal<string> | TemplateStringsArray
->(
-  text: T,
-  ...exprs: TemplateLiteralExpressions
-) => T extends string ? TextNode : DerivedSignal<TextNode>;
-
-export type MapFn<T> = (item: T, index: number) => Node;
+export type MapFn<T> = (item: T, index: number) => Child;
 export type MutableMapFn<T extends object> = (
   itemSignal: Signal<T>,
   indexSignal: Signal<number>
-) => Node;
+) => Child;
 export type ForProps<T> = {
   items: MaybeSignal<T[]>;
   itemIdKey?: string;
   map?: MapFn<T>;
   mutableMap?: MutableMapFn<SureObject<T>>;
   n?: number;
-  nthNode?: () => Node;
+  nthChild?: () => Child;
 };
-export type CustomNodeFor = <T>(props: ForProps<T>) => DerivedSignal<Node[]>;
+export type CustomNodeFor = <T>(props: ForProps<T>) => DerivedSignal<Child[]>;
 
 export type IfProps = {
   condition: MaybeSignal<any>;
-  then: () => Node;
-  otherwise?: () => Node;
+  then: () => Child;
+  otherwise?: () => Child;
 };
-export type CustomNodeIf = (props: IfProps) => DerivedSignal<Node>;
+export type CustomNodeIf = (props: IfProps) => DerivedSignal<Child>;
 
 export type SwitchProps = {
   subject: MaybeSignal<string>;
-  defaultCase?: () => Node;
+  defaultCase?: () => Child;
   cases: {
-    [x in string]: () => Node;
+    [x in string]: () => Child;
   };
 };
-export type CustomNodeSwitch = (props: SwitchProps) => DerivedSignal<Node>;
+export type CustomNodeSwitch = (props: SwitchProps) => DerivedSignal<Child>;
 
 export type CustomNodesMap = {
-  Text: CustomNodeText;
   For: CustomNodeFor;
   If: CustomNodeIf;
   Switch: CustomNodeSwitch;
@@ -116,18 +100,15 @@ export type NodesMap = HtmlNodesMap & CustomNodesMap;
 /**
  * Components type-defs
  */
-export type SignalledProps<P> = {
-  [K in keyof P]: P[K] extends Children | (((...args: any) => any) | undefined)
-    ? P[K]
-    : DerivedSignal<P[K]>;
-};
-export type SignalledPropsComponent<P> = (props: SignalledProps<P>) => HtmlNode;
 
 export type ComponentProps<P> = {
   [K in keyof P]: P[K] extends
     | Signal<any>
-    | Children
     | (((...args: any) => any) | undefined)
+    ? P[K]
+    : P[K] extends string | string[] | undefined
+    ? MaybeSignal<P[K]>
+    : P[K] extends ChildrenProp
     ? P[K]
     : MaybeSignal<P[K]>;
 };

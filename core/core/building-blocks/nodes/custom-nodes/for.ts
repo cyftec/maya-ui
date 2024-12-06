@@ -10,14 +10,14 @@ import type {
   CustomNodeFor,
   ForProps,
   MutableMapFn,
-  Node,
+  Child,
   SureObject,
 } from "../../../types";
 
 type SignalledObject<T> = {
   indexSignal: SourceSignal<number>;
   itemSignal: SourceSignal<T>;
-  mappedNode: Node;
+  mappedChild: Child;
 };
 
 const getSignalledObject = <T extends object>(
@@ -31,21 +31,20 @@ const getSignalledObject = <T extends object>(
   return {
     indexSignal,
     itemSignal,
-    mappedNode: map(itemSignal, indexSignal),
+    mappedChild: map(itemSignal, indexSignal),
   };
 };
 
-const getNodesListAfterInjection = (
-  nodesList: Node[],
+const getChildrenAfterInjection = (
+  children: Child[],
   n?: number,
-  nthNode?: () => Node
+  nthChild?: () => Child
 ) => {
-  if (n !== undefined && nthNode) {
-    const injectingIndex = n > nodesList.length ? nodesList.length : n;
-    nodesList.splice(injectingIndex, 0, nthNode());
-    console.log(nodesList);
+  if (n !== undefined && nthChild) {
+    const injectingIndex = n > children.length ? children.length : n;
+    children.splice(injectingIndex, 0, nthChild());
   }
-  return nodesList;
+  return children;
 };
 
 /**
@@ -90,10 +89,12 @@ export const customeNodeFor: CustomNodeFor = <T>({
   map,
   mutableMap,
   n,
-  nthNode,
+  nthChild,
 }: ForProps<T>) => {
-  if ((nthNode && n === undefined) || (n !== undefined && !nthNode)) {
-    throw new Error("Either both 'n' and 'nthNode' be passed or none of them.");
+  if ((nthChild && n === undefined) || (n !== undefined && !nthChild)) {
+    throw new Error(
+      "Either both 'n' and 'nthChild' be passed or none of them."
+    );
   }
 
   const list = valueIsSignal(items)
@@ -106,7 +107,7 @@ export const customeNodeFor: CustomNodeFor = <T>({
         "if 'map' is provided, 'itemIdKey' and 'mutableMap' is uncessary."
       );
     return derived(() =>
-      getNodesListAfterInjection(list.value.map(map), n, nthNode)
+      getChildrenAfterInjection(list.value.map(map), n, nthChild)
     );
   }
 
@@ -157,10 +158,10 @@ export const customeNodeFor: CustomNodeFor = <T>({
   });
 
   const nodesSignal = derived(() =>
-    getNodesListAfterInjection(
-      signalledItemsMap.value.map((ob) => ob.mappedNode),
+    getChildrenAfterInjection(
+      signalledItemsMap.value.map((ob) => ob.mappedChild),
       n,
-      nthNode
+      nthChild
     )
   );
 

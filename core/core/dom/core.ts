@@ -10,7 +10,11 @@ import type {
   AttributeValue,
   AttributeValueType,
   AttributesMap,
+  Child,
+  ChildSignal,
   Children,
+  ChildrenProp,
+  ChildrenSignal,
   CustomEventKey,
   CustomEventValue,
   DomEventKey,
@@ -20,8 +24,6 @@ import type {
   HtmlNode,
   HtmlNodeProps,
   HtmlTagName,
-  MaybeArray,
-  Node,
 } from "../types";
 import {
   customEventKeys,
@@ -32,8 +34,8 @@ import {
   valueIsChildren,
   valueIsChildrenProp,
   valueIsChildrenSignal,
-  valueIsNode,
-  valueIsSignalNode,
+  valueIsHtmlNode,
+  valueIsSignalChild,
 } from "../utils/index";
 
 const attributeIsChildren = (
@@ -142,26 +144,39 @@ const handleAttributeProps = (
   effect(attrSignalsEffect);
 };
 
-const getDomNode = (node: MaybeSignal<Node>): Node =>
-  valueIsNode(node)
-    ? (node as Node)
-    : valueIsSignalNode(node)
-    ? (node as Signal<Node>).value
-    : (node as Node);
+const getNodeFromChild = (child: MaybeSignal<Child>): HtmlNode | Text => {
+  if (valueIsSignalChild(child)) {
+    const nonSignalChild = (child as ChildSignal).value;
+    return getNodeFromChild(nonSignalChild);
+  }
 
-const handleChildrenProps = (parentNode: HtmlNode, children?: Children) => {
-  if (!children) return;
+  if (valueIsHtmlNode(child)) {
+    return child as HtmlNode;
+  }
 
-  if (valueIsChildrenSignal(children)) {
+  if (typeof child !== "string") {
+    throw new Error(`Invalid child. Type of child: ${typeof child}`);
+  }
+
+  return document.createTextNode(child);
+};
+
+const handleChildrenProp = (
+  parentNode: HtmlNode,
+  childrenProp?: ChildrenProp
+) => {
+  if (!childrenProp) return;
+
+  if (valueIsChildrenSignal(childrenProp)) {
     effect(() => {
-      const childrenSignal = children as Signal<MaybeArray<Node>>;
+      const childrenSignal = childrenProp as ChildrenSignal;
       const childrenSignalValue = childrenSignal.value;
-      const childNodes = valueIsArray(childrenSignalValue)
+      const children = valueIsArray(childrenSignalValue)
         ? childrenSignalValue
         : [childrenSignalValue];
-      childNodes.forEach((node, index) => {
+      children.forEach((child, index) => {
         const prevChildNode = parentNode.childNodes[index];
-        const newChildNode = node;
+        const newChildNode = getNodeFromChild(child);
         if (prevChildNode && newChildNode) {
           parentNode.replaceChild(newChildNode, prevChildNode);
         } else if (newChildNode) {
@@ -173,39 +188,37 @@ const handleChildrenProps = (parentNode: HtmlNode, children?: Children) => {
         }
       });
 
-      const newChildNodesCount = childNodes.length;
-      while (newChildNodesCount < parentNode.childNodes.length) {
-        const childNode = parentNode.childNodes[newChildNodesCount];
+      const newChildrenCount = children.length;
+      while (newChildrenCount < parentNode.childNodes.length) {
+        const childNode = parentNode.childNodes[newChildrenCount];
         if (childNode) parentNode.removeChild(childNode);
       }
     });
   }
 
-  if (valueIsChildren(children)) {
-    const childNodes = children as MaybeArray<MaybeSignal<Node>>;
-    const fixedSignalNodes: { index: number; signalNode: Signal<Node> }[] = [];
-    const sanitisedChildren = valueIsArray(childNodes)
-      ? childNodes
-      : [childNodes];
+  if (valueIsChildren(childrenProp)) {
+    const children = childrenProp as Children;
+    const signalledChildren: { index: number; childSignal: ChildSignal }[] = [];
+    const sureArrayChildren = valueIsArray(children) ? children : [children];
 
-    sanitisedChildren.forEach((maybeSignalChild, index) => {
-      if (valueIsSignalNode(maybeSignalChild)) {
-        fixedSignalNodes.push({
+    sureArrayChildren.forEach((maybeSignalChild, index) => {
+      if (valueIsSignalChild(maybeSignalChild)) {
+        signalledChildren.push({
           index,
-          signalNode: maybeSignalChild as Signal<Node>,
+          childSignal: maybeSignalChild as ChildSignal,
         });
         return;
       }
       if (window.isDomAccessPhase) return;
-      const childNode = getDomNode(maybeSignalChild);
+      const childNode = getNodeFromChild(maybeSignalChild);
       parentNode.appendChild(childNode);
     });
 
-    if (fixedSignalNodes.length) {
-      fixedSignalNodes.forEach(({ index, signalNode }) => {
+    if (signalledChildren.length) {
+      signalledChildren.forEach(({ index, childSignal }) => {
         const updateSignalledNodes = () => {
-          const newChildNode = signalNode.value;
-          if (!newChildNode) return;
+          if (!childSignal.value) return;
+          const newChildNode = getNodeFromChild(childSignal.value);
           const prevChildNode = parentNode.childNodes[index];
 
           if (prevChildNode && newChildNode) {
@@ -228,17 +241,17 @@ const getNodesEventsAndAttributes = (
   props: HtmlNodeProps,
   tagName: string
 ): {
-  children: Children | undefined;
+  childrenProp: ChildrenProp | undefined;
   events: EventsMap;
   attributes: AttributesMap;
 } => {
-  let children: Children | undefined = undefined;
+  let childrenProp: ChildrenProp | undefined = undefined;
   const events: EventsMap = {};
   const attributes: AttributesMap = {};
 
   Object.entries(props).forEach(([propKey, propValue]) => {
     if (attributeIsChildren(propKey, propValue, tagName)) {
-      children = propValue as Children;
+      childrenProp = propValue as ChildrenProp;
     } else if (attributeIsEvent(propKey, propValue)) {
       events[propKey as DomEventKey] = propValue as DomEventValue;
     } else {
@@ -246,7 +259,7 @@ const getNodesEventsAndAttributes = (
     }
   });
 
-  return { children, events, attributes };
+  return { childrenProp, events, attributes };
 };
 
 export const createHtmlNode = (
@@ -261,13 +274,13 @@ export const createHtmlNode = (
   htmlNode.unmountListener = undefined;
   props["data-node-id"] = htmlNode.nodeId.toString();
 
-  const { children, events, attributes } = getNodesEventsAndAttributes(
+  const { childrenProp, events, attributes } = getNodesEventsAndAttributes(
     props,
     htmlNode.tagName
   );
   handleEventProps(htmlNode, events);
   handleAttributeProps(htmlNode, attributes);
-  handleChildrenProps(htmlNode, children);
+  handleChildrenProp(htmlNode, childrenProp);
 
   return htmlNode;
 };

@@ -5,42 +5,25 @@ export const valueIsArray = (value: any) => Array.isArray(value);
 export const valueIsHtmlNode = (value: any): boolean =>
   !isNaN(value?.nodeId) && value?.nodeId > 0;
 
-export const valueIsTextNode = (value: any): boolean =>
-  !isNaN(value?.nodeId) && value?.nodeId === 0;
+export const valueIsChild = (value: any): boolean =>
+  valueIsHtmlNode(value) || typeof value === "string";
 
-export const valueIsNode = (value: any): boolean =>
-  typeof value?.nodeId === "number" && isFinite(value?.nodeId);
+export const valueIsSignalChild = (value: any): boolean =>
+  valueIsSignal(value) && valueIsChild(value.value);
 
-export const valueIsSignalNode = (value: any): boolean =>
-  valueIsSignal(value) && !isNaN(value.value?.nodeId);
+export const valueIsMaybeSignalChild = (value: any): boolean =>
+  valueIsChild(value) || valueIsSignalChild(value);
 
-export const valueIsChildrenSignal = (value: any) => {
-  if (valueIsSignal(value)) {
-    const children = value.value;
-    if (valueIsNode(children)) return true;
-    if (
-      valueIsArray(children) &&
-      children.every((child: any) => valueIsNode(child))
-    ) {
-      return true;
-    }
-  }
-  return false;
-};
+export const valueIsChildrenSignal = (value: any) =>
+  valueIsSignal(value) &&
+  (valueIsChild(value.value) ||
+    (valueIsArray(value.value) &&
+      value.value.every((child: any) => valueIsChild(child))));
 
-export const valueIsChildren = (value: any) => {
-  if (valueIsNode(value) || valueIsSignalNode(value)) return true;
-  if (
-    valueIsArray(value) &&
-    value.every((item: any) => valueIsNode(item) || valueIsSignalNode(item))
-  )
-    return true;
-  return false;
-};
+export const valueIsChildren = (value: any) =>
+  valueIsMaybeSignalChild(value) ||
+  (valueIsArray(value) &&
+    value.every((item: any) => valueIsMaybeSignalChild(item)));
 
-export const valueIsChildrenProp = (value: any) => {
-  if (valueIsChildrenSignal(value)) return true;
-  if (valueIsChildren(value)) return true;
-
-  return false;
-};
+export const valueIsChildrenProp = (value: any) =>
+  valueIsChildrenSignal(value) || valueIsChildren(value);
