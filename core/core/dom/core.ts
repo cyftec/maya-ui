@@ -100,27 +100,30 @@ const handleAttributeProps = (
 ): void => {
   const attribSignals: AttributeSignalsMap = {};
 
-  const getAttrValueString = (attrValue: AttributeValue): string => {
-    const attrValueString = valueIsSignal(attrValue)
-      ? (attrValue as Signal<AttributeValueType>).value
-      : (attrValue as AttributeValueType);
+  const getAttrValue = (attributeValue: AttributeValue): string | boolean => {
+    const attrValue: AttributeValueType = valueIsSignal(attributeValue)
+      ? (attributeValue as Signal<AttributeValueType>).value
+      : (attributeValue as AttributeValueType);
 
-    return attrValueString === undefined ? "" : attrValueString;
+    return attrValue ?? "";
   };
 
   const setAttribute = (
     htmlNode: HtmlNode,
     attrKey: string,
-    attrValue: AttributeValue
+    attributeValue: AttributeValue
   ): void => {
-    const attrValueString = getAttrValueString(attrValue);
+    const attrValue = getAttrValue(attributeValue);
 
-    if (attrKey === "value") {
-      htmlNode.value = attrValueString;
+    if (typeof attrValue === "boolean") {
+      if (attrValue) htmlNode.setAttribute(attrKey, "");
+      else htmlNode.removeAttribute(attrKey);
+    } else if (attrKey === "value") {
+      htmlNode.value = attrValue;
     } else if (attrKey === "classname") {
-      htmlNode.setAttribute("class", attrValueString);
+      htmlNode.setAttribute("class", attrValue);
     } else {
-      htmlNode.setAttribute(attrKey, attrValueString);
+      htmlNode.setAttribute(attrKey, attrValue);
     }
   };
 

@@ -27,7 +27,7 @@ export type DomEventValue = HtmlEventValue | CustomEventValue | undefined;
  * Attributes type-defs
  */
 export type AttributeKey = `data-${string}` | (typeof htmlAttributes)[number];
-export type AttributeValueType = string | undefined;
+export type AttributeValueType = string | boolean | undefined;
 export type AttributeValue = MaybeSignal<AttributeValueType>;
 export type AttributesMap = Partial<{
   [A in AttributeKey]: AttributeValue;
