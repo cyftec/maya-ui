@@ -39,22 +39,6 @@ import {
   valueIsSignalChild,
 } from "../utils/index";
 
-const attributeIsChildren = (
-  propKey: string,
-  propValue: any,
-  tagName: string
-): boolean => {
-  if (propKey === "children") {
-    if (valueIsChildrenProp(propValue)) return true;
-    throw new Error(
-      `Invalid children prop for node with tagName: ${tagName}\n\n ${JSON.stringify(
-        propValue
-      )}`
-    );
-  }
-  return false;
-};
-
 const attributeIsUndefinedEvent = (propKey: string, propValue: any): boolean =>
   eventKeys.includes(propKey as DomEventKey) && propValue === undefined;
 
@@ -254,8 +238,15 @@ const getNodesEventsAndAttributes = (
   const attributes: AttributesMap = {};
 
   Object.entries(props).forEach(([propKey, propValue]) => {
-    if (attributeIsChildren(propKey, propValue, tagName)) {
-      childrenProp = propValue as ChildrenProp;
+    if (propKey === "children") {
+      if (valueIsChildrenProp(propValue))
+        childrenProp = propValue as ChildrenProp;
+      else
+        throw new Error(
+          `Invalid children prop for node with tagName: ${tagName}\n\n ${JSON.stringify(
+            propValue
+          )}`
+        );
     } else if (attributeIsEvent(propKey, propValue)) {
       events[propKey as DomEventKey] = propValue as DomEventValue;
     } else {
