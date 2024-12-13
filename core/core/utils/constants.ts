@@ -1,4 +1,4 @@
-export const customEventKeys = ["onunmount"] as const;
+export const customEventKeys = ["onmount", "onunmount"] as const;
 
 export const htmlEventKeys = [
   "onafterprint",

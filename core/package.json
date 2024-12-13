@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@cyftec/immutjs": "0.3.0",
-    "@cyftec/signal": "0.4.8"
+    "@cyftec/signal": "0.4.10"
   },
   "devDependencies": {
     "typescript": "^5.6.2"

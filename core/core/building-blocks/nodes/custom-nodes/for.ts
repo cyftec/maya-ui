@@ -40,7 +40,7 @@ const getChildrenAfterInjection = (
   n?: number,
   nthChild?: () => Child
 ) => {
-  if (n !== undefined && nthChild) {
+  if (n !== undefined && n >= 0 && nthChild) {
     const injectingIndex = n > children.length ? children.length : n;
     children.splice(injectingIndex, 0, nthChild());
   }
@@ -102,10 +102,11 @@ export const customeNodeFor: CustomNodeFor = <T>({
     : source(items as T[]);
 
   if (map) {
-    if (itemIdKey || mutableMap)
+    if (itemIdKey || mutableMap) {
       throw new Error(
         "if 'map' is provided, 'itemIdKey' and 'mutableMap' is uncessary."
       );
+    }
     return derived(() =>
       getChildrenAfterInjection(list.value.map(map), n, nthChild)
     );

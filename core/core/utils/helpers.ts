@@ -11,6 +11,9 @@ export const valueIsChild = (value: any): boolean =>
 export const valueIsSignalChild = (value: any): boolean =>
   valueIsSignal(value) && valueIsChild(value.value);
 
+export const valueIsNonSignalChild = (value: any): boolean =>
+  !valueIsSignalChild(value) && valueIsChild(value);
+
 export const valueIsMaybeSignalChild = (value: any): boolean =>
   valueIsChild(value) || valueIsSignalChild(value);
 
@@ -21,7 +24,7 @@ export const valueIsChildrenSignal = (value: any) =>
       value.value.every((child: any) => valueIsChild(child))));
 
 export const valueIsChildren = (value: any) =>
-  valueIsMaybeSignalChild(value) ||
+  valueIsNonSignalChild(value) ||
   (valueIsArray(value) &&
     value.every((item: any) => valueIsMaybeSignalChild(item)));
 

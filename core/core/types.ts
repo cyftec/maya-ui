@@ -41,7 +41,7 @@ export type AttributeSignalsMap = Partial<{
  */
 export type HtmlTagName = (typeof htmlTagNames)[number];
 export type NodeTagName = Capitalize<HtmlTagName>;
-export type HtmlNode = HTMLElement & {
+export type HtmlNode<H extends HTMLElement = HTMLElement> = H & {
   nodeId: number;
   unmountListener: UnmountListener;
   value?: string; // for HTMLInputElement

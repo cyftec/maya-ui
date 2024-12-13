@@ -31,6 +31,8 @@ import {
   eventKeys,
   htmlEventKeys,
   idGen,
+  phases,
+  startPhase,
   valueIsArray,
   valueIsChildren,
   valueIsChildrenProp,
@@ -68,8 +70,12 @@ const handleEventProps = (htmlNode: HtmlNode, events: EventsMap): void => {
         listenerFn(e);
       });
     } else if (attributeIsCustomEvent(eventName, listenerFn)) {
-      if (eventName === "onunmount")
+      if (eventName === "onmount") {
+        // do nothing as it's handled in 'createHtmlNode' method
+      }
+      if (eventName === "onunmount") {
         htmlNode.unmountListener = listenerFn as CustomEventValue;
+      }
     } else {
       console.error(
         `Invalid event key: ${eventName} for node with tagName: ${htmlNode.tagName}`
@@ -195,7 +201,6 @@ const handleChildrenProp = (
           index,
           childSignal: maybeSignalChild as ChildSignal,
         });
-        return;
       }
       if (window.isDomAccessPhase) return;
       const childNode = getNodeFromChild(maybeSignalChild);
@@ -204,22 +209,22 @@ const handleChildrenProp = (
 
     if (signalledChildren.length) {
       signalledChildren.forEach(({ index, childSignal }) => {
-        const updateSignalledNodes = () => {
+        effect(() => {
           if (!childSignal.value) return;
+          if (window.isDomAccessPhase) return;
           const newChildNode = getNodeFromChild(childSignal.value);
           const prevChildNode = parentNode.childNodes[index];
 
           if (prevChildNode && newChildNode) {
             parentNode.replaceChild(newChildNode, prevChildNode);
-          } else if (newChildNode) {
+          } else if (!prevChildNode && newChildNode) {
             parentNode.appendChild(newChildNode);
           } else {
             console.error(
               `No child found for node with tagName: ${parentNode.tagName}`
             );
           }
-        };
-        effect(updateSignalledNodes);
+        });
       });
     }
   }
@@ -262,6 +267,13 @@ export const createHtmlNode = (
   props: Props
 ): HtmlNode => {
   const nodeId = idGen.getNewId();
+
+  // Dom Access Phase starts with accessing first element nodeId 1
+  if (nodeId === 1 && window.isDomAccessPhase) {
+    startPhase("domAccessPhase");
+    window.isDomAccessPhase = true;
+  }
+
   const htmlNode = window.isDomAccessPhase
     ? (document.querySelector(`[data-node-id="${nodeId}"]`) as HtmlNode)
     : (document.createElement(tagName) as HtmlNode);
@@ -279,6 +291,22 @@ export const createHtmlNode = (
   handleEventProps(htmlNode, events);
   handleAttributeProps(htmlNode, attributes);
   handleChildrenProp(htmlNode, childrenProp);
+
+  if (
+    phases.value.domAccessPhase &&
+    typeof props === "object" &&
+    props.hasOwnProperty("onmount")
+  ) {
+    const onMount = (props as HtmlNodeProps).onmount as CustomEventValue;
+    if (onMount && typeof onMount === "function") onMount();
+  }
+
+  // Dom Access Phase completes with accessing 'html' element finally,
+  // and App Running Phase starts after that
+  if (tagName === "html" && window.isDomAccessPhase) {
+    startPhase("appRunningPhase");
+    window.isDomAccessPhase = false;
+  }
 
   return htmlNode;
 };
