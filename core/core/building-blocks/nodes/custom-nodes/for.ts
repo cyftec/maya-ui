@@ -11,7 +11,7 @@ import type {
   ForProps,
   MutableMapFn,
   Child,
-  SureObject,
+  Object,
 } from "../../../types";
 
 type SignalledObject<T> = {
@@ -117,17 +117,17 @@ export const customeNodeFor: CustomNodeFor = <T>({
   if (itemsValue.length && typeof itemsValue[0] !== "object")
     throw new Error("for mutable map, item in the list must be an object");
 
-  let oldList: SureObject<T>[] | null = null;
-  const newList = derived((oldVal: SureObject<T>[] | undefined) => {
+  let oldList: Object<T>[] | null = null;
+  const newList = derived((oldVal: Object<T>[] | undefined) => {
     oldList = oldVal || oldList;
-    return (list as Signal<SureObject<T>[]>).value;
+    return (list as Signal<Object<T>[]>).value;
   });
 
   const signalledItemsMap = derived<SignalledObject<T>[]>((oldMap) => {
     if (!oldMap || !oldList) {
       const initialItems = newList.value;
       return initialItems.map((item, i) =>
-        getSignalledObject(item as SureObject<T>, i, mutableMap)
+        getSignalledObject(item as Object<T>, i, mutableMap)
       );
     }
 

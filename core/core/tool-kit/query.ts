@@ -1,11 +1,4 @@
-import {
-  dpromstate,
-  dprops,
-  effect,
-  source,
-  val,
-  type MaybeSignal,
-} from "../../signal";
+import { dpromstate, dprops, effect, source } from "../../signal";
 
 type QueryState<D> = {
   isLoading: boolean;
@@ -16,11 +9,11 @@ type QueryState<D> = {
 export const query = <T>(
   url: string,
   options: RequestInit | undefined,
-  runQuery: MaybeSignal<boolean>
+  runImmediately: boolean = false
 ) => {
   const abortController = new AbortController();
   const state = source<QueryState<T>>({
-    isLoading: val(runQuery),
+    isLoading: runImmediately,
     data: undefined,
     error: undefined,
   });
@@ -39,7 +32,7 @@ export const query = <T>(
     });
   };
 
-  const { result: fResult, error: fError } = dpromstate(runFetch, runQuery);
+  const [fResult, fError] = dpromstate(runFetch, runImmediately);
 
   effect(() => {
     if (fError.value) {

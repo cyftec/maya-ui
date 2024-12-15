@@ -7,7 +7,7 @@ import type {
 } from "./utils/constants";
 
 export type MaybeArray<T> = T | T[];
-export type SureObject<T> = T extends object ? T : never;
+export type Object<T> = T extends object ? T : never;
 
 /**
  * Event type-defs
@@ -68,7 +68,7 @@ export type ForProps<T> = {
   items: MaybeSignal<T[]>;
   itemIdKey?: string;
   map?: MapFn<T>;
-  mutableMap?: MutableMapFn<SureObject<T>>;
+  mutableMap?: MutableMapFn<Object<T>>;
   n?: number;
   nthChild?: () => Child;
 };
