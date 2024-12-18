@@ -1,4 +1,4 @@
-import { dpromstate, dprops, effect, source } from "../../signal";
+import { dpromise, dprops, effect, source } from "../../signal";
 
 type QueryState<D> = {
   isLoading: boolean;
@@ -9,16 +9,16 @@ type QueryState<D> = {
 export const query = <T>(
   url: string,
   options: RequestInit | undefined,
-  runImmediately: boolean = false
+  onComplete: () => void
 ) => {
   const abortController = new AbortController();
   const state = source<QueryState<T>>({
-    isLoading: runImmediately,
+    isLoading: false,
     data: undefined,
     error: undefined,
   });
 
-  const runFetch = () => {
+  const [runQuery, fResult, fError] = dpromise(() => {
     const prevData = state.value.data;
     state.value = {
       isLoading: true,
@@ -30,9 +30,7 @@ export const query = <T>(
       ...options,
       method: "get",
     });
-  };
-
-  const [fResult, fError] = dpromstate(runFetch, runImmediately);
+  }, onComplete);
 
   effect(() => {
     if (fError.value) {
@@ -86,6 +84,7 @@ export const query = <T>(
 
   return {
     ...dprops(state),
+    runQuery,
     abortQuery,
     clearCache,
   };
