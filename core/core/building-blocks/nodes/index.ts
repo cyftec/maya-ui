@@ -1,1 +1,1 @@
-export * from "./html-nodes";
+export * from "./html-nodes.ts";
