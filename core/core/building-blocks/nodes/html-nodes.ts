@@ -10,7 +10,7 @@ import {
   customeNodeFor,
   customeNodeIf,
   customeNodeSwitch,
-} from "./custom-nodes/index";
+} from "./custom-nodes/index.ts";
 
 const htmlNodesMap: HtmlNodesMap = htmlTagNames.reduce((map, htmlTagName) => {
   const nodeTagName = htmlTagName
