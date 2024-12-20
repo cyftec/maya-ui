@@ -1,10 +1,10 @@
-import type { DerivedSignal, MaybeSignal, Signal } from "../signal";
+import type { DerivedSignal, MaybeSignal, Signal } from "../signal/index.ts";
 import type {
   customEventKeys,
   htmlAttributes,
   htmlEventKeys,
   htmlTagNames,
-} from "./utils/constants";
+} from "./utils/constants.ts";
 
 export type MaybeArray<T> = T | T[];
 export type Object<T> = T extends object ? T : never;

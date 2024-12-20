@@ -1,6 +1,10 @@
-import { derived, valueIsSignal, type Signal } from "../../../../signal";
-import type { CustomNodeIf } from "../../../types";
-import { m } from "../html-nodes";
+import {
+  derived,
+  valueIsSignal,
+  type Signal,
+} from "../../../../signal/index.ts";
+import type { CustomNodeIf } from "../../../types.ts";
+import { m } from "../html-nodes.ts";
 
 export const customeNodeIf: CustomNodeIf = ({ condition, then, otherwise }) => {
   const isTruthy = derived(

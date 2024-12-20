@@ -1,18 +1,18 @@
-import { getArrayMutations } from "../../../../immutjs";
+import { getArrayMutations } from "../../../../immutjs/index.ts";
 import {
   source,
   derived,
   valueIsSignal,
   type Signal,
   type SourceSignal,
-} from "../../../../signal";
+} from "../../../../signal/index.ts";
 import type {
   CustomNodeFor,
   ForProps,
   MutableMapFn,
   Child,
   Object,
-} from "../../../types";
+} from "../../../types.ts";
 
 type SignalledObject<T> = {
   indexSignal: SourceSignal<number>;

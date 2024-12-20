@@ -1,4 +1,4 @@
-import { dpromise, dprops, effect, source } from "../../signal";
+import { dpromise, dprops, effect, source } from "../../signal/index.ts";
 
 type QueryState<D> = {
   isLoading: boolean;

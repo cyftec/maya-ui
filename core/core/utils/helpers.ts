@@ -1,4 +1,4 @@
-import { valueIsSignal } from "../../signal";
+import { valueIsSignal } from "../../signal/index.ts";
 
 export const valueIsArray = (value: any) => Array.isArray(value);
 

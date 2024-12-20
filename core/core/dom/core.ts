@@ -3,7 +3,7 @@ import {
   valueIsSignal,
   type MaybeSignal,
   type Signal,
-} from "../../signal";
+} from "../../signal/index.ts";
 import type {
   AttributeKey,
   AttributeSignalsMap,
@@ -25,7 +25,7 @@ import type {
   HtmlNodeProps,
   HtmlTagName,
   Props,
-} from "../types";
+} from "../types.ts";
 import {
   customEventKeys,
   eventKeys,
@@ -39,7 +39,7 @@ import {
   valueIsChildrenSignal,
   valueIsHtmlNode,
   valueIsSignalChild,
-} from "../utils/index";
+} from "../utils/index.ts";
 
 const attributeIsUndefinedEvent = (propKey: string, propValue: any): boolean =>
   eventKeys.includes(propKey as DomEventKey) && propValue === undefined;

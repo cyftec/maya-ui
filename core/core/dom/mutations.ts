@@ -1,5 +1,5 @@
-import { valueIsHtmlNode } from "../utils/index";
-import type { CustomEventValue, HtmlNode, UnmountListener } from "../types";
+import { valueIsHtmlNode } from "../utils/index.ts";
+import type { CustomEventValue, HtmlNode, UnmountListener } from "../types.ts";
 
 type ListenerData = { node: HtmlNode; unmountListener: CustomEventValue };
 

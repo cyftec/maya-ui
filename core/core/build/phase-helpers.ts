@@ -1,6 +1,6 @@
-import { mountUnmountObserver } from "../dom/index";
-import type { HtmlNode } from "../types";
-import { idGen } from "../utils/index";
+import { mountUnmountObserver } from "../dom/index.ts";
+import type { HtmlNode } from "../types.ts";
+import { idGen } from "../utils/index.ts";
 
 export const buildStaticHtml = (page: () => HtmlNode): string => {
   if (window) window.isBuildHtmlPhase = true;

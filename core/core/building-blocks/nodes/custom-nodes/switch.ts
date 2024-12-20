@@ -1,6 +1,10 @@
-import { derived, valueIsSignal, type Signal } from "../../../../signal";
-import type { CustomNodeSwitch } from "../../../types";
-import { m } from "../html-nodes";
+import {
+  derived,
+  valueIsSignal,
+  type Signal,
+} from "../../../../signal/index.ts";
+import type { CustomNodeSwitch } from "../../../types.ts";
+import { m } from "../html-nodes.ts";
 
 export const customeNodeSwitch: CustomNodeSwitch = ({
   subject,

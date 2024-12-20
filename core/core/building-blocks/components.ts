@@ -1,5 +1,5 @@
-import { m } from "./nodes/html-nodes";
-import type { HtmlNode } from "../types";
+import { m } from "./nodes/html-nodes.ts";
+import type { HtmlNode } from "../types.ts";
 
 export const defaultMetaTags: () => HtmlNode[] = () => [
   m.Meta({ charset: "UTF-8" }),
@@ -22,10 +22,7 @@ export const defaultHtmlPageNode = (
     lang: "en",
     children: [
       m.Head({
-        children: [
-          m.Title({ children: m.Text(pageTitle) }),
-          ...defaultMetaTags(),
-        ],
+        children: [m.Title({ children: pageTitle }), ...defaultMetaTags()],
       }),
       m.Body({
         children: [

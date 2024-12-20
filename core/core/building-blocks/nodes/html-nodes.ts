@@ -1,6 +1,11 @@
-import { createHtmlNode } from "../../dom/index";
-import type { HtmlNodesMap, NodesMap, NodeTagName, Props } from "../../types";
-import { htmlTagNames } from "../../utils/index";
+import { createHtmlNode } from "../../dom/index.ts";
+import type {
+  HtmlNodesMap,
+  NodesMap,
+  NodeTagName,
+  Props,
+} from "../../types.ts";
+import { htmlTagNames } from "../../utils/index.ts";
 import {
   customeNodeFor,
   customeNodeIf,

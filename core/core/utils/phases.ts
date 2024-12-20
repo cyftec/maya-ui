@@ -1,4 +1,4 @@
-import { source } from "@cyftec/signal";
+import { source } from "../../signal/index.ts";
 
 type Phases = {
   htmlBuildPhase: boolean;
