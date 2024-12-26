@@ -1,0 +1,14 @@
+{
+  "name": "@maya/core",
+  "version": "0.1.0",
+  "description": "Maya core implementation",
+  "author": "Chandan Kumar (Cyfer Tech)",
+  "license": "MIT",
+  "dependencies": {
+    "@cyfer/immutjs": "link:@cyfer/immutjs",
+    "@cyfer/signal": "link:@cyfer/signal"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  }
+}
