@@ -1,1 +1,1 @@
-# maya-ui
+# Maya UI framework mono repo

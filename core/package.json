@@ -1,16 +1,12 @@
 {
-  "name": "maya",
+  "name": "@maya/core",
   "version": "0.1.0",
   "description": "UI library for devloping MPAs using TypeScript",
-  "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "lint": "tsc"
-  },
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
   "dependencies": {
-    "@cyftec/immutjs": "0.3.0",
-    "@cyftec/signal": "0.4.16"
+    "@cyfer/immutjs": "link:@cyfer/immutjs",
+    "@cyfer/signal": "link:@cyfer/signal"
   },
   "devDependencies": {
     "typescript": "^5.6.2"
