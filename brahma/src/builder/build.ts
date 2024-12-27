@@ -6,7 +6,7 @@ import type { KarmaConfig } from "../example/karma-types.ts";
 import {
   getBuildDirPath,
   getBuildFileNames,
-  getBuiltPageMethodName,
+  getBuiltJsMethodName,
   isSrcPageFile,
 } from "./build-helpers.ts";
 
@@ -50,7 +50,10 @@ const updateJs = async (destJsPath: string) => {
     jsWithExport.split("export {")[0] +
     "\n" +
     runScriptText(
-      getBuiltPageMethodName(getFileNameFromPath(destJsPath) as string)
+      getBuiltJsMethodName(
+        getFileNameFromPath(destJsPath) as string,
+        buildData.config
+      )
     );
   await Bun.write(destJsPath, sanitizedJs);
 };
@@ -72,10 +75,10 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
 
   if (srcFilePath.endsWith(".ts")) return;
 
-  const fileText = await Bun.file(srcFilePath).text();
+  const fileData = Bun.file(srcFilePath);
   const fileName = getFileNameFromPath(srcFilePath);
   const filePath = `${destDirPath}/${fileName}`;
-  await Bun.write(filePath, fileText);
+  await Bun.write(filePath, fileData);
 };
 
 const buildDir = async (srcDirPath: string): Promise<void> => {

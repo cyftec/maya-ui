@@ -9,10 +9,21 @@ import type { KarmaConfig } from "../example/karma-types";
 export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>
   srcPagePath.endsWith(karmaConfig.app.srcPageFileName);
 
-export const getBuiltPageMethodName = (filename: string) => {
+export const getBuiltJsMethodName = (
+  filename: string,
+  karmaConfig: KarmaConfig
+) => {
   const words = filename.replace("-", ".").split(".");
   words.pop();
-  return words.join("_") + "_default";
+  return (
+    words
+      .map((w, i) =>
+        i === words.length - 1 && w === DEST_JS_DEFAULT_FILE_NAME
+          ? karmaConfig.app.srcPageFileName.slice(0, -3)
+          : w
+      )
+      .join("_") + "_default"
+  );
 };
 
 export const getBuildDirPath = (
