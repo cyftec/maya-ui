@@ -44,15 +44,18 @@ const buildJs = async (destJsPath: string, srcPagePath: string) => {
     console.log(jsBuild);
     throw new Error(NO_JS_ERROR);
   }
-  const sanitizedJs =
-    js.split("export {")[0] +
-    "\n" +
-    runScriptText(
+  const sanitizedJs = `${js.split("export {")[0]}
+    \n${runScriptText(
       getBuiltJsMethodName(
         getFileNameFromPath(destJsPath) as string,
         buildData.config
       )
-    );
+    )}
+    \n${
+      !buildData.isProd && buildData.config.app.localServer.reloadPageOnFocus
+        ? "window.onfocus = () => location.reload();"
+        : ""
+    }`;
 
   await Bun.write(destJsPath, sanitizedJs);
 };

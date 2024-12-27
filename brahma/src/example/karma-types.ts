@@ -14,6 +14,11 @@ export type KarmaConfig = {
     stagingDirName: string;
     publishDirName: string;
     srcPageFileName: `${string}.ts`;
+    localServer: {
+      port: number;
+      redirectOnStage: boolean;
+      reloadPageOnFocus: boolean;
+    };
   };
   packageJson: {
     name?: string;

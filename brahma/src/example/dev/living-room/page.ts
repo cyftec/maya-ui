@@ -28,7 +28,7 @@ export default () => {
             rel: "stylesheet",
             href: "https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css",
           }),
-          m.Link({ rel: "stylesheet", href: "./sample-assets/styles.css" }),
+          m.Link({ rel: "stylesheet", href: "sample-assets/styles.css" }),
         ],
       }),
       m.Body({
@@ -44,8 +44,8 @@ export default () => {
               }),
               PhotoFrame({
                 isBulbOn,
-                frameSrc: "./sample-assets/photo-frame.webp",
-                photoSrc: "./sample-assets/pp.png",
+                frameSrc: "sample-assets/photo-frame.webp",
+                photoSrc: "sample-assets/pp.png",
               }),
               m.Div({
                 class: "mt7 pt6 flex justify-center items-center",

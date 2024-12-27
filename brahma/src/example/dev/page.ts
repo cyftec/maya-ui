@@ -29,7 +29,7 @@ export default () => {
             children: [
               Header(),
               m.H1({
-                children: "Only Fans",
+                children: "My home page",
               }),
               m.Switch({
                 subject: sub,

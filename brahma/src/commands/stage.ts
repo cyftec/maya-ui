@@ -1,7 +1,8 @@
+import chokidar from "chokidar";
+import liveServer from "live-server";
 import { buildApp } from "../builder/build.ts";
 import { getKarma } from "../common/utils.ts";
 import type { KarmaConfig } from "../example/karma-types.ts";
-import chokidar, { type FSWatcher } from "chokidar";
 
 const DEBOUNCE_TIME_IN_MS = 500;
 let lastTimestamp: number = 0;
@@ -31,18 +32,17 @@ const tryBuild = async (srcDir: string, config: KarmaConfig) => {
 };
 
 export const stageApp = async () => {
-  let watcher: FSWatcher;
   const cwd = process.cwd();
   console.log(`Staging app files and starting dev server...\n`);
   const karma = await getKarma(cwd);
   if (!karma) return false;
   const { config } = karma;
+  const sourceDirPath = `${cwd}/${config.app.sourceDirName}`;
+  const stagingDirPath = `${cwd}/${config.app.stagingDirName}`;
 
   await tryBuild(cwd, config);
 
-  const sourceDirPath = `${cwd}/${config.app.sourceDirName}`;
-
-  watcher = chokidar.watch(sourceDirPath).on("change", () => {
+  const watcher = chokidar.watch(sourceDirPath).on("change", () => {
     if (busyBuildingApp) return;
     onFileModification(async () => {
       busyBuildingApp = true;
@@ -50,11 +50,24 @@ export const stageApp = async () => {
       busyBuildingApp = false;
     });
   });
+  console.log(`Watching changes in staging directory:\n${stagingDirPath}`);
+
+  const serverPort = config.app.localServer.port;
+  liveServer.start({
+    port: serverPort,
+    host: "0.0.0.0",
+    root: stagingDirPath,
+    open: config.app.localServer.redirectOnStage,
+    wait: 1000,
+    logLevel: 2,
+  });
+  console.log(`\nLocal Server started on http://localhost:${serverPort}`);
 
   process.on("SIGINT", () => {
-    // close watcher when Ctrl-C is pressed
-    console.log("\nClosing stage and dev server...");
-    watcher?.close();
+    console.log("\nClosing file watcher...");
+    watcher.close();
+    console.log(`\nClosing local dev server at port: ${serverPort}...`);
+    liveServer.shutdown();
     process.exit(0);
   });
 };
