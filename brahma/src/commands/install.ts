@@ -3,15 +3,15 @@ import { mkdir } from "node:fs/promises";
 import type {
   KarmaConfig,
   RegeneratableFilesMap,
-} from "../example/karma-type.ts";
+} from "../example/karma-types.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
 import { NO_ARG_PROVIDED } from "../common/constants.ts";
 
 const installDotVsCodeDir = async (
-  projectRootDirPath: string,
+  appRootPath: string,
   karmaConfig: KarmaConfig
 ) => {
-  const dotVsCodePath = `${projectRootDirPath}/.vscode`;
+  const dotVsCodePath = `${appRootPath}/.vscode`;
   await mkdir(dotVsCodePath);
   const settingsPath = `${dotVsCodePath}/settings.json`;
   await Bun.write(
@@ -21,19 +21,19 @@ const installDotVsCodeDir = async (
 };
 
 const installGitIgnore = async (
-  projectRootDirPath: string,
+  appRootPath: string,
   karmaConfig: KarmaConfig
 ) => {
-  const gitIgnorePath = `${projectRootDirPath}/.gitignore`;
+  const gitIgnorePath = `${appRootPath}/.gitignore`;
   const gitIgnoreText = karmaConfig.git.ignore.join("\n");
   await Bun.write(gitIgnorePath, gitIgnoreText);
 };
 
 const installPackages = async (
-  projectRootDirPath: string,
+  appRootPath: string,
   karmaConfig: KarmaConfig
 ) => {
-  const packageJsonPath = `${projectRootDirPath}/package.json`;
+  const packageJsonPath = `${appRootPath}/package.json`;
   await Bun.write(
     packageJsonPath,
     JSON.stringify(karmaConfig.packageJson, null, "\t")
@@ -48,16 +48,16 @@ const installPackages = async (
 };
 
 const installAllConfigsAndPackages = async (
-  projectRootDirPath: string,
+  appRootPath: string,
   karmaConfig: KarmaConfig,
   regeneratableFiles: RegeneratableFilesMap
 ) => {
   console.log(`Removing previously installed files...`);
-  await removeInstalledFiles(projectRootDirPath, regeneratableFiles);
+  await removeInstalledFiles(appRootPath, regeneratableFiles);
   console.log(`\nInstalling latest config and packages...`);
-  await installDotVsCodeDir(projectRootDirPath, karmaConfig);
-  await installGitIgnore(projectRootDirPath, karmaConfig);
-  await installPackages(projectRootDirPath, karmaConfig);
+  await installDotVsCodeDir(appRootPath, karmaConfig);
+  await installGitIgnore(appRootPath, karmaConfig);
+  await installPackages(appRootPath, karmaConfig);
 };
 
 const installSpecificPackage = async (bunPackageAlias: string) => {
@@ -67,17 +67,13 @@ const installSpecificPackage = async (bunPackageAlias: string) => {
 
 export const installApp = async (
   bunPackageAlias: string,
-  projectRootDirPath: string,
   karmaConfig: KarmaConfig,
   regeneratableFiles: RegeneratableFilesMap
 ) => {
+  const cwd = process.cwd();
   try {
     if (bunPackageAlias === NO_ARG_PROVIDED) {
-      await installAllConfigsAndPackages(
-        projectRootDirPath,
-        karmaConfig,
-        regeneratableFiles
-      );
+      await installAllConfigsAndPackages(cwd, karmaConfig, regeneratableFiles);
     } else {
       await installSpecificPackage(bunPackageAlias);
     }

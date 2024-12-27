@@ -1,4 +1,4 @@
-import { defaultMetaTags, m, derived, signal } from "@maya/core";
+import { defaultMetaTags, m, derived, signal } from "maya";
 import { Button } from "../@elements";
 import { Bulb, PhotoFrame } from "./@components";
 

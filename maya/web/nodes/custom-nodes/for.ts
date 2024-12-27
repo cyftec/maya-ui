@@ -12,7 +12,7 @@ import type {
   MutableMapFn,
   Child,
   Object,
-} from "../../../index-types.ts";
+} from "../../../index.types.ts";
 
 type SignalledObject<T> = {
   indexSignal: SourceSignal<number>;

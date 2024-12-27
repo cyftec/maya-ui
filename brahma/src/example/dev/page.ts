@@ -1,11 +1,10 @@
-import { m } from "@maya/core";
-import { effect, source } from "@maya/core/utils";
-import { Header } from "./@elements/index.ts";
+import { m } from "maya";
+import { source } from "maya/signal";
+import { Header } from "./elements/index.ts";
 
 export default () => {
   const header = source("Home Page");
   const sub = source("a");
-  effect(() => console.log(sub.value));
 
   return m.Html({
     lang: "en",

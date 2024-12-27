@@ -1,4 +1,7 @@
 {
   "name": "maya-ui-monorepo",
-  "private": true
+  "private": true,
+  "scripts": {
+    "load-example": "ln -s ./brahma/src/example ./example"
+  }
 }

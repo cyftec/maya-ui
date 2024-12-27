@@ -3,7 +3,7 @@ import type {
   CustomEventValue,
   HtmlNode,
   UnmountListener,
-} from "../../index-types.ts";
+} from "../../index.types.ts";
 
 type ListenerData = { node: HtmlNode; unmountListener: CustomEventValue };
 

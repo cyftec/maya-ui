@@ -1,4 +1,4 @@
-import { m } from "@maya/core";
+import { m } from "maya";
 
 export const Header = () =>
   m.Div({

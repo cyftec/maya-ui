@@ -1,4 +1,4 @@
-import { derived, Component, m } from "@maya/core";
+import { derived, Component, m } from "maya";
 
 type PhotoFrameProps = {
   frameSrc: string;

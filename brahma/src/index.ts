@@ -4,6 +4,7 @@ import {
   createApp,
   installApp,
   publishApp,
+  resetApp,
   showHelp,
   showVersion,
   stageApp,
@@ -11,50 +12,52 @@ import {
 } from "./commands/index.ts";
 import { parseArgs } from "./common/parse-args.ts";
 import { readdir, exists } from "node:fs/promises";
-import { getKarma, isMayaAppDir } from "./common/utils.ts";
+import { getKarma, validateMayaAppDir } from "./common/utils.ts";
+import type { Karma } from "./example/karma-types.ts";
 
 const execCli = async () => {
+  const cwd = process.cwd();
   const args = parseArgs(Bun.argv);
   // console.log(args);
 
   args.help && showHelp();
   args.version && showVersion();
   args.create && (await createApp(args.create));
+  args.reset && (await resetApp());
 
-  const projectRootDirPath = process.cwd();
-  const karma = await getKarma(projectRootDirPath);
-  if (!karma) return false;
+  const { karmaMissing, karmaCorrupted, srcDirMissing } =
+    await validateMayaAppDir(cwd);
+  if (karmaMissing || karmaCorrupted) {
+    console.log(
+      karmaMissing
+        ? `ERROR: 'karma.ts' file is missing.`
+        : karmaCorrupted
+        ? `ERROR: 'karma.ts' file is corrupted.
+  - Use 'brhm reset' and then 'brhm install' to reset karma.ts and reinstall app.
+    WARNING: You might lose previous config changes. Make sure to use git to have access to previous state.`
+        : ""
+    );
+    process.exit(1);
+  }
+
+  const karma = (await getKarma(cwd)) as Karma;
   const { config, regeneratables } = karma;
 
-  args.uninstall &&
-    (await uninstallApp(args.uninstall, projectRootDirPath, regeneratables));
+  args.uninstall && (await uninstallApp(args.uninstall, regeneratables));
 
-  const mayaAppDir = await isMayaAppDir(projectRootDirPath);
-  if (!mayaAppDir || !config) {
-    const files = await readdir(projectRootDirPath);
+  if (srcDirMissing) {
+    const files = await readdir(cwd);
     console.log(
-      `ERROR: Command will not work as this is not a valid maya project directory.
-  
-  Possible reasons, either one or both:
-  - Config file ('karma.ts') is either missing or corrupted.
-  - App src directory name is '${config?.app.appRootDirName}' and it is missing`
+      `ERROR: App source directory '${config?.app.sourceDirName}' is either missing or have a different name.`
     );
     console.log(`\nList of files in current directory:`);
     console.log(files);
     process.exit(1);
   }
 
-  args.install &&
-    (await installApp(
-      args.install,
-      projectRootDirPath,
-      config,
-      regeneratables
-    ));
+  args.install && (await installApp(args.install, config, regeneratables));
 
-  const packageJsonFileExists = await exists(
-    `${projectRootDirPath}/package.json`
-  );
+  const packageJsonFileExists = await exists(`${cwd}/package.json`);
   if (!packageJsonFileExists) {
     console.log(
       `ERROR: App not installed. 'package.json' file is missing.

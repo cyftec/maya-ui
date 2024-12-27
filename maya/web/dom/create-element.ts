@@ -25,7 +25,7 @@ import type {
   HtmlNodeProps,
   HtmlTagName,
   Props,
-} from "../../index-types.ts";
+} from "../../index.types.ts";
 import {
   currentPhaseIs,
   customEventKeys,

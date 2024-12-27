@@ -1,14 +1,14 @@
 import { exists, rm } from "node:fs/promises";
-import type { RegeneratableFilesMap } from "../example/karma-type";
+import type { RegeneratableFilesMap } from "../example/karma-types";
 import { NO_ARG_PROVIDED } from "../common/constants";
 
 export const removeInstalledFiles = async (
-  projectRootDirPath: string,
+  appRootPath: string,
   regeneratableFiles: RegeneratableFilesMap
 ) => {
   const files = Object.values(regeneratableFiles);
   for (const file of files) {
-    const filePath = `${projectRootDirPath}/${file}`;
+    const filePath = `${appRootPath}/${file}`;
     const fileExists = await exists(filePath);
     if (fileExists) console.log(`deleting: ${filePath}`);
     if (fileExists) await rm(filePath, { recursive: true });
@@ -16,12 +16,12 @@ export const removeInstalledFiles = async (
 };
 
 const uninstallAllConfigsAndPackages = async (
-  projectRootDirPath: string,
+  appRootPath: string,
   regeneratableFiles: RegeneratableFilesMap
 ) => {
   console.log(`Removing installed config and packages...`);
   console.log(Object.values(regeneratableFiles));
-  await removeInstalledFiles(projectRootDirPath, regeneratableFiles);
+  await removeInstalledFiles(appRootPath, regeneratableFiles);
 };
 
 const uninstallSpecificPackage = async (bunPackageAlias: string) => {
@@ -32,15 +32,12 @@ const uninstallSpecificPackage = async (bunPackageAlias: string) => {
 
 export const uninstallApp = async (
   bunPackageAlias: string,
-  projectRootDirPath: string,
   regeneratableFiles: RegeneratableFilesMap
 ) => {
+  const cwd = process.cwd();
   try {
     if (bunPackageAlias === NO_ARG_PROVIDED) {
-      await uninstallAllConfigsAndPackages(
-        projectRootDirPath,
-        regeneratableFiles
-      );
+      await uninstallAllConfigsAndPackages(cwd, regeneratableFiles);
     } else {
       await uninstallSpecificPackage(bunPackageAlias);
     }

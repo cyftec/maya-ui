@@ -3,7 +3,7 @@ import {
   valueIsSignal,
   type Signal,
 } from "../../../utils/signal/index.ts";
-import type { CustomNodeIf } from "../../../index-types.ts";
+import type { CustomNodeIf } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
 export const customeNodeIf: CustomNodeIf = ({ condition, then, otherwise }) => {

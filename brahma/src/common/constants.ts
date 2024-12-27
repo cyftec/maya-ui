@@ -14,6 +14,7 @@ export const ACCEPTED_ARGS = [
   { long: "create", short: "c", withArg: true },
   { long: "install", short: "i", withArg: true },
   { long: "uninstall", short: "u", withArg: true },
+  { long: "reset", short: "r", withArg: false },
   { long: "stage", short: "s", withArg: false },
   { long: "publish", short: "p", withArg: false },
 ] as const;

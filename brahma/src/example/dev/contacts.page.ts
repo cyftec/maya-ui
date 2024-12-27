@@ -1,6 +1,6 @@
-import { m } from "@maya/core";
-import { dstr, source } from "@maya/core/utils";
-import { Header } from "./@elements/index.ts";
+import { m } from "maya";
+import { dstr, source } from "maya/signal";
+import { Header } from "./elements/index.ts";
 
 export default () => {
   const toggled = source(false);

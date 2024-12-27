@@ -5,7 +5,7 @@ import type {
   NodesMap,
   NodeTagName,
   Props,
-} from "../../index-types.ts";
+} from "../../index.types.ts";
 import {
   customeNodeFor,
   customeNodeIf,

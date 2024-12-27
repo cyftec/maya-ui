@@ -4,7 +4,8 @@ export type RegeneratableFilesMap = {
 
 export type KarmaConfig = {
   app: {
-    appRootDirName: string;
+    ignoreDelimiter: string;
+    sourceDirName: string;
     stagingDirName: string;
     publishDirName: string;
     srcPageFileName: `${string}.ts`;

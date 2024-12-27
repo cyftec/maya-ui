@@ -1,5 +1,5 @@
-import { Component, m } from "@maya/core";
-import { dstr, val } from "@maya/core/utils";
+import { m, type Component } from "maya";
+import { dstr, val } from "maya/signal";
 
 type ButtonProps = {
   label: string;

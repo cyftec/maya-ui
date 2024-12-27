@@ -2,7 +2,7 @@ import type {
   HtmlNode,
   RunScriptFunctionDefinition,
   StaticHtmlBuilder,
-} from "../../index-types.ts";
+} from "../../index.types.ts";
 import { idGen } from "./index.ts";
 import { startPhase } from "./phase-helpers.ts";
 

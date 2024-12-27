@@ -1,4 +1,4 @@
-import type { RegeneratableFilesMap, KarmaConfig } from "./karma-type.ts";
+import type { RegeneratableFilesMap, KarmaConfig } from "./karma-types.ts";
 
 const APP_ROOT_DIRNAME = "dev";
 
@@ -19,14 +19,16 @@ export const regeneratables: RegeneratableFilesMap = RG;
 // DO NOT CHANGE exported variable name
 export const config: KarmaConfig = {
   app: {
-    appRootDirName: APP_ROOT_DIRNAME,
+    sourceDirName: APP_ROOT_DIRNAME,
     stagingDirName: RG.STAGING_DIRNAME,
     publishDirName: RG.PUBLISH_DIRNAME,
-    srcPageFileName: "main.ts",
+    srcPageFileName: "page.ts",
+    // file or dir name prefixed with below delimiter gets ignores during build
+    ignoreDelimiter: "@",
   },
   packageJson: {
     dependencies: {
-      "@maya/core": "link:@maya/core",
+      maya: "link:maya",
     },
   },
   git: {
@@ -42,9 +44,9 @@ export const config: KarmaConfig = {
   },
   vscode: {
     settings: {
-      "deno.enable": true,
+      "deno.enable": false,
       "files.exclude": {
-        "karma-type.ts": false,
+        "karma-types.ts": false,
         [RG.BUN_LOCKB]: false,
         [RG.GIT_IGNORE]: false,
         [RG.DOT_VSCODE_DIR]: false,

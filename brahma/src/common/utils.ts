@@ -1,14 +1,5 @@
-import type {
-  RegeneratableFilesMap,
-  KarmaConfig,
-} from "../example/karma-type.ts";
-import { readdir, mkdir, exists, lstat } from "node:fs/promises";
-
-export const getExportedPageMethodName = (filename: string) => {
-  const words = filename.replace("-", ".").split(".");
-  words.pop();
-  return words.join("_") + "_default";
-};
+import { exists, lstat, mkdir, readdir } from "node:fs/promises";
+import type { Karma } from "../example/karma-types.ts";
 
 export const createDirIfNotExist = async (dirPath: string) => {
   if (await exists(dirPath)) return;
@@ -23,29 +14,37 @@ export const getFileNameFromPath = (path: string) => {
 export const hasKarmaConfigFile = async (dirPath: string): Promise<boolean> =>
   (await readdir(dirPath)).includes("karma.ts");
 
-export const getKarma = async (
-  dirPath: string
-): Promise<
-  | {
-      config: KarmaConfig;
-      regeneratables: RegeneratableFilesMap;
-    }
-  | undefined
-> => {
+export const getKarma = async (dirPath: string): Promise<Karma | undefined> => {
   if (!(await hasKarmaConfigFile(dirPath))) return;
   return await import(`${dirPath}/karma.ts`);
 };
 
-export const isMayaAppDir = async (dirPath: string): Promise<boolean> => {
+export const validateMayaAppDir = async (
+  dirPath: string
+): Promise<{
+  karmaMissing: boolean;
+  karmaCorrupted: boolean;
+  srcDirMissing: boolean;
+}> => {
+  const validState = {
+    karmaMissing: false,
+    karmaCorrupted: false,
+    srcDirMissing: false,
+  };
   const karma = await getKarma(dirPath);
-  if (!karma) return false;
-  const { config } = karma;
+  if (!karma) {
+    return { ...validState, karmaMissing: true };
+  }
+  const { config, regeneratables } = karma;
+  if (!config || !regeneratables) {
+    return { ...validState, karmaCorrupted: true };
+  }
   const files = await readdir(dirPath);
   for (const file of files) {
     const fileStats = await lstat(`${dirPath}/${file}`);
-    if (file === config.app.appRootDirName && fileStats.isDirectory())
-      return true;
+    if (file === config.app.sourceDirName && fileStats.isDirectory())
+      return validState;
   }
 
-  return false;
+  return { ...validState, srcDirMissing: true };
 };

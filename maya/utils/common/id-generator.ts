@@ -1,4 +1,4 @@
-import type { IDGen } from "../../index-types.ts";
+import type { IDGen } from "../../index.types";
 
 const idGenerator = () => {
   let nodeId = 0;

@@ -4,7 +4,7 @@ import {
   type DerivedSignal,
   type Signal,
 } from "../../../utils/signal/index.ts";
-import type { Child, SwitchProps } from "../../../index-types.ts";
+import type { Child, SwitchProps } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
 export function customeNodeSwitch({
