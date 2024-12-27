@@ -1,5 +1,10 @@
 import { exists, lstat, mkdir, readdir } from "node:fs/promises";
-import type { Karma } from "../example/karma-types.ts";
+import type { Karma } from "../example/karma-types";
+
+export const nonCachedImport = async (modulePath: string) => {
+  const mpWithParam = `${modulePath}?imported=${Date.now()}`;
+  return await import(mpWithParam);
+};
 
 export const createDirIfNotExist = async (dirPath: string) => {
   if (await exists(dirPath)) return;

@@ -1,3 +1,8 @@
+export type Karma = {
+  config: KarmaConfig;
+  regeneratables: RegeneratableFilesMap;
+};
+
 export type RegeneratableFilesMap = {
   [f in string]: string;
 };

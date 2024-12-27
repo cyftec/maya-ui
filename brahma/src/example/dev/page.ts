@@ -3,7 +3,6 @@ import { source } from "maya/signal";
 import { Header } from "./elements/index.ts";
 
 export default () => {
-  const header = source("Home Page");
   const sub = source("a");
 
   return m.Html({
@@ -11,7 +10,7 @@ export default () => {
     children: [
       m.Head({
         children: [
-          m.Title("My app"),
+          m.Title("Maya App"),
           m.Meta({ charset: "UTF-8" }),
           m.Meta({
             "http-equiv": "X-UA-Compatible",
@@ -30,7 +29,7 @@ export default () => {
             children: [
               Header(),
               m.H1({
-                children: header.value,
+                children: "Only Fans",
               }),
               m.Switch({
                 subject: sub,

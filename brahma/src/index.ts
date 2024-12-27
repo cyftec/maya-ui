@@ -69,7 +69,7 @@ const execCli = async () => {
   args.stage && (await stageApp());
   args.publish && publishApp();
 
-  showHelp();
+  console.log(`Run 'brhm help' if you need the guide.`);
 };
 
 execCli();
