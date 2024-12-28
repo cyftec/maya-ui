@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import type { RegeneratableFilesMap } from "../example/karma-types";
 import { NO_ARG_PROVIDED } from "../common/constants";
@@ -27,7 +28,9 @@ const uninstallAllConfigsAndPackages = async (
 const uninstallSpecificPackage = async (bunPackageAlias: string) => {
   if (!bunPackageAlias)
     throw `Package name is incorrect. Provided - '${bunPackageAlias}'`;
-  console.log(`Uninstalling '${bunPackageAlias}' package`);
+  console.log(`Uninstalling '${bunPackageAlias}' package...\n`);
+  await $`bun remove ${bunPackageAlias}`;
+  process.exit();
 };
 
 export const uninstallApp = async (

@@ -1,11 +1,11 @@
 import { $ } from "bun";
 import { mkdir } from "node:fs/promises";
+import { NO_ARG_PROVIDED } from "../common/constants.ts";
 import type {
   KarmaConfig,
   RegeneratableFilesMap,
 } from "../example/karma-types.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
-import { NO_ARG_PROVIDED } from "../common/constants.ts";
 
 const installDotVsCodeDir = async (
   appRootPath: string,
@@ -62,7 +62,9 @@ const installAllConfigsAndPackages = async (
 
 const installSpecificPackage = async (bunPackageAlias: string) => {
   if (!bunPackageAlias) throw `Package name is empty.`;
-  console.log(`Installing '${bunPackageAlias}' package`);
+  console.log(`Installing '${bunPackageAlias}' package...\n`);
+  await $`bun add ${bunPackageAlias}`;
+  process.exit();
 };
 
 export const installApp = async (
