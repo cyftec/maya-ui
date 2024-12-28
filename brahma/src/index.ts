@@ -21,7 +21,7 @@ const execCli = async () => {
   // console.log(args);
 
   args.help && showHelp();
-  args.version && showVersion();
+  args.version && (await showVersion());
   args.create && (await createApp(args.create));
   args.reset && (await resetApp());
 
@@ -67,7 +67,7 @@ const execCli = async () => {
   }
 
   args.stage && (await stageApp());
-  args.publish && publishApp();
+  args.publish && (await publishApp());
 };
 
 execCli();

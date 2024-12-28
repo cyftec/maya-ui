@@ -1,6 +1,6 @@
 {
   "name": "brahma",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "CLI app to generate, develop and manage app written in Maya library",
   "author": "Chandan Kumar (Cyfer Tech)",
   "devDependencies": {
