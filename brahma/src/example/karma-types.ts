@@ -9,6 +9,7 @@ export type RegeneratableFilesMap = {
 
 export type KarmaConfig = {
   app: {
+    // file or dir name prefixed with below delimiter gets ignored during build
     ignoreDelimiter: string;
     sourceDirName: string;
     stagingDirName: string;

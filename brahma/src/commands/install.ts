@@ -1,6 +1,6 @@
 import { $ } from "bun";
-import { mkdir } from "node:fs/promises";
-import { NO_ARG_PROVIDED } from "../common/constants.ts";
+import { exists, mkdir } from "node:fs/promises";
+import { syncPackageJsonToKarma } from "../common/file-syncer.ts";
 import type {
   KarmaConfig,
   RegeneratableFilesMap,
@@ -38,13 +38,7 @@ const installPackages = async (
     packageJsonPath,
     JSON.stringify(karmaConfig.packageJson, null, "\t")
   );
-  try {
-    await $`bun i`;
-  } catch (error) {
-    console.log(process.cwd());
-    console.log(error);
-    process.exit(1);
-  }
+  await $`bun i`;
 };
 
 const installAllConfigsAndPackages = async (
@@ -60,28 +54,28 @@ const installAllConfigsAndPackages = async (
   await installPackages(appRootPath, karmaConfig);
 };
 
-const installSpecificPackage = async (bunPackageAlias: string) => {
+const installSpecificPackage = async (bunAddPackageArgs: string[]) => {
+  const bunPackageAlias = bunAddPackageArgs.join(" ").trim();
   if (!bunPackageAlias) throw `Package name is empty.`;
   console.log(`Installing '${bunPackageAlias}' package...\n`);
-  await $`bun add ${bunPackageAlias}`;
-  process.exit();
+  await $`${{ raw: `bun add ${bunPackageAlias}`.trim() }} `;
 };
 
-export const installApp = async (
-  bunPackageAlias: string,
+export const installPackageOrEverything = async (
+  packageArgs: string[],
   karmaConfig: KarmaConfig,
   regeneratableFiles: RegeneratableFilesMap
 ) => {
   const cwd = process.cwd();
-  try {
-    if (bunPackageAlias === NO_ARG_PROVIDED) {
-      await installAllConfigsAndPackages(cwd, karmaConfig, regeneratableFiles);
-    } else {
-      await installSpecificPackage(bunPackageAlias);
-    }
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
+  const packageJsonExist = await exists(`${cwd}/"package.json"`);
+
+  if (!packageArgs.length || !packageJsonExist) {
+    await installAllConfigsAndPackages(cwd, karmaConfig, regeneratableFiles);
+  }
+
+  if (packageArgs.length) {
+    await installSpecificPackage(packageArgs);
+    await syncPackageJsonToKarma(cwd);
   }
 
   process.exit();

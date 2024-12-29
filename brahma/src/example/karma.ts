@@ -23,7 +23,6 @@ export const config: KarmaConfig = {
     stagingDirName: RG.STAGING_DIRNAME,
     publishDirName: RG.PUBLISH_DIRNAME,
     srcPageFileName: "page.ts",
-    // file or dir name prefixed with below delimiter gets ignored during build
     ignoreDelimiter: "@",
     localServer: {
       port: 3000,

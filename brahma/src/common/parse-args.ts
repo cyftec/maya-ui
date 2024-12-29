@@ -1,33 +1,33 @@
-import { ACCEPTED_ARGS, NO_ARG_PROVIDED } from "./constants";
+import { ACCEPTED_COMMANDS } from "./constants";
 
-type Arg = (typeof ACCEPTED_ARGS)[number];
-type ArgsMap = {
-  [x in Arg["long"]]: string;
+type AcceptedCommand = (typeof ACCEPTED_COMMANDS)[number];
+type Command = AcceptedCommand["long"] | AcceptedCommand["short"];
+type CommandsMap = {
+  [x in AcceptedCommand["long"]]: { args: string[] } | undefined;
+} & {
+  nocmd: boolean;
+  error: boolean;
 };
 
-export const parseArgs = (argsv: string[]) => {
-  const args = argsv.splice(2);
-  const argsMap: ArgsMap = {
-    ...ACCEPTED_ARGS.reduce(
-      (map, aa) => ({ ...map, [aa.long]: "" }),
-      {} as ArgsMap
+export const getParsedCommands = (argsv: string[]) => {
+  const parsed = argsv.slice(2);
+  const cmd = parsed[0];
+  const args = parsed.slice(1);
+  const commandsMap: CommandsMap = {
+    ...ACCEPTED_COMMANDS.reduce(
+      (map, aa) => ({ ...map, [aa.long]: undefined }),
+      {} as CommandsMap
     ),
+    nocmd: false,
+    error: false,
   };
-  const addedCmds: (keyof ArgsMap)[] = [];
+  const matchingCmd = ACCEPTED_COMMANDS.find((aa) =>
+    [aa.long, aa.short].includes(cmd as Command)
+  );
 
-  for (let i = 0; i < args.length; i++) {
-    const cmd = args[i];
-    const arg = args[i + 1];
-    const matchingCmd = ACCEPTED_ARGS.find((aa) =>
-      [aa.long, aa.short].includes(cmd as keyof ArgsMap)
-    );
+  if (!cmd) commandsMap.nocmd = true;
+  if (matchingCmd) commandsMap[matchingCmd.long] = { args };
+  if (cmd && !matchingCmd) commandsMap.error = true;
 
-    if (!matchingCmd || (matchingCmd && addedCmds.includes(matchingCmd.long))) {
-      break;
-    }
-    argsMap[matchingCmd.long] =
-      arg || (matchingCmd.withArg ? NO_ARG_PROVIDED : matchingCmd.long);
-  }
-
-  return argsMap;
+  return commandsMap;
 };

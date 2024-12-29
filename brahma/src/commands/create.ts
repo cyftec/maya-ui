@@ -1,17 +1,16 @@
 import { exists, mkdir, cp } from "node:fs/promises";
 import path from "node:path";
-import { NO_ARG_PROVIDED } from "../common/constants";
 
-export const createApp = async (appDirName: string) => {
-  const cwd = process.cwd();
-
-  if (appDirName === NO_ARG_PROVIDED) {
+export const createApp = async (cmdArgs: string[]) => {
+  const appDirName = cmdArgs[0];
+  if (!appDirName) {
     console.log(
       `ERROR: Project directory name missing.\nRun 'brhm help' for usage guide.`
     );
     process.exit(1);
   }
 
+  const cwd = process.cwd();
   const exampleAppPath = path.resolve(__dirname, "../example");
   const destAppDirPath = `${cwd}/${appDirName}`;
   if (await exists(destAppDirPath)) {

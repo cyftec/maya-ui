@@ -2,28 +2,28 @@
 
 import {
   createApp,
-  installApp,
+  installPackageOrEverything,
   publishApp,
   resetApp,
   showHelp,
   showVersion,
   stageApp,
-  uninstallApp,
+  uninstallPackageOrEverything,
 } from "./commands/index.ts";
-import { parseArgs } from "./common/parse-args.ts";
+import { getParsedCommands } from "./common/parse-args.ts";
 import { readdir, exists } from "node:fs/promises";
 import { getKarma, validateMayaAppDir } from "./common/utils.ts";
 import type { Karma } from "./example/karma-types.ts";
 
 const execCli = async () => {
   const cwd = process.cwd();
-  const args = parseArgs(Bun.argv);
-  // console.log(args);
+  const commands = getParsedCommands(Bun.argv);
+  // console.log(commands);
 
-  args.help && showHelp();
-  args.version && (await showVersion());
-  args.create && (await createApp(args.create));
-  args.reset && (await resetApp());
+  if (commands.help || commands.nocmd) showHelp();
+  if (commands.version) await showVersion();
+  if (commands.create) await createApp(commands.create.args);
+  if (commands.reset) await resetApp();
 
   const { karmaMissing, karmaCorrupted, srcDirMissing } =
     await validateMayaAppDir(cwd);
@@ -41,9 +41,13 @@ const execCli = async () => {
   }
 
   const karma = (await getKarma(cwd)) as Karma;
-  const { config, regeneratables } = karma;
+  const { config, regeneratables: regeneratableFiles } = karma;
 
-  args.uninstall && (await uninstallApp(args.uninstall, regeneratables));
+  if (commands.uninstall)
+    await uninstallPackageOrEverything(
+      commands.uninstall.args,
+      regeneratableFiles
+    );
 
   if (srcDirMissing) {
     const files = await readdir(cwd);
@@ -55,7 +59,12 @@ const execCli = async () => {
     process.exit(1);
   }
 
-  args.install && (await installApp(args.install, config, regeneratables));
+  if (commands.install)
+    await installPackageOrEverything(
+      commands.install.args,
+      config,
+      regeneratableFiles
+    );
 
   const packageJsonFileExists = await exists(`${cwd}/package.json`);
   if (!packageJsonFileExists) {
@@ -66,8 +75,13 @@ const execCli = async () => {
     process.exit(1);
   }
 
-  args.stage && (await stageApp());
-  args.publish && (await publishApp());
+  if (commands.stage) await stageApp();
+  if (commands.publish) await publishApp();
+
+  if (commands.error) {
+    console.log(`ERROR: bad input.\nCheck usage guide below.`);
+    showHelp();
+  }
 };
 
 execCli();

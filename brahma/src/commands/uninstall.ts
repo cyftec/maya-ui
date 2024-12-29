@@ -1,7 +1,7 @@
 import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import type { RegeneratableFilesMap } from "../example/karma-types";
-import { NO_ARG_PROVIDED } from "../common/constants";
+import { syncPackageJsonToKarma } from "../common/file-syncer";
 
 export const removeInstalledFiles = async (
   appRootPath: string,
@@ -25,28 +25,25 @@ const uninstallAllConfigsAndPackages = async (
   await removeInstalledFiles(appRootPath, regeneratableFiles);
 };
 
-const uninstallSpecificPackage = async (bunPackageAlias: string) => {
+const uninstallSpecificPackage = async (bunRemovePackageArgs: string[]) => {
+  const bunPackageAlias = bunRemovePackageArgs.join(" ").trim();
   if (!bunPackageAlias)
     throw `Package name is incorrect. Provided - '${bunPackageAlias}'`;
   console.log(`Uninstalling '${bunPackageAlias}' package...\n`);
-  await $`bun remove ${bunPackageAlias}`;
-  process.exit();
+  await $`${{ raw: `bun remove ${bunPackageAlias}`.trim() }} `;
 };
 
-export const uninstallApp = async (
-  bunPackageAlias: string,
+export const uninstallPackageOrEverything = async (
+  packageArgs: string[],
   regeneratableFiles: RegeneratableFilesMap
 ) => {
   const cwd = process.cwd();
-  try {
-    if (bunPackageAlias === NO_ARG_PROVIDED) {
-      await uninstallAllConfigsAndPackages(cwd, regeneratableFiles);
-    } else {
-      await uninstallSpecificPackage(bunPackageAlias);
-    }
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
+
+  if (!packageArgs.length)
+    await uninstallAllConfigsAndPackages(cwd, regeneratableFiles);
+  else {
+    await uninstallSpecificPackage(packageArgs);
+    await syncPackageJsonToKarma(cwd);
   }
 
   process.exit();
