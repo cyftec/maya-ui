@@ -1,4 +1,4 @@
-import { m } from "maya";
+import { m } from "@mufw/maya";
 import { Header } from "../elements";
 
 export default () => {

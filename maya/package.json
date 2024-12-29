@@ -1,5 +1,5 @@
 {
-  "name": "maya",
+  "name": "@mufw/maya",
   "version": "0.1.0",
   "description": "Maya core implementation",
   "author": "Chandan Kumar (Cyfer Tech)",
@@ -10,10 +10,13 @@
     "./utils": "./utils/index.ts"
   },
   "dependencies": {
-    "@cyfer/immutjs": "link:@cyfer/immutjs",
-    "@cyfer/signal": "link:@cyfer/signal"
+    "@cyf__/immutjs": "0.1.0",
+    "@cyf__/signal": "0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.6.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

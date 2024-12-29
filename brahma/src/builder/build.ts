@@ -1,4 +1,4 @@
-import { buildStaticHtml, runScriptText } from "maya/utils";
+import { buildStaticHtml, runScriptText } from "@mufw/maya/utils";
 import { exists, lstat, readdir, rm } from "node:fs/promises";
 import { NO_HTML_ERROR, NO_JS_ERROR } from "../common/constants.ts";
 import {

@@ -1,4 +1,4 @@
-import { m } from "maya";
+import { m } from "@mufw/maya";
 
 export const Header = () =>
   m.Div({

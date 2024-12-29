@@ -1,5 +1,5 @@
-import { type Component, m } from "maya";
-import { dstr, val } from "maya/signal";
+import { type Component, m } from "@mufw/maya";
+import { dstr, val } from "@mufw/maya/signal";
 
 type BulbProps = {
   isOn: boolean;

@@ -1,5 +1,5 @@
-import { m } from "maya";
-import { derived, dstr, source } from "maya/signal";
+import { m } from "@mufw/maya";
+import { derived, dstr, source } from "@mufw/maya/signal";
 import { Button } from "../elements";
 import { Bulb, PhotoFrame } from "./components";
 

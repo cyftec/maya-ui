@@ -1,23 +1,27 @@
 {
-  "name": "brahma",
+  "name": "@mufw/brahma",
   "version": "0.0.1",
-  "description": "CLI app to generate, develop and manage app written in Maya library",
+  "description": "CLI app to generate, develop and manage Maya app",
   "author": "Chandan Kumar (Cyfer Tech)",
+  "license": "MIT",
   "devDependencies": {
     "@types/bun": "^1.1.14",
     "@types/jsdom": "^21.1.7",
     "@types/live-server": "^1.2.3"
   },
   "dependencies": {
+    "@mufw/maya": "0.1.0",
     "chokidar": "^4.0.3",
     "jsdom": "^24.1.0",
-    "live-server": "^1.2.2",
-    "maya": "link:maya"
+    "live-server": "^1.2.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "bin": {
     "brhm": "./src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
