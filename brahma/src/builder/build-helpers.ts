@@ -4,7 +4,7 @@ import {
   DEST_JS_DEFAULT_FILE_NAME,
   DEST_JS_FILE_EXT,
 } from "../common/constants";
-import type { KarmaConfig } from "../example/karma-types";
+import type { KarmaConfig } from "../sample-app/karma-types";
 
 export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>
   srcPagePath.endsWith(karmaConfig.app.srcPageFileName);
@@ -60,3 +60,25 @@ export const getBuildFileNames = (
   const jsFileName = prefixName + DEST_JS_DEFAULT_FILE_NAME + DEST_JS_FILE_EXT;
   return { htmlFileName, jsFileName };
 };
+
+export const buildHtmlFnDef = `
+export const buildPageHtml = (page) => {
+  startPhase("build"); 
+  idGen.resetIdCounter();
+  const htmlPageNode = page();
+  idGen.resetIdCounter();
+  return htmlPageNode?.outerHTML;
+}`;
+
+export const mountAndRunFnDef = (appMethodName: string) => `
+const mountAndRun = () => {
+  setTimeout(() => {
+    startPhase("mount");
+    idGen.resetIdCounter();
+    ${appMethodName}();
+    idGen.resetIdCounter();
+    startPhase("run")
+  });
+};
+
+mountAndRun();`;

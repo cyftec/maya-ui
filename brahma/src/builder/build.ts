@@ -1,4 +1,3 @@
-import { buildStaticHtml, runScriptText } from "@mufw/maya/utils";
 import { exists, lstat, readdir, rm } from "node:fs/promises";
 import { NO_HTML_ERROR, NO_JS_ERROR } from "../common/constants.ts";
 import {
@@ -6,12 +5,14 @@ import {
   getFileNameFromPath,
   nonCachedImport,
 } from "../common/utils.ts";
-import type { KarmaConfig } from "../example/karma-types.ts";
+import type { KarmaConfig } from "../sample-app/karma-types.ts";
 import {
+  buildHtmlFnDef,
   getBuildDirPath,
   getBuildFileNames,
   getBuiltJsMethodName,
   isSrcPageFile,
+  mountAndRunFnDef,
 } from "./build-helpers.ts";
 
 type BuildData = {
@@ -22,10 +23,10 @@ type BuildData = {
 
 const buildData: BuildData = {} as BuildData;
 
-const buildHtml = async (destHtmlPath: string, srcPagePath: string) => {
+const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
   try {
-    const { default: page } = await nonCachedImport(srcPagePath);
-    const pageHtml = buildStaticHtml(page);
+    const { default: page, buildPageHtml } = await nonCachedImport(destJsPath);
+    const pageHtml = buildPageHtml(page);
     const html = `<!DOCTYPE html>\n${pageHtml}`;
     if (!html) throw new Error(NO_HTML_ERROR);
     await Bun.write(destHtmlPath, html);
@@ -35,7 +36,7 @@ const buildHtml = async (destHtmlPath: string, srcPagePath: string) => {
   }
 };
 
-const buildJs = async (destJsPath: string, srcPagePath: string) => {
+const buildJsFile = async (destJsPath: string, srcPagePath: string) => {
   const jsBuild = await Bun.build({
     entrypoints: [srcPagePath],
   });
@@ -44,18 +45,28 @@ const buildJs = async (destJsPath: string, srcPagePath: string) => {
     console.log(jsBuild);
     throw new Error(NO_JS_ERROR);
   }
-  const sanitizedJs = `${js.split("export {")[0]}
-    \n${runScriptText(
+  const sanitizedJs = `${js}
+    \n\n${buildHtmlFnDef}`;
+
+  await Bun.write(destJsPath, sanitizedJs);
+};
+
+const sanitizeJsFile = async (destJsPath: string) => {
+  const jsWithExports = await Bun.file(destJsPath).text();
+  if (!jsWithExports) {
+    throw new Error(NO_JS_ERROR);
+  }
+  const sanitizedJs = `${jsWithExports.split("export {")[0]}
+    ${mountAndRunFnDef(
       getBuiltJsMethodName(
         getFileNameFromPath(destJsPath) as string,
         buildData.config
       )
-    )}
-    \n${
-      !buildData.isProd && buildData.config.app.localServer.reloadPageOnFocus
-        ? "window.onfocus = () => location.reload();"
-        : ""
-    }`;
+    )}\n${
+    !buildData.isProd && buildData.config.app.localServer.reloadPageOnFocus
+      ? "window.onfocus = () => location.reload();"
+      : ""
+  }`;
 
   await Bun.write(destJsPath, sanitizedJs);
 };
@@ -69,8 +80,9 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
     );
     const destJsPath = `${destDirPath}/${jsFileName}`;
     const destHtmlPath = `${destDirPath}/${htmlFileName}`;
-    await buildHtml(destHtmlPath, srcPagePath);
-    await buildJs(destJsPath, srcPagePath);
+    await buildJsFile(destJsPath, srcPagePath);
+    await buildHtmlFile(destHtmlPath, destJsPath);
+    await sanitizeJsFile(destJsPath);
     return;
   }
 

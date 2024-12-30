@@ -1,6 +1,6 @@
 import { exists } from "node:fs/promises";
 import { nonCachedImport } from "./utils";
-import type { KarmaConfig } from "../example/karma-types";
+import type { KarmaConfig } from "../sample-app/karma-types";
 
 export const syncPackageJsonToKarma = async (appRootPath: string) => {
   const packageJsonPath = `${appRootPath}/package.json`;

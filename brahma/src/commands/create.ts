@@ -11,7 +11,7 @@ export const createApp = async (cmdArgs: string[]) => {
   }
 
   const cwd = process.cwd();
-  const exampleAppPath = path.resolve(__dirname, "../example");
+  const sampleAppPath = path.resolve(__dirname, "../sample-app");
   const destAppDirPath = `${cwd}/${appDirName}`;
   if (await exists(destAppDirPath)) {
     console.log(`A directory with name '${appDirName}' already exists.`);
@@ -21,7 +21,7 @@ export const createApp = async (cmdArgs: string[]) => {
   }
 
   await mkdir(appDirName);
-  await cp(exampleAppPath, destAppDirPath, { recursive: true });
+  await cp(sampleAppPath, destAppDirPath, { recursive: true });
   console.log(`'${appDirName}' directory created.`);
   console.log(`
   Run following commands to start dev:

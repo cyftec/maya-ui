@@ -2,7 +2,7 @@ import chokidar from "chokidar";
 import liveServer from "live-server";
 import { buildApp } from "../builder/build.ts";
 import { getKarma } from "../common/utils.ts";
-import type { KarmaConfig } from "../example/karma-types.ts";
+import type { KarmaConfig } from "../sample-app/karma-types.ts";
 
 const DEBOUNCE_TIME_IN_MS = 500;
 let lastTimestamp: number = 0;
@@ -64,7 +64,7 @@ export const stageApp = async () => {
   console.log(`\nLocal Server started on http://localhost:${serverPort}`);
 
   process.on("SIGINT", () => {
-    console.log("\n\nClosing file watcher...");
+    console.log("\n\nClosing file changes listener...");
     watcher.close();
     console.log(`Closing local dev server at port: ${serverPort}...`);
     liveServer.shutdown();

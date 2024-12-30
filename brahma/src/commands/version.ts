@@ -1,4 +1,5 @@
 import path from "node:path";
+import { config } from "../sample-app/karma";
 
 const getPackageVersion = (packageJsonText: string) =>
   packageJsonText
@@ -11,14 +12,10 @@ const getPackageVersion = (packageJsonText: string) =>
 
 export const showVersion = async () => {
   const cliRootPath = path.resolve(__dirname, "../../");
-  const brahmaPackageJsonText = await Bun.file(
-    `${cliRootPath}/package.json`
-  ).text();
-  const mayaPackageJsonText = await Bun.file(
-    `${cliRootPath}/node_modules/@mufw/maya/package.json`
-  ).text();
+  const packageJsonPath = `${cliRootPath}/package.json`;
+  const brahmaPackageJsonText = await Bun.file(packageJsonPath).text();
   const brahmaV = getPackageVersion(brahmaPackageJsonText);
-  const mayaV = getPackageVersion(mayaPackageJsonText);
-  console.log(`brahma v${brahmaV}\nmaya   v${mayaV}`);
+  console.log(`brahma v${brahmaV}`);
+  console.log(`maya   v${config.packageJson.dependencies["@mufw/maya"]}`);
   process.exit();
 };

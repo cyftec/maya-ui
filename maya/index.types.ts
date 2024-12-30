@@ -127,9 +127,3 @@ export type IDGen = {
   getNewId: () => number;
   resetIdCounter: () => number;
 };
-
-/**
- * Build helper functions signature
- */
-export type StaticHtmlBuilder = (page: () => HtmlNode) => string;
-export type RunScriptFunctionDefinition = (appMethodName: string) => string;

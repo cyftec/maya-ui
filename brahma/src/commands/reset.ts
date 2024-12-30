@@ -13,10 +13,10 @@ export const resetApp = async () => {
   - 'brhm reset' is used when 'karma.ts' file exists but is corrupted.`);
       process.exit(1);
     }
-    const srcKarmaPath = path.resolve(__dirname, "../example/karma.ts");
+    const srcKarmaPath = path.resolve(__dirname, "../sample-app/karma.ts");
     const srcKarmaTypesPath = path.resolve(
       __dirname,
-      "../example/karma-types.ts"
+      "../sample-app/karma-types.ts"
     );
     const destKarmaTempPath = `${cwd}/karma.temp.ts`;
     const destKarmaTypesTempPath = `${cwd}/karma-types.temp.ts`;

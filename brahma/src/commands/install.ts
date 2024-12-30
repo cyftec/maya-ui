@@ -4,7 +4,7 @@ import { syncPackageJsonToKarma } from "../common/file-syncer.ts";
 import type {
   KarmaConfig,
   RegeneratableFilesMap,
-} from "../example/karma-types.ts";
+} from "../sample-app/karma-types.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
 
 const installDotVsCodeDir = async (

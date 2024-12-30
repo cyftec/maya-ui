@@ -1,11 +1,4 @@
 node_modules
 
-# generated files in example app
-/brahma/src/example/.gitignore
-/brahma/src/example/.vscode
-/brahma/src/example/bun.lockb
-/brahma/src/example/package.json
-/brahma/src/example/stage
-
 # './example' is a symlink of original './brahma/src/example'
 /example
