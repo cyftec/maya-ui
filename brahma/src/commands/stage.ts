@@ -64,9 +64,9 @@ export const stageApp = async () => {
   console.log(`\nLocal Server started on http://localhost:${serverPort}`);
 
   process.on("SIGINT", () => {
-    console.log("\nClosing file watcher...");
+    console.log("\n\nClosing file watcher...");
     watcher.close();
-    console.log(`\nClosing local dev server at port: ${serverPort}...`);
+    console.log(`Closing local dev server at port: ${serverPort}...`);
     liveServer.shutdown();
     process.exit(0);
   });

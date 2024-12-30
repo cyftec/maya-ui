@@ -1,4 +1,4 @@
-import { dpromise, dprops, effect, source } from "@maya/signal";
+import { dpromise, dprops, effect, source } from "@mufw/maya/signal";
 
 type QueryState<D> = {
   isLoading: boolean;
