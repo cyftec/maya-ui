@@ -7,7 +7,7 @@ import {
 import type { KarmaConfig } from "../sample-app/karma-types";
 
 export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>
-  srcPagePath.endsWith(karmaConfig.app.srcPageFileName);
+  srcPagePath.endsWith(karmaConfig.brahma.build.srcPageFileName);
 
 export const getBuiltJsMethodName = (
   filename: string,
@@ -19,7 +19,7 @@ export const getBuiltJsMethodName = (
     words
       .map((w, i) =>
         i === words.length - 1 && w === DEST_JS_DEFAULT_FILE_NAME
-          ? karmaConfig.app.srcPageFileName.slice(0, -3)
+          ? karmaConfig.brahma.build.srcPageFileName.slice(0, -3)
           : w
       )
       .join("_") + "_default"
@@ -32,7 +32,8 @@ export const getBuildDirPath = (
   karmaConfig: KarmaConfig,
   buildProd: boolean
 ) => {
-  const { sourceDirName, stagingDirName, publishDirName } = karmaConfig.app;
+  const { sourceDirName, stagingDirName, publishDirName } =
+    karmaConfig.brahma.build;
   const srcRootPath = `${appRootPath}/${sourceDirName}`;
   const buildRootPath = `${appRootPath}/${
     buildProd ? publishDirName : stagingDirName
@@ -48,7 +49,7 @@ export const getBuildFileNames = (
   karmaConfig: KarmaConfig
 ) => {
   const pathWithoutFileName = srcPagePath.split(
-    karmaConfig.app.srcPageFileName
+    karmaConfig.brahma.build.srcPageFileName
   )[0];
   const isPrefixed = pathWithoutFileName.endsWith(".");
   const prefixName = isPrefixed

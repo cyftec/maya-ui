@@ -1,6 +1,7 @@
-import chokidar from "chokidar";
-import liveServer from "live-server";
-import { buildApp } from "../builder/build.ts";
+import { buildApp } from "../builder";
+import { watchFileChange } from "../common/file-change-watcher.ts";
+import { runLocalServer } from "../common/local-server.ts";
+import { startStdinListener } from "../common/stdin-listener.ts";
 import { getKarma } from "../common/utils.ts";
 import type { KarmaConfig } from "../sample-app/karma-types.ts";
 
@@ -19,16 +20,11 @@ const onFileModification = (callback: () => Promise<void>) => {
   }, DEBOUNCE_TIME_IN_MS);
 };
 
-const tryBuild = async (srcDir: string, config: KarmaConfig) => {
-  try {
-    const start = performance.now();
-    await buildApp(srcDir, config, false);
-    const finish = performance.now();
-    console.log(`Build done in ${(finish - start).toFixed(0)} ms.\n`);
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
-  }
+const buildSrcDir = async (srcDir: string, config: KarmaConfig) => {
+  const start = performance.now();
+  await buildApp(srcDir, config, false);
+  const finish = performance.now();
+  console.log(`Build done in ${(finish - start).toFixed(0)} ms.\n`);
 };
 
 export const stageApp = async () => {
@@ -37,37 +33,30 @@ export const stageApp = async () => {
   const karma = await getKarma(cwd);
   if (!karma) return false;
   const { config } = karma;
-  const sourceDirPath = `${cwd}/${config.app.sourceDirName}`;
-  const stagingDirPath = `${cwd}/${config.app.stagingDirName}`;
+  const sourceDirPath = `${cwd}/${config.brahma.build.sourceDirName}`;
+  const stagingDirPath = `${cwd}/${config.brahma.build.stagingDirName}`;
+  const serverPort = config.brahma.localServer.port;
 
-  await tryBuild(cwd, config);
-
-  const watcher = chokidar.watch(sourceDirPath).on("change", () => {
+  await buildSrcDir(cwd, config);
+  watchFileChange(sourceDirPath, () => {
     if (busyBuildingApp) return;
     onFileModification(async () => {
       busyBuildingApp = true;
-      await tryBuild(cwd, config);
+      await buildSrcDir(cwd, config);
       busyBuildingApp = false;
     });
   });
-  console.log(`Watching changes in staging directory:\n${stagingDirPath}`);
+  runLocalServer(
+    serverPort,
+    stagingDirPath,
+    config.brahma.localServer.redirectOnStage
+  );
 
-  const serverPort = config.app.localServer.port;
-  liveServer.start({
-    port: serverPort,
-    host: "0.0.0.0",
-    root: stagingDirPath,
-    open: config.app.localServer.redirectOnStage,
-    wait: 1000,
-    logLevel: 2,
-  });
-  console.log(`\nLocal Server started on http://localhost:${serverPort}`);
-
-  process.on("SIGINT", () => {
-    console.log("\n\nClosing file changes listener...");
-    watcher.close();
-    console.log(`Closing local dev server at port: ${serverPort}...`);
-    liveServer.shutdown();
-    process.exit(0);
-  });
+  setTimeout(() => {
+    console.log(`Press 'q' and then Enter to quit.`);
+    startStdinListener(async () => {
+      console.log(`Quitting on user input.`);
+      process.exit();
+    });
+  }, 0);
 };

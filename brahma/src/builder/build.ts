@@ -45,8 +45,10 @@ const buildJsFile = async (destJsPath: string, srcPagePath: string) => {
     console.log(jsBuild);
     throw new Error(NO_JS_ERROR);
   }
-  const sanitizedJs = `${js}
-    \n\n${buildHtmlFnDef}`;
+  const sanitizedJs = `
+    ${js}
+    ${buildHtmlFnDef}
+  `;
 
   await Bun.write(destJsPath, sanitizedJs);
 };
@@ -56,17 +58,20 @@ const sanitizeJsFile = async (destJsPath: string) => {
   if (!jsWithExports) {
     throw new Error(NO_JS_ERROR);
   }
-  const sanitizedJs = `${jsWithExports.split("export {")[0]}
+  const sanitizedJs = `
+    ${jsWithExports.split("export {")[0]}
     ${mountAndRunFnDef(
       getBuiltJsMethodName(
         getFileNameFromPath(destJsPath) as string,
         buildData.config
       )
-    )}\n${
-    !buildData.isProd && buildData.config.app.localServer.reloadPageOnFocus
-      ? "window.onfocus = () => location.reload();"
-      : ""
-  }`;
+    )}
+    ${
+      !buildData.isProd && buildData.config.brahma.localServer.reloadPageOnFocus
+        ? "window.onfocus = () => location.reload();"
+        : ""
+    }
+  `;
 
   await Bun.write(destJsPath, sanitizedJs);
 };
@@ -110,7 +115,8 @@ export const buildDir = async (srcDirPath: string): Promise<void> => {
   await createDirIfNotExist(destDirPath);
 
   for (const file of await readdir(srcDirPath)) {
-    if (file.startsWith(buildData.config.app.ignoreDelimiter)) continue;
+    if (file.startsWith(buildData.config.brahma.build.ignoreDelimiter))
+      continue;
 
     const filePath = `${srcDirPath}/${file}`;
     const fileStats = await lstat(filePath);
@@ -144,6 +150,6 @@ export const buildApp = async (
 ): Promise<void> => {
   if (!appRootPath || !config) throw `App root path or config is missing.`;
   await setupBuild({ appRootPath, config, isProd });
-  const sourcePath = `${appRootPath}/${config.app.sourceDirName}`;
+  const sourcePath = `${appRootPath}/${config.brahma.build.sourceDirName}`;
   return await buildDir(sourcePath);
 };

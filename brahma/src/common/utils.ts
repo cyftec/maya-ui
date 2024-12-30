@@ -47,7 +47,7 @@ export const validateMayaAppDir = async (
   const files = await readdir(dirPath);
   for (const file of files) {
     const fileStats = await lstat(`${dirPath}/${file}`);
-    if (file === config.app.sourceDirName && fileStats.isDirectory())
+    if (file === config.brahma.build.sourceDirName && fileStats.isDirectory())
       return validState;
   }
 

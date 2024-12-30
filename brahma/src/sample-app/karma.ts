@@ -18,12 +18,14 @@ export const regeneratables: RegeneratableFilesMap = RG;
 
 // DO NOT CHANGE exported variable name
 export const config: KarmaConfig = {
-  app: {
-    sourceDirName: APP_ROOT_DIRNAME,
-    stagingDirName: RG.STAGING_DIRNAME,
-    publishDirName: RG.PUBLISH_DIRNAME,
-    srcPageFileName: "page.ts",
-    ignoreDelimiter: "@",
+  brahma: {
+    build: {
+      sourceDirName: APP_ROOT_DIRNAME,
+      stagingDirName: RG.STAGING_DIRNAME,
+      publishDirName: RG.PUBLISH_DIRNAME,
+      srcPageFileName: "page.ts",
+      ignoreDelimiter: "@",
+    },
     localServer: {
       port: 3000,
       redirectOnStage: false,

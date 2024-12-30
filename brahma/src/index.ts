@@ -52,7 +52,7 @@ const execCli = async () => {
   if (srcDirMissing) {
     const files = await readdir(cwd);
     console.log(
-      `ERROR: App source directory '${config?.app.sourceDirName}' is either missing or have a different name.`
+      `ERROR: App source directory '${config?.brahma.build.sourceDirName}' is either missing or have a different name.`
     );
     console.log(`\nList of files in current directory:`);
     console.log(files);
