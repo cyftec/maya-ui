@@ -76,6 +76,20 @@ const sanitizeJsFile = async (destJsPath: string) => {
   await Bun.write(destJsPath, sanitizedJs);
 };
 
+const minifyJsFile = async (destJsPath: string) => {
+  const jsBuild = await Bun.build({
+    entrypoints: [destJsPath],
+    minify: true,
+  });
+  const minifiedJsCode = await jsBuild.outputs.map(
+    async (o) => await o.text()
+  )[0];
+  if (!minifiedJsCode) {
+    throw new Error(NO_JS_ERROR);
+  }
+  await Bun.write(destJsPath, minifiedJsCode);
+};
+
 const buildFile = async (srcFilePath: string, destDirPath: string) => {
   if (isSrcPageFile(srcFilePath, buildData.config)) {
     const srcPagePath = srcFilePath;
@@ -88,6 +102,7 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
     await buildJsFile(destJsPath, srcPagePath);
     await buildHtmlFile(destHtmlPath, destJsPath);
     await sanitizeJsFile(destJsPath);
+    if (buildData.isProd) await minifyJsFile(destJsPath);
     return;
   }
 
