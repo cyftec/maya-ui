@@ -1,1 +1,1 @@
-export * from "@cyf__/signal";
+export * from "@cyftech/signal";

@@ -1,1 +1,1 @@
-export * from "@cyf__/immutjs";
+export * from "@cyftech/immutjs";

@@ -1,9 +1,9 @@
 import { m } from "@mufw/maya";
-import { dstr, source } from "@mufw/maya/signal";
+import { dstring, signal } from "@mufw/maya/signal";
 import { Header } from "./elements/index.ts";
 
 export default () => {
-  const toggled = source(false);
+  const toggled = signal(false);
 
   return m.Html({
     lang: "en",
@@ -29,7 +29,7 @@ export default () => {
             children: [
               Header(),
               m.H1({
-                style: dstr`color: ${() =>
+                style: dstring`color: ${() =>
                   toggled.value ? "red" : "green"}; user-select: none;`,
                 onclick: () => (toggled.value = !toggled.value),
                 children: "Contact Page",

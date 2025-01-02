@@ -1,6 +1,6 @@
 import { getArrayMutations } from "../../../utils/immutjs/index.ts";
 import {
-  source,
+  signal,
   derived,
   valueIsSignal,
   type Signal,
@@ -25,8 +25,8 @@ const getSignalledObject = <T extends object>(
   i: number,
   map: MutableMapFn<T>
 ): SignalledObject<T> => {
-  const indexSignal = source(i);
-  const itemSignal = source(item);
+  const indexSignal = signal(i);
+  const itemSignal = signal(item);
 
   return {
     indexSignal,
@@ -99,7 +99,7 @@ export const customeNodeFor: CustomNodeFor = <T>({
 
   const list = valueIsSignal(items)
     ? (items as Signal<T[]>)
-    : source(items as T[]);
+    : signal(items as T[]);
 
   if (map) {
     if (itemIdKey || mutableMap) {

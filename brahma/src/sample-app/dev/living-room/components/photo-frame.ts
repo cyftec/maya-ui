@@ -1,5 +1,5 @@
 import { type Component, m } from "@mufw/maya";
-import { dstr, val } from "@mufw/maya/signal";
+import { dstring, val } from "@mufw/maya/signal";
 
 type PhotoFrameProps = {
   frameSrc: string;
@@ -19,7 +19,7 @@ export const PhotoFrame: Component<PhotoFrameProps> = ({
         class: "absolute",
         children: [
           m.Div({
-            class: dstr`absolute z-3 ${() =>
+            class: dstring`absolute z-3 ${() =>
               val(isBulbOn) ? "bg-transparent" : "bg-black-90"}`,
             style: "height: 300px; width: 250px; ",
           }),
@@ -30,7 +30,7 @@ export const PhotoFrame: Component<PhotoFrameProps> = ({
             src: val(frameSrc),
           }),
           m.Div({
-            class: dstr`absolute z-1 ${() =>
+            class: dstring`absolute z-1 ${() =>
               val(isBulbOn) ? "bg-transparent" : "bg-black-90"}`,
             style: "height: 300px; width: 250px; ",
           }),

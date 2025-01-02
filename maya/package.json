@@ -7,11 +7,12 @@
   "exports": {
     ".": "./index.ts",
     "./signal": "./utils/signal/index.ts",
-    "./utils": "./utils/index.ts"
+    "./utils": "./utils/index.ts",
+    "./toolkit": "./toolkit/index.ts"
   },
   "dependencies": {
-    "@cyf__/immutjs": "0.1.0",
-    "@cyf__/signal": "0.1.0"
+    "@cyftech/immutjs": "0.1.0",
+    "@cyftech/signal": "0.1.2"
   },
   "devDependencies": {
     "typescript": "^5.6.2"

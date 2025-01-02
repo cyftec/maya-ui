@@ -1,5 +1,5 @@
 import { m, type Component } from "@mufw/maya";
-import { dstr, val } from "@mufw/maya/signal";
+import { dstring, val } from "@mufw/maya/signal";
 
 type ButtonProps = {
   label: string;
@@ -15,7 +15,7 @@ export const Button: Component<ButtonProps> = ({
   color,
 }) =>
   m.Button({
-    class: dstr`pa2 b br3 ba bw1 b--gray pointer ${() =>
+    class: dstring`pa2 b br3 ba bw1 b--gray pointer ${() =>
       val(color) || "bg-green  white"} ${classNames}`,
     onclick: onTap,
     children: label,

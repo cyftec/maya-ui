@@ -1,10 +1,10 @@
 import { m } from "@mufw/maya";
-import { derived, dstr, source } from "@mufw/maya/signal";
+import { derived, dstring, signal } from "@mufw/maya/signal";
 import { Button } from "../elements";
 import { Bulb, PhotoFrame } from "./components";
 
 export default () => {
-  const isBulbOn = source(false);
+  const isBulbOn = signal(false);
   const buttonColor = derived(() =>
     isBulbOn.value ? "bg-light-gray black" : "bg-mid-gray light-gray"
   );
@@ -35,7 +35,7 @@ export default () => {
         children: [
           m.Script({ src: "main.js", defer: "true" }),
           m.Div({
-            class: dstr`absolute--fill vh-100 ${() =>
+            class: dstring`absolute--fill vh-100 ${() =>
               isBulbOn.value ? "bg-light-yellow" : "bg-dark-gray"}`,
             children: [
               Bulb({

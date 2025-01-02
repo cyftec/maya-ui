@@ -1,9 +1,9 @@
 import { m } from "@mufw/maya";
-import { source } from "@mufw/maya/signal";
+import { signal } from "@mufw/maya/signal";
 import { Header } from "./elements/index.ts";
 
 export default () => {
-  const sub = source("a");
+  const sub = signal("a");
 
   return m.Html({
     lang: "en",

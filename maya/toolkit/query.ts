@@ -1,4 +1,4 @@
-import { dpromise, dprops, effect, source } from "@mufw/maya/signal";
+import { dpromise, dprops, effect, signal } from "../utils/signal";
 
 type QueryState<D> = {
   isLoading: boolean;
@@ -12,7 +12,7 @@ export const query = <T>(
   onComplete: () => void
 ) => {
   const abortController = new AbortController();
-  const state = source<QueryState<T>>({
+  const state = signal<QueryState<T>>({
     isLoading: false,
     data: undefined,
     error: undefined,
