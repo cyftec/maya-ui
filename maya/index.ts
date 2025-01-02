@@ -1,2 +1,2 @@
 export * from "./index.types.ts";
-export * from "./web/index.ts";
+export * from "./core/index.ts";
