@@ -1,17 +1,17 @@
+import type { Child, CustomNodeSwitch } from "../../../index.types.ts";
 import {
   derived,
   valueIsSignal,
   type DerivedSignal,
   type Signal,
 } from "../../../utils/signal/index.ts";
-import type { Child, SwitchProps } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
-export function customeNodeSwitch({
+export const customeNodeSwitch: CustomNodeSwitch = ({
   subject,
   defaultCase,
   cases,
-}: SwitchProps): DerivedSignal<Child> {
+}): DerivedSignal<Child> => {
   const switchCase = derived(() =>
     valueIsSignal(subject)
       ? (subject as Signal<string>).value
@@ -26,4 +26,4 @@ export function customeNodeSwitch({
       ? defaultCase()
       : m.Span({ style: "display: none;" });
   });
-}
+};

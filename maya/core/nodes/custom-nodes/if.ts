@@ -6,8 +6,15 @@ import {
 import type { CustomNodeIf } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
-export const customeNodeIf: CustomNodeIf = ({ condition, then, otherwise }) => {
-  const isTruthy = derived(
+export const customeNodeIf: CustomNodeIf = ({
+  condition,
+  whenTruthy,
+  whenFalsy,
+}) => {
+  if (!whenTruthy && !whenFalsy)
+    throw `Both 'whenTruthy' and 'whenFalsy' are missing. At least one of them should be provided.`;
+
+  const conditionIsTruthy = derived(
     () =>
       !!(valueIsSignal(condition)
         ? (condition as Signal<unknown>).value
@@ -15,10 +22,12 @@ export const customeNodeIf: CustomNodeIf = ({ condition, then, otherwise }) => {
   );
 
   return derived(() =>
-    isTruthy.value
-      ? then()
-      : otherwise
-      ? otherwise()
+    conditionIsTruthy.value
+      ? whenTruthy
+        ? whenTruthy()
+        : m.Span({ style: "display: none;" })
+      : whenFalsy
+      ? whenFalsy()
       : m.Span({ style: "display: none;" })
   );
 };

@@ -1,15 +1,15 @@
 // deno-lint-ignore-file no-explicit-any
 import type {
-  DerivedSignal,
-  MaybeSignal,
-  Signal,
-} from "./utils/signal/index.ts";
-import type {
   customEventKeys,
   htmlAttributes,
   htmlEventKeys,
   htmlTagNames,
 } from "./utils/common/index.ts";
+import {
+  type DerivedSignal,
+  type MaybeSignal,
+  type Signal,
+} from "./utils/signal/index.ts";
 
 export type MaybeArray<T> = T | T[];
 export type Object<T> = T extends object ? T : never;
@@ -81,8 +81,8 @@ export type CustomNodeFor = <T>(props: ForProps<T>) => DerivedSignal<Child[]>;
 
 export type IfProps = {
   condition: MaybeSignal<any>;
-  then: () => Child;
-  otherwise?: () => Child;
+  whenTruthy?: () => Child;
+  whenFalsy?: () => Child;
 };
 export type CustomNodeIf = (props: IfProps) => DerivedSignal<Child>;
 
