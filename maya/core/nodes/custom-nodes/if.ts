@@ -1,9 +1,5 @@
-import {
-  derived,
-  valueIsSignal,
-  type Signal,
-} from "../../../utils/signal/index.ts";
 import type { CustomNodeIf } from "../../../index.types.ts";
+import { derived, val } from "../../../utils/signal/index.ts";
 import { m } from "../m.ts";
 
 export const customeNodeIf: CustomNodeIf = ({
@@ -14,12 +10,7 @@ export const customeNodeIf: CustomNodeIf = ({
   if (!whenTruthy && !whenFalsy)
     throw `Both 'whenTruthy' and 'whenFalsy' are missing. At least one of them should be provided.`;
 
-  const conditionIsTruthy = derived(
-    () =>
-      !!(valueIsSignal(condition)
-        ? (condition as Signal<unknown>).value
-        : condition)
-  );
+  const conditionIsTruthy = derived(() => !!val(condition));
 
   return derived(() =>
     conditionIsTruthy.value
