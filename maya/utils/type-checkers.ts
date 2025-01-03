@@ -1,5 +1,4 @@
-// deno-lint-ignore-file no-explicit-any
-import { valueIsSignal } from "../signal";
+import { valueIsSignal } from "@cyftech/signal";
 
 export const valueIsArray = (value: any): boolean => Array.isArray(value);
 

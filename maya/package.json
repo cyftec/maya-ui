@@ -1,12 +1,11 @@
 {
   "name": "@mufw/maya",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Maya core implementation",
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
   "exports": {
     ".": "./index.ts",
-    "./signal": "./utils/signal/index.ts",
     "./utils": "./utils/index.ts",
     "./toolkit": "./toolkit/index.ts"
   },

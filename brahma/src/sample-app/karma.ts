@@ -34,18 +34,20 @@ export const config: KarmaConfig = {
   },
   packageJson: {
     dependencies: {
-      "@mufw/maya": "0.1.4",
+      "@mufw/maya": "0.1.5",
     },
   },
   git: {
     ignore: [
       ".DS_Store",
+      "karma-types.ts",
+      `./${RG.STAGING_DIRNAME}`,
+      `./${RG.PUBLISH_DIRNAME}`,
+      RG.BUN_LOCKB,
       RG.DOT_VSCODE_DIR,
       RG.DOT_ENV_FILE,
       RG.NODE_MODULES_DIR,
       RG.PACKAGE_JSON_FILE,
-      RG.STAGING_DIRNAME,
-      RG.PUBLISH_DIRNAME,
     ],
   },
   vscode: {
@@ -53,14 +55,14 @@ export const config: KarmaConfig = {
       "deno.enable": false,
       "files.exclude": {
         "karma-types.ts": true,
+        [RG.STAGING_DIRNAME]: false,
+        [RG.PUBLISH_DIRNAME]: false,
         [RG.BUN_LOCKB]: true,
         [RG.GIT_IGNORE]: true,
         [RG.DOT_VSCODE_DIR]: true,
         [RG.DOT_ENV_FILE]: true,
         [RG.NODE_MODULES_DIR]: true,
         [RG.PACKAGE_JSON_FILE]: true,
-        [RG.STAGING_DIRNAME]: false,
-        [RG.PUBLISH_DIRNAME]: false,
       },
     },
   },

@@ -77,7 +77,6 @@ const mountAndRun = () => {
     startPhase("mount");
     idGen.resetIdCounter();
     ${appMethodName}();
-    idGen.resetIdCounter();
     startPhase("run")
   });
 };

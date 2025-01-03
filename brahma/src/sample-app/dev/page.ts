@@ -1,5 +1,5 @@
 import { m } from "@mufw/maya";
-import { signal } from "@mufw/maya/signal";
+import { signal } from "@cyftech/signal";
 import { Header } from "./elements/index.ts";
 
 export default () => {

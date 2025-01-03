@@ -1,5 +1,5 @@
 import { m, type Component } from "@mufw/maya";
-import { dstring, val } from "@mufw/maya/signal";
+import { dstring, val } from "@cyftech/signal";
 
 type ButtonProps = {
   label: string;

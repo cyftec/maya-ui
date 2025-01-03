@@ -1,4 +1,4 @@
-import { dpromise, dprops, effect, signal } from "../utils/signal";
+import { dpromise, dprops, effect, signal } from "@cyftech/signal";
 
 type QueryState<D> = {
   isLoading: boolean;

@@ -1,15 +1,14 @@
-// deno-lint-ignore-file no-explicit-any
 import type {
   customEventKeys,
   htmlAttributes,
   htmlEventKeys,
   htmlTagNames,
-} from "./utils/common/index.ts";
+} from "./utils/index.ts";
 import {
   type DerivedSignal,
   type MaybeSignal,
   type Signal,
-} from "./utils/signal/index.ts";
+} from "@cyftech/signal";
 
 export type MaybeArray<T> = T | T[];
 export type Object<T> = T extends object ? T : never;

@@ -1,5 +1,5 @@
 import { type Component, m } from "@mufw/maya";
-import { dstring, val } from "@mufw/maya/signal";
+import { dstring, val } from "@cyftech/signal";
 
 type PhotoFrameProps = {
   frameSrc: string;
