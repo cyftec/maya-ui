@@ -71,8 +71,9 @@ const handleEventProps = (htmlNode: HtmlNode, events: EventsMap): void => {
         listenerFn(e);
       });
     } else if (attributeIsCustomEvent(eventName, listenerFn)) {
-      if (eventName === "onmount") {
-        // do nothing as it's handled in 'createHtmlNode' method
+      if (eventName === "onmount" && !currentPhaseIs("build")) {
+        const onMount = listenerFn as CustomEventValue;
+        setTimeout(() => onMount(), 0);
       }
       if (eventName === "onunmount") {
         startUnmountObserver();
@@ -282,7 +283,18 @@ export const createHtmlNode = (
   const htmlNodeProps: HtmlNodeProps = valueIsChildrenProp(props)
     ? { children: props as ChildrenProp }
     : (props as HtmlNodeProps);
-  htmlNodeProps["data-node-id"] = htmlNode.nodeId.toString();
+
+  if (!currentPhaseIs("run")) {
+    /**
+     * The attribute "data-node-id" is only required for mounting. I.e. when
+     * the generated static site is loaded, the script need to find the html nodes
+     * using query selector and hold on to them in the memory for reactivity.
+     *
+     * So this attribute "data-node-id" is only required during 'build' and
+     * 'mount' phases, not in the 'run' phase.
+     */
+    htmlNodeProps["data-node-id"] = htmlNode.nodeId.toString();
+  }
 
   const { childrenProp, events, attributes } = getNodesEventsAndAttributes(
     htmlNodeProps,
@@ -292,22 +304,20 @@ export const createHtmlNode = (
   handleAttributeProps(htmlNode, attributes);
   handleChildrenProp(htmlNode, childrenProp);
 
-  if (
-    currentPhaseIs("mount") &&
-    typeof props === "object" &&
-    // deno-lint-ignore no-prototype-builtins
-    props.hasOwnProperty("onmount")
-  ) {
-    const onMount = (props as HtmlNodeProps).onmount as CustomEventValue;
-    if (onMount && typeof onMount === "function") onMount();
-  }
+  if (currentPhaseIs("mount")) {
+    /**
+     * Keep removing attribute "data-node-id" when mounting on
+     * that html node is done.
+     */
+    htmlNode.removeAttribute("data-node-id");
 
-  /**
-   * Mount (Dom Access) phase completes with finally accessing 'html' node,
-   * and (app) Run phase starts after that
-   */
-  if (tagName === "html" && currentPhaseIs("mount")) {
-    startPhase("run");
+    /**
+     * Mount (Dom Access) phase completes with finally accessing 'html' node,
+     * and (app) Run phase starts after that
+     */
+    if (tagName === "html") {
+      startPhase("run");
+    }
   }
 
   return htmlNode;
