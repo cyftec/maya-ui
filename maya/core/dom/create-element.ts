@@ -3,7 +3,7 @@ import {
   valueIsSignal,
   type MaybeSignal,
   type Signal,
-} from "../../utils/signal/index.ts";
+} from "@cyftech/signal";
 import type {
   AttributeKey,
   AttributeSignalsMap,
@@ -39,7 +39,7 @@ import {
   valueIsChildrenSignal,
   valueIsHtmlNode,
   valueIsSignalChild,
-} from "../../utils/common/index.ts";
+} from "../../utils/index.ts";
 import { startUnmountObserver } from "./unmount-observer.ts";
 
 const attributeIsUndefinedEvent = (propKey: string, propValue: any): boolean =>

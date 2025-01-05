@@ -1,4 +1,4 @@
-import { currentPhaseIs, valueIsHtmlNode } from "../../utils/common/index.ts";
+import { currentPhaseIs, valueIsHtmlNode } from "../../utils/index.ts";
 import type {
   CustomEventValue,
   HtmlNode,

@@ -1,11 +1,11 @@
-import { getArrayMutations } from "../../../utils/immutjs/index.ts";
+import { getArrayMutations } from "@cyftech/immutjs";
 import {
   signal,
   derived,
   valueIsSignal,
   type Signal,
   type SourceSignal,
-} from "../../../utils/signal/index.ts";
+} from "@cyftech/signal";
 import type {
   CustomNodeFor,
   ForProps,

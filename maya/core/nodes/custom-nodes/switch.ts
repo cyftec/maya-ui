@@ -4,7 +4,7 @@ import {
   valueIsSignal,
   type DerivedSignal,
   type Signal,
-} from "../../../utils/signal/index.ts";
+} from "@cyftech/signal";
 import { m } from "../m.ts";
 
 export const customeNodeSwitch: CustomNodeSwitch = ({

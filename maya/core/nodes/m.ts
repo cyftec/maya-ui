@@ -1,4 +1,4 @@
-import { htmlTagNames } from "../../utils/common/index.ts";
+import { htmlTagNames } from "../../utils/index.ts";
 import { createHtmlNode } from "../dom/index.ts";
 import type {
   HtmlNodesMap,

@@ -1,5 +1,5 @@
 import type { CustomNodeIf } from "../../../index.types.ts";
-import { derived, val } from "../../../utils/signal/index.ts";
+import { derived, val } from "@cyftech/signal";
 import { m } from "../m.ts";
 
 export const customeNodeIf: CustomNodeIf = ({
