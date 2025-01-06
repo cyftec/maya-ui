@@ -1,11 +1,10 @@
-import { currentPhaseIs, valueIsHtmlNode } from "../../utils/index.ts";
-import type {
-  CustomEventValue,
-  HtmlNode,
-  UnmountListener,
-} from "../../index.types.ts";
+import { currentPhaseIs, valueIsMHtmlElement } from "../../utils/index.ts";
+import type { CustomEventValue, MHtmlElement } from "../../index.types.ts";
 
-type ListenerData = { node: HtmlNode; unmountListener: CustomEventValue };
+type ListenerData = {
+  element: MHtmlElement;
+  unmountListener: CustomEventValue;
+};
 
 let _observingDocument = false;
 const addedNodesRecord: Record<number, string> = {};
@@ -15,23 +14,24 @@ const MutationObserver = globalThis.MutationObserver;
 const unmountObserver: MutationObserver = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.type === "childList") {
-      mutation.addedNodes.forEach((n) => {
-        if (valueIsHtmlNode(n)) {
-          const node = n as HtmlNode;
-          const nodeId = node.nodeId;
-          if (removedNodesRecord[nodeId]) delete removedNodesRecord[nodeId];
-          else addedNodesRecord[nodeId] = node.tagName;
+      mutation.addedNodes.forEach((node) => {
+        if (valueIsMHtmlElement(node)) {
+          const element = node as MHtmlElement;
+          const elementId = element.elementId;
+          if (removedNodesRecord[elementId])
+            delete removedNodesRecord[elementId];
+          else addedNodesRecord[elementId] = element.tagName;
         }
       });
 
-      mutation.removedNodes.forEach((n) => {
-        if (valueIsHtmlNode(n)) {
-          const node = n as HtmlNode;
-          const nodeId = node.nodeId;
-          const unmountListener = node.unmountListener;
+      mutation.removedNodes.forEach((node) => {
+        if (valueIsMHtmlElement(node)) {
+          const element = node as MHtmlElement;
+          const elementId = element.elementId;
+          const unmountListener = element.unmountListener;
           if (unmountListener)
-            removedNodesRecord[nodeId] = {
-              node,
+            removedNodesRecord[elementId] = {
+              element,
               unmountListener: unmountListener as CustomEventValue,
             };
         }
@@ -39,24 +39,25 @@ const unmountObserver: MutationObserver = new MutationObserver((mutations) => {
     }
   });
   Object.entries(removedNodesRecord).forEach(([_, listenerData]) => {
-    const { node, unmountListener } = listenerData;
-    execSubtreeUnmountListeners(node, unmountListener);
+    const { element, unmountListener } = listenerData;
+    execSubtreeUnmountListeners(element, unmountListener);
   });
 });
 
 const execSubtreeUnmountListeners = (
-  node: HtmlNode,
-  elUnmountListener: UnmountListener
+  element: MHtmlElement,
+  elUnmountListener: CustomEventValue | undefined
 ): void => {
-  if (!valueIsHtmlNode(node)) return;
+  if (!valueIsMHtmlElement(element)) return;
 
-  const elChildren = node.children;
+  const elChildren = element.children;
   for (let i = 0; i < elChildren.length; i++) {
-    const elChild = elChildren[i] as HtmlNode;
+    const elChild = elChildren[i] as MHtmlElement;
     execSubtreeUnmountListeners(elChild, elChild.unmountListener);
   }
   elUnmountListener && elUnmountListener();
-  if (removedNodesRecord[node.nodeId]) delete removedNodesRecord[node.nodeId];
+  if (removedNodesRecord[element.elementId])
+    delete removedNodesRecord[element.elementId];
 };
 
 export const startUnmountObserver = (): void => {

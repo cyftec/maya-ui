@@ -1,13 +1,23 @@
-import type { Child, CustomNodeSwitch } from "../../../index.types.ts";
 import {
   derived,
   valueIsSignal,
   type DerivedSignal,
+  type MaybeSignal,
   type Signal,
 } from "@cyftech/signal";
+import type { Child } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
-export const customeNodeSwitch: CustomNodeSwitch = ({
+type SwitchProps = {
+  subject: MaybeSignal<string>;
+  defaultCase?: Child;
+  cases: {
+    [x in string]: Child;
+  };
+};
+export type SwitchComponent = (props: SwitchProps) => DerivedSignal<Child>;
+
+export const switchComponent: SwitchComponent = ({
   subject,
   defaultCase,
   cases,
@@ -20,10 +30,6 @@ export const customeNodeSwitch: CustomNodeSwitch = ({
 
   return derived(() => {
     const caseKey = switchCase.value;
-    return cases[caseKey]
-      ? cases[caseKey]()
-      : defaultCase
-      ? defaultCase()
-      : m.Span({ style: "display: none;" });
+    return cases[caseKey] || defaultCase || m.Span({ style: "display: none;" });
   });
 };

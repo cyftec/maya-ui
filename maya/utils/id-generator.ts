@@ -1,10 +1,13 @@
-import type { IDGen } from "../index.types";
+type IDGen = {
+  getNewId: () => number;
+  resetIdCounter: () => number;
+};
 
 const idGenerator = () => {
-  let nodeId = 0;
+  let _id = 0;
   return {
-    getNewId: () => ++nodeId,
-    resetIdCounter: () => (nodeId = 0),
+    getNewId: () => ++_id,
+    resetIdCounter: () => (_id = 0),
   };
 };
 

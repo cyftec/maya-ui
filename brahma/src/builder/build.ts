@@ -66,7 +66,7 @@ const sanitizeJsFile = async (destJsPath: string) => {
         buildData.config
       )
     )}
-    ${
+    \n${
       !buildData.isProd && buildData.config.brahma.localServer.reloadPageOnFocus
         ? "window.onfocus = () => location.reload();"
         : ""

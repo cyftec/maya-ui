@@ -1,29 +1,46 @@
 import { getArrayMutations } from "@cyftech/immutjs";
 import {
-  signal,
   derived,
+  signal,
   valueIsSignal,
+  type DerivedSignal,
+  type MaybeSignal,
   type Signal,
   type SourceSignal,
 } from "@cyftech/signal";
 import type {
-  CustomNodeFor,
-  ForProps,
-  MutableMapFn,
   Child,
+  MHtmlElementGetter,
   Object,
 } from "../../../index.types.ts";
+
+type MapFn<T> = (item: T, index: number) => Child;
+type MutableMapFn<T extends object> = (
+  itemSignal: Signal<T>,
+  indexSignal: Signal<number>
+) => MHtmlElementGetter;
+type ForProps<T> = {
+  items: MaybeSignal<T[]>;
+  itemIdKey?: string;
+  map?: MapFn<T>;
+  mutableMap?: ForProps<T>["items"] extends T[]
+    ? never
+    : MutableMapFn<Object<T>>;
+  n?: number;
+  nthChild?: Child;
+};
+export type ForComponent = <T>(props: ForProps<T>) => DerivedSignal<Child[]>;
 
 type SignalledObject<T> = {
   indexSignal: SourceSignal<number>;
   itemSignal: SourceSignal<T>;
-  mappedChild: Child;
+  mappedChild: MHtmlElementGetter;
 };
 
 const getSignalledObject = <T extends object>(
   item: T,
   i: number,
-  map: MutableMapFn<T>
+  mutableMap: MutableMapFn<T>
 ): SignalledObject<T> => {
   const indexSignal = signal(i);
   const itemSignal = signal(item);
@@ -31,18 +48,18 @@ const getSignalledObject = <T extends object>(
   return {
     indexSignal,
     itemSignal,
-    mappedChild: map(itemSignal, indexSignal),
+    mappedChild: mutableMap(itemSignal, indexSignal),
   };
 };
 
 const getChildrenAfterInjection = (
   children: Child[],
   n?: number,
-  nthChild?: () => Child
+  nthChild?: Child
 ) => {
   if (n !== undefined && n >= 0 && nthChild) {
     const injectingIndex = n > children.length ? children.length : n;
-    children.splice(injectingIndex, 0, nthChild());
+    children.splice(injectingIndex, 0, nthChild);
   }
   return children;
 };
@@ -83,7 +100,7 @@ const getChildrenAfterInjection = (
  * @param param0 dfsgsdgfsfggs
  * @returns number
  */
-export const customeNodeFor: CustomNodeFor = <T>({
+export const forComponent: ForComponent = <T>({
   items,
   itemIdKey,
   map,

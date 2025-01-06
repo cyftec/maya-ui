@@ -67,18 +67,15 @@ export const buildPageHtml = (page) => {
   startPhase("build"); 
   idGen.resetIdCounter();
   const htmlPageNode = page();
-  idGen.resetIdCounter();
   return htmlPageNode?.outerHTML;
 }`;
 
 export const mountAndRunFnDef = (appMethodName: string) => `
 const mountAndRun = () => {
-  setTimeout(() => {
     startPhase("mount");
     idGen.resetIdCounter();
     ${appMethodName}();
     startPhase("run")
-  });
 };
 
 mountAndRun();`;
