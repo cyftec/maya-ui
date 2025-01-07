@@ -19,6 +19,11 @@ export const Header = () =>
       }),
       m.Span(" | "),
       m.A({
+        href: "/examples.html",
+        children: "Examples",
+      }),
+      m.Span(" | "),
+      m.A({
         href: "/living-room",
         children: "Living Room app",
       }),

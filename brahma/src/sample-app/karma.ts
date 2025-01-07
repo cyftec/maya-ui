@@ -29,20 +29,20 @@ export const config: KarmaConfig = {
     localServer: {
       port: 3000,
       redirectOnStage: false,
-      reloadPageOnFocus: true,
+      reloadPageOnFocus: false,
     },
   },
   packageJson: {
     dependencies: {
-      "@mufw/maya": "0.1.5",
+      "@mufw/maya": "0.1.6",
     },
   },
   git: {
     ignore: [
       ".DS_Store",
       "karma-types.ts",
-      `./${RG.STAGING_DIRNAME}`,
-      `./${RG.PUBLISH_DIRNAME}`,
+      `/${RG.STAGING_DIRNAME}`,
+      `/${RG.PUBLISH_DIRNAME}`,
       RG.BUN_LOCKB,
       RG.DOT_VSCODE_DIR,
       RG.DOT_ENV_FILE,
