@@ -15,9 +15,9 @@ type SwitchProps = {
     [x in string]: Child;
   };
 };
-export type SwitchComponent = (props: SwitchProps) => DerivedSignal<Child>;
+export type SwitchElement = (props: SwitchProps) => DerivedSignal<Child>;
 
-export const switchComponent: SwitchComponent = ({
+export const switchElement: SwitchElement = ({
   subject,
   defaultCase,
   cases,

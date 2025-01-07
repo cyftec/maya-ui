@@ -1,18 +1,23 @@
 import {
   effect,
+  valueIsMaybeSignalObject,
+  valueIsNonSignalString,
+  valueIsNonSignalStringArray,
   valueIsSignal,
   type MaybeSignal,
+  type MaybeSignalObject,
+  type MaybeSignalValue,
+  type NonSignal,
   type Signal,
 } from "@cyftech/signal";
 import type {
   AttributeKey,
-  SignalAttributeProps,
-  AttributeValue,
   AttributeProps,
+  AttributeValue,
   Child,
   ChildSignal,
-  ChildrenPlain,
   Children,
+  PropsOrChildren,
   ChildrenSignal,
   CustomEventKey,
   CustomEventValue,
@@ -20,11 +25,11 @@ import type {
   DomEventValue,
   EventProps,
   HtmlEventKey,
-  MHtmlElement,
-  Props,
   HtmlTagName,
+  MHtmlElement,
   MHtmlElementGetter,
-  ChildrenOrProps,
+  Props,
+  SignalAttributeProps,
 } from "../../index.types.ts";
 import {
   currentPhaseIs,
@@ -33,13 +38,13 @@ import {
   htmlEventKeys,
   idGen,
   startPhase,
+  validChild,
+  validChildren,
+  validChildrenSignal,
+  validPlainChildren,
+  validSignalChild,
   valueIsArray,
-  valueIsChild,
-  valueIsPlainChildren,
-  valueIsChildren,
-  valueIsChildrenSignal,
   valueIsMHtmlElement,
-  valueIsSignalChild,
 } from "../../utils/index.ts";
 import { startUnmountObserver } from "./unmount-observer.ts";
 
@@ -94,11 +99,11 @@ const handleEventProps = (
 const setAttribute = (
   mHtmlElement: MHtmlElement,
   attrKey: string,
-  attributePropValue: MaybeSignal<AttributeValue>
+  attributePropValue: MaybeSignalValue<AttributeValue>
 ): void => {
   const attrValue =
-    (valueIsSignal(attributePropValue)
-      ? (attributePropValue as Signal<AttributeValue>).value
+    (valueIsMaybeSignalObject(attributePropValue)
+      ? (attributePropValue as MaybeSignalObject<AttributeValue>).value
       : (attributePropValue as AttributeValue)) ?? "";
 
   if (typeof attrValue === "boolean") {
@@ -119,20 +124,19 @@ const handleAttributeProps = (
 
   Object.entries(attributeProps).forEach((attributeProp) => {
     const [attrKey, attrVal] = attributeProp;
-    const maybeSignalAttrVal = attrVal as MaybeSignal<AttributeValue>;
-
-    if (valueIsSignal(maybeSignalAttrVal)) {
+    if (valueIsSignal(attrVal)) {
       signalAttributeProps[attrKey as AttributeKey] =
-        maybeSignalAttrVal as Signal<AttributeValue>;
-      return;
+        attrVal as Signal<AttributeValue>;
     }
-    setAttribute(mHtmlElem, attrKey, maybeSignalAttrVal);
+    setAttribute(mHtmlElem, attrKey, attrVal);
   });
 
   effect(() => {
     Object.entries(signalAttributeProps).forEach((signalAttributeProp) => {
-      const [attrKey, signalAttrVal] = signalAttributeProp;
-      setAttribute(mHtmlElem, attrKey, signalAttrVal as Signal<AttributeValue>);
+      const [attrKey, attrVal] = signalAttributeProp;
+      const signalAttrVal = (attrVal as Signal<AttributeValue>).value;
+      if (!currentPhaseIs("run")) return;
+      setAttribute(mHtmlElem, attrKey, signalAttrVal);
     });
   });
 };
@@ -140,7 +144,7 @@ const handleAttributeProps = (
 const getElementFromChild = (
   child: MaybeSignal<Child>
 ): MHtmlElement | Text => {
-  if (valueIsSignalChild(child)) {
+  if (validSignalChild(child)) {
     const nonSignalChild = (child as ChildSignal).value;
     return getElementFromChild(nonSignalChild);
   }
@@ -149,7 +153,7 @@ const getElementFromChild = (
     return document.createTextNode(child);
   }
 
-  if (valueIsChild(child)) {
+  if (validChild(child)) {
     const elem = (child as MHtmlElementGetter)();
     if (!valueIsMHtmlElement(elem)) {
       throw new Error(
@@ -165,7 +169,7 @@ const getElementFromChild = (
 const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
   if (!children) return;
 
-  if (valueIsChildrenSignal(children)) {
+  if (validChildrenSignal(children)) {
     effect(() => {
       const childrenSignal = children as ChildrenSignal;
       const childrenSignalValue = childrenSignal.value;
@@ -196,15 +200,20 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
     });
   }
 
-  if (valueIsPlainChildren(children)) {
-    const plainChildren = children as ChildrenPlain;
-    const signalledChildren: { index: number; childSignal: ChildSignal }[] = [];
+  if (validPlainChildren(children)) {
     const sureArrayChildren = (
-      valueIsArray(children) ? plainChildren : [plainChildren]
+      valueIsNonSignalString(children)
+        ? [(children as NonSignal<string>).value]
+        : valueIsNonSignalStringArray(children)
+        ? (children as NonSignal<string[]>).value
+        : valueIsArray(children)
+        ? (children as MaybeSignal<Child>[])
+        : [children as MaybeSignal<Child>]
     ) as Array<MaybeSignal<Child>>;
+    const signalledChildren: { index: number; childSignal: ChildSignal }[] = [];
 
     sureArrayChildren.forEach((maybeSignalChild, index) => {
-      if (valueIsSignalChild(maybeSignalChild)) {
+      if (validSignalChild(maybeSignalChild)) {
         signalledChildren.push({
           index,
           childSignal: maybeSignalChild as ChildSignal,
@@ -252,7 +261,7 @@ const getNodesEventsAndAttributes = (
 
   Object.entries(props).forEach(([propKey, propValue]) => {
     if (propKey === "children") {
-      if (valueIsChildren(propValue)) children = propValue as Children;
+      if (validChildren(propValue)) children = propValue as Children;
       else
         throw new Error(
           `Invalid children prop for node with tagName: ${tagName}\n\n ${JSON.stringify(
@@ -269,24 +278,23 @@ const getNodesEventsAndAttributes = (
   return { children, eventProps, attributeProps };
 };
 
-export const getElementGetter =
-  (
-    tagName: HtmlTagName,
-    childrenOrProps: ChildrenOrProps
-  ): MHtmlElementGetter =>
-  () => {
+export const createElementGetter = (
+  tagName: HtmlTagName,
+  propsOrChildren: PropsOrChildren
+): MHtmlElementGetter => {
+  const elemGetter: MHtmlElementGetter = () => {
     const elementId = idGen.getNewId();
 
-    const mHtmlElem = currentPhaseIs("mount")
-      ? (document.querySelector(
-          `[data-elem-id="${elementId}"]`
-        ) as MHtmlElement)
-      : (document.createElement(tagName) as MHtmlElement);
+    const mHtmlElem = (
+      currentPhaseIs("mount")
+        ? document.querySelector(`[data-elem-id="${elementId}"]`)
+        : document.createElement(tagName)
+    ) as MHtmlElement;
     mHtmlElem.elementId = elementId;
     mHtmlElem.unmountListener = undefined;
-    const props: Props = valueIsChildren(childrenOrProps)
-      ? { children: childrenOrProps as Children }
-      : (childrenOrProps as Props);
+    const props: Props = validChildren(propsOrChildren)
+      ? { children: propsOrChildren as Children }
+      : (propsOrChildren as Props);
 
     if (!currentPhaseIs("run")) {
       /**
@@ -297,17 +305,13 @@ export const getElementGetter =
        * So this attribute "data-elem-id" is only required during 'build' and
        * 'mount' phases, not in the 'run' phase.
        */
-      console.log(
-        `Current phase is ${currentPhaseIs("build") ? "build" : "mount"}`
-      );
       props["data-elem-id"] = mHtmlElem.elementId.toString();
     }
 
-    const { children, eventProps, attributeProps } =
-      getNodesEventsAndAttributes(props, mHtmlElem.tagName);
-    handleEventProps(mHtmlElem, eventProps);
-    handleAttributeProps(mHtmlElem, attributeProps);
-    handleChildrenProp(mHtmlElem, children);
+    const allProps = getNodesEventsAndAttributes(props, mHtmlElem.tagName);
+    handleEventProps(mHtmlElem, allProps.eventProps);
+    handleAttributeProps(mHtmlElem, allProps.attributeProps);
+    handleChildrenProp(mHtmlElem, allProps.children);
 
     if (!currentPhaseIs("build")) {
       /**
@@ -327,3 +331,7 @@ export const getElementGetter =
 
     return mHtmlElem;
   };
+
+  elemGetter.isElementGetter = true;
+  return elemGetter;
+};

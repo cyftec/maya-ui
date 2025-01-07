@@ -1,4 +1,1 @@
 node_modules
-
-# './example' is a symlink of original './brahma/src/example'
-/example

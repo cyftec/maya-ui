@@ -121,12 +121,12 @@ export const buildDir = async (srcDirPath: string): Promise<void> => {
     buildData.config,
     buildData.isProd
   );
-  console.log(`Building dir: ${destDirPath}`);
 
   if (await exists(destDirPath)) {
-    console.log(`Deleing build dir: ${destDirPath}`);
+    console.log(`Deleing built dir: ${destDirPath}`);
     await rm(destDirPath, { recursive: true });
   }
+  console.log(`Building dir: ${destDirPath}`);
   await createDirIfNotExist(destDirPath);
 
   for (const file of await readdir(srcDirPath)) {

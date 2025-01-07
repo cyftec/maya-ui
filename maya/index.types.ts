@@ -1,4 +1,9 @@
-import { type MaybeSignal, type Signal } from "@cyftech/signal";
+import {
+  type MaybeSignal,
+  type MaybeSignalValue,
+  type NonSignal,
+  type Signal,
+} from "@cyftech/signal";
 import type {
   customEventKeys,
   htmlAttributes,
@@ -29,51 +34,38 @@ export type AttributeValue = string | boolean | undefined;
  * Maya Html Element and Children type-defs
  */
 export type HtmlTagName = (typeof htmlTagNames)[number];
-export type MHtmlTagName = Capitalize<HtmlTagName>;
 export type MHtmlElement<H extends HTMLElement = HTMLElement> = H & {
   elementId: number;
   unmountListener: CustomEventValue | undefined;
   value?: string; // for HTMLInputElement
 };
-export type MHtmlElementGetter = () => MHtmlElement;
+export type MHtmlElementGetter = {
+  (): MHtmlElement;
+  isElementGetter: true;
+};
 export type Child = string | MHtmlElementGetter;
 export type ChildSignal = Signal<Child>;
 export type ChildrenSignal = Signal<MaybeArray<Child>>;
-export type ChildrenPlain = MaybeArray<MaybeSignal<Child>>;
+export type ChildrenPlain =
+  | NonSignal<string>
+  | NonSignal<string[]>
+  | MaybeArray<MaybeSignal<Child>>;
 export type Children = ChildrenSignal | ChildrenPlain;
 
 /**
- * Component Props type-defs
+ * Props type-defs
  */
 
 export type EventProps = Partial<{
   [E in DomEventKey]: DomEventValue;
 }>;
-
 export type AttributeProps = Partial<{
-  [A in AttributeKey]: MaybeSignal<AttributeValue>;
+  [A in AttributeKey]: MaybeSignalValue<AttributeValue>;
 }>;
 export type SignalAttributeProps = Partial<{
   [A in AttributeKey]: Signal<AttributeValue>;
 }>;
-
 export type ChildrenProp = { children?: Children };
+
 export type Props = EventProps & AttributeProps & ChildrenProp;
-export type ChildrenOrProps = Children | Props;
-
-/**
- * Components type-defs
- */
-
-export type ComponentProps<P> = {
-  [K in keyof P]: P[K] extends
-    | Signal<any>
-    | (((...args: any) => any) | undefined)
-    ? P[K]
-    : P[K] extends string | string[] | undefined
-    ? MaybeSignal<P[K]>
-    : P[K] extends Children
-    ? P[K]
-    : MaybeSignal<P[K]>;
-};
-export type Component<P> = (props: ComponentProps<P>) => MHtmlElementGetter;
+export type PropsOrChildren = Props | Children;

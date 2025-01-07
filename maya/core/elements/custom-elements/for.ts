@@ -29,7 +29,7 @@ type ForProps<T> = {
   n?: number;
   nthChild?: Child;
 };
-export type ForComponent = <T>(props: ForProps<T>) => DerivedSignal<Child[]>;
+export type ForElement = <T>(props: ForProps<T>) => DerivedSignal<Child[]>;
 
 type SignalledObject<T> = {
   indexSignal: SourceSignal<number>;
@@ -100,7 +100,7 @@ const getChildrenAfterInjection = (
  * @param param0 dfsgsdgfsfggs
  * @returns number
  */
-export const forComponent: ForComponent = <T>({
+export const forElement: ForElement = <T>({
   items,
   itemIdKey,
   map,
