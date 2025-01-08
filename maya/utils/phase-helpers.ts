@@ -1,4 +1,4 @@
-import { signal } from "@cyftech/signal";
+import { effect, signal } from "@cyftech/signal";
 
 /**
  * Given that the source code for the app is ready, for generating
@@ -22,9 +22,11 @@ import { signal } from "@cyftech/signal";
  * During this phase, the script simply updates deletes attributes
  * of in-memory DOM nodes or add new attributes or nodes to the DOM.
  */
-type Phase = "build" | "mount" | "run";
+type Phase = "none" | "build" | "mount" | "run";
 
-const _currentPhase = signal<Phase>("build");
+const _currentPhase = signal<Phase>("none");
+
+effect(() => console.log(`Current phase is ${_currentPhase.value}`));
 
 export const currentPhaseIs = (phase: Phase): boolean =>
   _currentPhase.value === phase;

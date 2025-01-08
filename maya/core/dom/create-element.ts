@@ -112,7 +112,7 @@ const setAttribute = (
   } else if (attrKey === "value") {
     mHtmlElement.value = attrValue;
   } else {
-    mHtmlElement.setAttribute(attrKey, attrValue);
+    if (attrValue) mHtmlElement.setAttribute(attrKey, attrValue);
   }
 };
 
@@ -128,6 +128,7 @@ const handleAttributeProps = (
       signalAttributeProps[attrKey as AttributeKey] =
         attrVal as Signal<AttributeValue>;
     }
+    if (currentPhaseIs("mount")) return;
     setAttribute(mHtmlElem, attrKey, attrVal);
   });
 
@@ -219,9 +220,17 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
           childSignal: maybeSignalChild as ChildSignal,
         });
       }
-      const childNode = getElementFromChild(maybeSignalChild);
-      if (currentPhaseIs("mount")) return;
-      parentNode.appendChild(childNode);
+      const newChildNode = getElementFromChild(maybeSignalChild);
+      const prevChildNode = parentNode.childNodes[index];
+      if (prevChildNode && newChildNode) {
+        parentNode.replaceChild(newChildNode, prevChildNode);
+      } else if (!prevChildNode && newChildNode) {
+        parentNode.appendChild(newChildNode);
+      } else {
+        console.error(
+          `No child found for node with tagName: ${parentNode.tagName}`
+        );
+      }
     });
 
     if (signalledChildren.length) {
@@ -283,6 +292,13 @@ export const createElementGetter = (
   propsOrChildren: PropsOrChildren
 ): MHtmlElementGetter => {
   const elemGetter: MHtmlElementGetter = () => {
+    if (currentPhaseIs("none") && tagName === "html") {
+      /**
+       * If current phase is 'none' that means it's not build environment.
+       * So, 'mpunt' (Dom Access) phase should start with 'html' node.
+       */
+      startPhase("mount");
+    }
     const elementId = idGen.getNewId();
 
     const mHtmlElem = (
@@ -319,14 +335,6 @@ export const createElementGetter = (
        * that html node is done.
        */
       mHtmlElem.removeAttribute("data-elem-id");
-    }
-
-    if (currentPhaseIs("mount") && tagName === "html") {
-      /**
-       * Mount (Dom Access) phase completes with finally accessing 'html' node,
-       * and (app) Run phase starts after that
-       */
-      startPhase("run");
     }
 
     return mHtmlElem;

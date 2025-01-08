@@ -1,15 +1,14 @@
 import {
   derived,
-  valueIsSignal,
+  val,
   type DerivedSignal,
-  type MaybeSignal,
-  type Signal,
+  type MaybeSignalValue,
 } from "@cyftech/signal";
 import type { Child } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
 type SwitchProps = {
-  subject: MaybeSignal<string>;
+  subject: MaybeSignalValue<string>;
   defaultCase?: Child;
   cases: {
     [x in string]: Child;
@@ -22,11 +21,7 @@ export const switchElement: SwitchElement = ({
   defaultCase,
   cases,
 }): DerivedSignal<Child> => {
-  const switchCase = derived(() =>
-    valueIsSignal(subject)
-      ? (subject as Signal<string>).value
-      : (subject as string)
-  );
+  const switchCase = derived(() => val(subject));
 
   return derived(() => {
     const caseKey = switchCase.value;

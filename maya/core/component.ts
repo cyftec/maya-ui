@@ -1,9 +1,9 @@
 import {
   val,
   valueIsSignal,
-  type MaybeSignal,
   type MaybeSignalObject,
   type Signal,
+  type MaybeSignalValue,
 } from "@cyftech/signal";
 import type { Children, MHtmlElementGetter } from "../index.types";
 import { validChildren } from "../utils";
@@ -25,10 +25,10 @@ type Props<P extends object> = {
     | (((...args: any) => any) | undefined)
     ? P[K]
     : P[K] extends string | string[] | undefined
-    ? MaybeSignal<P[K]>
+    ? MaybeSignalValue<P[K]>
     : P[K] extends Children | undefined
     ? P[K]
-    : MaybeSignal<P[K]>;
+    : MaybeSignalValue<P[K]>;
 };
 
 type ArgComp<P extends object> = (p: ArgCompProps<P>) => MHtmlElementGetter;
@@ -56,7 +56,7 @@ export const component =
                   return val(propValue);
                 },
               }
-            : // string child(ren) will be filtered out other type of Children
+            : // string child(ren) will be filtered out from other type of Children
             validChildren(propValue)
             ? propValue
             : {

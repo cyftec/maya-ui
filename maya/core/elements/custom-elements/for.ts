@@ -2,9 +2,10 @@ import { getArrayMutations } from "@cyftech/immutjs";
 import {
   derived,
   signal,
+  val,
   valueIsSignal,
   type DerivedSignal,
-  type MaybeSignal,
+  type MaybeSignalValue,
   type Signal,
   type SourceSignal,
 } from "@cyftech/signal";
@@ -14,41 +15,51 @@ import type {
   Object,
 } from "../../../index.types.ts";
 
-type MapFn<T> = (item: T, index: number) => Child;
-type MutableMapFn<T extends object> = (
-  itemSignal: Signal<T>,
-  indexSignal: Signal<number>
+type MapFn<T> = (item: T, index: number) => MHtmlElementGetter;
+type MutableMapFn<T> = (
+  item: DerivedSignal<T>,
+  index: DerivedSignal<number>
 ) => MHtmlElementGetter;
-type ForProps<T> = {
-  items: MaybeSignal<T[]>;
-  itemIdKey?: string;
-  map?: MapFn<T>;
-  mutableMap?: ForProps<T>["items"] extends T[]
-    ? never
-    : MutableMapFn<Object<T>>;
+type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
+  items: MaybeSignalValue<T[]>;
+  itemKey?: ItemKey;
+  map: (T extends object ? keyof T : null) extends ItemKey
+    ? MapFn<T>
+    : MutableMapFn<T>;
   n?: number;
   nthChild?: Child;
 };
-export type ForElement = <T>(props: ForProps<T>) => DerivedSignal<Child[]>;
+export type ForElement = <
+  T,
+  ItemKey extends T extends object ? keyof T : never
+>(
+  props: ForProps<T, ItemKey>
+) => DerivedSignal<Child[]>;
 
-type SignalledObject<T> = {
+type MappedChild<T> = {
   indexSignal: SourceSignal<number>;
   itemSignal: SourceSignal<T>;
   mappedChild: MHtmlElementGetter;
 };
 
-const getSignalledObject = <T extends object>(
+const getMappedChild = <T extends object>(
   item: T,
   i: number,
   mutableMap: MutableMapFn<T>
-): SignalledObject<T> => {
+): MappedChild<T> => {
   const indexSignal = signal(i);
   const itemSignal = signal(item);
+  const child = mutableMap(
+    derived(() => itemSignal.value),
+    derived(() => indexSignal.value)
+  )();
+  const childGetter: MHtmlElementGetter = () => child;
+  childGetter.isElementGetter = true;
 
   return {
     indexSignal,
     itemSignal,
-    mappedChild: mutableMap(itemSignal, indexSignal),
+    mappedChild: childGetter,
   };
 };
 
@@ -65,50 +76,68 @@ const getChildrenAfterInjection = (
 };
 
 /**
- * For the case of 'mutableMap',
- * if 'itemIdKey' is provided, then only any update in item is checked during diff,
+ * For is a maya-custom-element which takes 'items' and a 'map' method and returns
+ * a signal of list of maya-html-elements.
+ * 
+ * For mutable nodes list, 'itemKey' must be provided, for which item in 'itmes' must be
+ * an object and 'itemKey' is the name of field in item whose value are unique among
+ * all items. Similar to an id field in an SQL record (object).
+ * 
+ * Mutable nodes doesn't get recreated when input 'items' value gets changed,
+ * rather nodes remain the same and only individual item (as signal) value
+ * changes and subsequently updates the nodes.
+ * 
+ * If 'itemKey' is provided, then only any update in item is checked during diff,
  * otherwise any mutation in the item is considered as new item
  * being created and old item being destroyed.
  * 
  * for example, consider this list of tasks and its corresponding list tiles
  * 
- * JS
+ * ```
+ * //// JS
  * const tasks = [
     { id: 0, text: "some task", isDone: false },
     { id: 1, text: "other task", isDone: true },
    ];
    
-   UI
-   |-------------------|
-   |  some task        |
-   |-------------------|
-   |  other task ✓✓✓✓ |
-   |-------------------|
+   //// UI
+   // |-------------------|
+   // |  some task        |
+   // |-------------------|
+   // |  other task ✓✓✓✓ |
+   // |-------------------|
+ * ```
+   
+ * 1. WHEN `itemKey = undefined`
  * 
- * 1. WHEN itemIdKey = undefined
-   if tasks[1].text is changed from "other task" to "another task", it will result in
-   new list tile element created and appended to the DOM. All previous
-   UI mutations like change in CSS color property will be lost.
+ * if `tasks[1].text` is changed from "other task" to "another task", it will
+ * result in new list tile element created and appended to the DOM. All previous
+ * UI mutations like change in CSS color property will be lost.
  * 
- * 2. WHEN itemIdKey = "id"
-   if tasks[1].text is changed from "other task" to "another task", it will result in
-   individual item signal being updated with new value. This item signal will
-   ultimately trigger the UI mutation in existing list tile element in the DOM.
- */
-/**
+ * 2. WHEN `itemKey = "id"`
+ * 
+ * if `tasks[1].text` is changed from "other task" to "another task", it will result in
+ * individual item (`tasks[1]`) signal being updated with new value. This item signal
+ * will ultimately trigger the UI mutation in existing list tile element in the DOM.
  *
- * @param param0 dfsgsdgfsfggs
- * @returns number
+ * @param props
+ * @returns a derived signal of a list of maya-html-elements
+ * 
  */
-export const forElement: ForElement = <T>({
+export const forElement: ForElement = <
+  T,
+  ItemKey extends T extends object ? keyof T : never
+>({
   items,
-  itemIdKey,
+  itemKey,
   map,
-  mutableMap,
   n,
   nthChild,
-}: ForProps<T>) => {
-  if ((nthChild && n === undefined) || (n !== undefined && !nthChild)) {
+}: ForProps<T, ItemKey>) => {
+  if (
+    (nthChild && n === undefined) ||
+    (n !== undefined && n > -1 && !nthChild)
+  ) {
     throw new Error(
       "Either both 'n' and 'nthChild' be passed or none of them."
     );
@@ -116,72 +145,80 @@ export const forElement: ForElement = <T>({
 
   const list = valueIsSignal(items)
     ? (items as Signal<T[]>)
-    : signal(items as T[]);
+    : signal(val(items) as T[]);
 
-  if (map) {
-    if (itemIdKey || mutableMap) {
-      throw new Error(
-        "if 'map' is provided, 'itemIdKey' and 'mutableMap' is uncessary."
-      );
-    }
+  if (!itemKey) {
     return derived(() =>
-      getChildrenAfterInjection(list.value.map(map), n, nthChild)
+      getChildrenAfterInjection(list.value.map(map as MapFn<T>), n, nthChild)
     );
   }
 
+  /**
+   * Mutable nodes list logic below
+   */
+  let injectableElement: Child | undefined = nthChild;
+  if (nthChild && typeof nthChild !== "string") {
+    const element = nthChild();
+    const injectable: MHtmlElementGetter = () => element;
+    injectable.isElementGetter = true;
+    injectableElement = injectable;
+  }
   const itemsValue = list.value;
-  if (!mutableMap) throw new Error("mutableMap is missing");
   if (itemsValue.length && typeof itemsValue[0] !== "object")
     throw new Error("for mutable map, item in the list must be an object");
 
-  let oldList: Object<T>[] | null = null;
-  const newList = derived((oldVal: Object<T>[] | undefined) => {
-    oldList = oldVal || oldList;
+  let previousItems: Object<T>[] | null = null;
+  const currentItems = derived((prevItems: Object<T>[] | undefined) => {
+    previousItems = prevItems || previousItems;
     return (list as Signal<Object<T>[]>).value;
   });
 
-  const signalledItemsMap = derived<SignalledObject<T>[]>((oldMap) => {
-    if (!oldMap || !oldList) {
-      const initialItems = newList.value;
+  const mappedChildren = derived<MappedChild<T>[]>((prevChildrenMap) => {
+    if (!prevChildrenMap || !previousItems) {
+      const initialItems = currentItems.value;
       return initialItems.map((item, i) =>
-        getSignalledObject(item as Object<T>, i, mutableMap)
+        getMappedChild(item as Object<T>, i, map as MutableMapFn<T>)
       );
     }
 
-    const muts = getArrayMutations(oldList, newList.value, itemIdKey);
+    const muts = getArrayMutations(
+      previousItems,
+      currentItems.value,
+      itemKey as string
+    );
 
     return muts.map((mut, i) => {
-      const oldObject = oldMap[mut.oldIndex];
+      const oldMappedChild = (prevChildrenMap || [])[mut.oldIndex];
       console.assert(
-        (mut.type === "add" && mut.oldIndex === -1 && !oldObject) ||
-          (mut.oldIndex > -1 && !!oldObject),
+        (mut.type === "add" && mut.oldIndex === -1 && !oldMappedChild) ||
+          (mut.oldIndex > -1 && !!oldMappedChild),
         "In case of mutation type 'add' oldIndex should be '-1', or else oldIndex should always be a non-negative integer."
       );
 
-      if (oldObject) {
+      if (oldMappedChild) {
         if (mut.type === "shuffle") {
-          oldObject.indexSignal.value = i;
+          oldMappedChild.indexSignal.value = i;
         }
 
         if (mut.type === "update") {
-          oldObject.indexSignal.value = i;
-          oldObject.itemSignal.value = mut.value;
+          oldMappedChild.indexSignal.value = i;
+          oldMappedChild.itemSignal.value = { ...mut.value };
         }
 
-        return oldObject;
+        return oldMappedChild;
       }
 
-      return getSignalledObject(mut.value, i, mutableMap);
+      return getMappedChild(mut.value, i, map as MutableMapFn<T>);
     });
   });
 
-  const nodesSignal = derived(() =>
+  const mappedChildrenSignal = derived(() =>
     getChildrenAfterInjection(
-      signalledItemsMap.value.map((ob) => ob.mappedChild),
+      mappedChildren.value.map((item) => item.mappedChild),
       n,
-      nthChild
+      injectableElement
     )
   );
 
-  return nodesSignal;
+  return mappedChildrenSignal;
 };
