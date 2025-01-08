@@ -34,7 +34,7 @@ export const config: KarmaConfig = {
   },
   packageJson: {
     dependencies: {
-      "@mufw/maya": "0.1.6",
+      "@mufw/maya": "0.1.7",
     },
   },
   git: {
