@@ -5,7 +5,7 @@ export const createApp = async (cmdArgs: string[]) => {
   const appDirName = cmdArgs[0];
   if (!appDirName) {
     console.log(
-      `ERROR: Project directory name missing.\nRun 'brhm help' for usage guide.`
+      `ERROR: Project directory name missing.\nRun 'brahma help' for usage guide.`
     );
     process.exit(1);
   }
@@ -27,8 +27,8 @@ export const createApp = async (cmdArgs: string[]) => {
   Run following commands to start dev:
 
   cd ${appDirName}
-  brhm install
-  brhm stage
+  brahma install
+  brahma stage
   `);
   process.exit();
 };

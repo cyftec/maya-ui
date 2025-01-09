@@ -21,7 +21,7 @@ const execCli = async () => {
   // console.log(commands);
 
   if (commands.help || commands.nocmd) showHelp();
-  if (commands.version) await showVersion();
+  if (commands.version) await showVersion(commands.version.args);
   if (commands.create) await createApp(commands.create.args);
   if (commands.reset) await resetApp();
 
@@ -33,7 +33,7 @@ const execCli = async () => {
         ? `ERROR: 'karma.ts' file is missing.`
         : karmaCorrupted
         ? `ERROR: 'karma.ts' file is corrupted.
-  - Use 'brhm reset' and then 'brhm install' to reset karma.ts and reinstall app.
+  - Use 'brahma reset' and then 'brahma install' to reset karma.ts and reinstall app.
     WARNING: You might lose previous config changes. Make sure to use git to have access to previous state.`
         : ""
     );
@@ -70,7 +70,7 @@ const execCli = async () => {
   if (!packageJsonFileExists) {
     console.log(
       `ERROR: App not installed. 'package.json' file is missing.
-  Run 'brhm install' command to install app first.`
+  Run 'brahma install' command to install app first.`
     );
     process.exit(1);
   }

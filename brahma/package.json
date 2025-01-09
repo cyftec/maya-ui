@@ -1,6 +1,6 @@
 {
   "name": "@mufw/brahma",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "description": "CLI app to generate, develop and manage Maya app",
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
@@ -18,7 +18,7 @@
     "typescript": "^5.0.0"
   },
   "bin": {
-    "brhm": "./src/index.ts"
+    "brahma": "./src/index.ts"
   },
   "publishConfig": {
     "access": "public"

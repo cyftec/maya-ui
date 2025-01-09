@@ -1,6 +1,6 @@
 export const showHelp = () => {
   console.log(`
-  Usage: brhm <COMMAND> <?ARG>
+  Usage: brahma <COMMAND> <?ARG>
 
   COMMAND      | ARG           | RESULT
   ---------------------------------------------------------------------------------
@@ -15,12 +15,12 @@ export const showHelp = () => {
 
 
   Examples: 
-    - brhm create my-app
-    - brhm c my-app  
-    - brhm s
-    - brhm stage
-    - brhm install
-    - brhm install lodash
+    - brahma create my-app
+    - brahma c my-app  
+    - brahma s
+    - brahma stage
+    - brahma install
+    - brahma install lodash
 `);
 
   process.exit();

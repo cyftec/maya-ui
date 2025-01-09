@@ -10,7 +10,7 @@ export const resetApp = async () => {
     const karma = await getKarma(cwd);
     if (!karma) {
       console.log(`ERROR: 'karma.ts' file is missing in current directory.
-  - 'brhm reset' is used when 'karma.ts' file exists but is corrupted.`);
+  - 'brahma reset' is used when 'karma.ts' file exists but is corrupted.`);
       process.exit(1);
     }
     const srcKarmaPath = path.resolve(__dirname, "../sample-app/karma.ts");
