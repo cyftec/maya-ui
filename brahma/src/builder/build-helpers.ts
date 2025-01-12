@@ -64,7 +64,7 @@ export const getBuildFileNames = (
 
 export const buildHtmlFnDef = `
 export const buildPageHtml = (page) => {
-  startPhase("build"); 
+  phase.start("build"); 
   idGen.resetIdCounter();
   const htmlPageNode = page();
   return htmlPageNode?.outerHTML;
@@ -72,10 +72,10 @@ export const buildPageHtml = (page) => {
 
 export const mountAndRunFnDef = (appMethodName: string) => `
 const mountAndRun = () => {
-    startPhase("mount");
+    phase.start("mount");
     idGen.resetIdCounter();
     ${appMethodName}();
-    startPhase("run")
+    phase.start("run")
 };
 
 mountAndRun();`;

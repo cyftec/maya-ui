@@ -1,4 +1,4 @@
-import { currentPhaseIs, valueIsMHtmlElement } from "../../utils/index.ts";
+import { phase, valueIsMHtmlElement } from "../../utils/index.ts";
 import type { CustomEventValue, MHtmlElement } from "../../index.types.ts";
 
 type ListenerData = {
@@ -61,7 +61,7 @@ const execSubtreeUnmountListeners = (
 };
 
 export const startUnmountObserver = (): void => {
-  if (!_observingDocument && !currentPhaseIs("build")) {
+  if (!_observingDocument && !phase.currentIs("build")) {
     unmountObserver.observe(document.body, {
       childList: true,
       subtree: true,

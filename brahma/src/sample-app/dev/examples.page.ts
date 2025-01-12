@@ -1,24 +1,36 @@
 import { dstring, signal } from "@cyftech/signal";
-import { m } from "@mufw/maya";
+import { component, DomEventValue, m } from "@mufw/maya";
 import { Header } from "./@elements/index.ts";
 
 const topBulbIsOn = signal(false);
 const bulbStates = signal(
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, index) => ({ value, index }))
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, i) => ({ value, i }))
 );
+const filaColor = signal("green");
+const changeFilaColor = (e: Event) => {
+  e.stopPropagation();
+  if (filaColor.value === "red") filaColor.value = "green";
+  else filaColor.value = "red";
+};
 
-const Bulb = () => {
+type BulbProps = {
+  fontColor: string;
+  changeFontColor: DomEventValue;
+};
+
+const Bulb = component<BulbProps>(({ fontColor, changeFontColor }) => {
   const isOn = signal(false);
   return m.Div({
-    class: "mv2",
+    class: dstring`mv2 pa4 ${() =>
+      isOn.value ? "bg-yellow" : "bg-light-gray"}`,
     onclick: () => (isOn.value = !isOn.value),
-    children: m.If({
-      condition: isOn,
-      isTruthy: m.Div({ class: `bg-yellow pa4`, children: "ON" }),
-      isFalsy: m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
+    children: m.Div({
+      class: fontColor,
+      children: dstring`${() => (isOn.value ? "ON" : "OFF")}`,
+      onclick: changeFontColor,
     }),
   });
-};
+});
 
 export default m.Html({
   lang: "en",
@@ -79,14 +91,21 @@ export default m.Html({
               onclick: () =>
                 (bulbStates.value = [
                   ...bulbStates.value,
-                  { value: 1, index: bulbStates.value.length },
+                  { value: 1, i: bulbStates.value.length },
                 ]),
               children: "Add Bulb",
             }),
             m.Div(
               m.For({
                 items: bulbStates,
-                mutableMap: (isOn, index) => Bulb(),
+                itemKey: "i",
+                n: 3,
+                nthChild: "Some injectable title",
+                map: () =>
+                  Bulb({
+                    fontColor: filaColor,
+                    changeFontColor: (e) => changeFilaColor(e),
+                  }),
               })
             ),
           ],

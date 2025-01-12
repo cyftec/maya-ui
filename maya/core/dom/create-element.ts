@@ -32,12 +32,11 @@ import type {
   SignalAttributeProps,
 } from "../../index.types.ts";
 import {
-  currentPhaseIs,
   customEventKeys,
   eventKeys,
   htmlEventKeys,
   idGen,
-  startPhase,
+  phase,
   validChild,
   validChildren,
   validChildrenSignal,
@@ -80,7 +79,7 @@ const handleEventProps = (
         listenerFn(e);
       });
     } else if (attributeIsCustomEvent(eventName, listenerFn)) {
-      if (eventName === "onmount" && !currentPhaseIs("build")) {
+      if (eventName === "onmount" && !phase.currentIs("build")) {
         const onMount = listenerFn as CustomEventValue;
         setTimeout(() => onMount(), 0);
       }
@@ -128,7 +127,7 @@ const handleAttributeProps = (
       signalAttributeProps[attrKey as AttributeKey] =
         attrVal as Signal<AttributeValue>;
     }
-    if (currentPhaseIs("mount")) return;
+    if (phase.currentIs("mount")) return;
     setAttribute(mHtmlElem, attrKey, attrVal);
   });
 
@@ -136,7 +135,7 @@ const handleAttributeProps = (
     Object.entries(signalAttributeProps).forEach((signalAttributeProp) => {
       const [attrKey, attrVal] = signalAttributeProp;
       const signalAttrVal = (attrVal as Signal<AttributeValue>).value;
-      if (!currentPhaseIs("run")) return;
+      if (!phase.currentIs("run")) return;
       setAttribute(mHtmlElem, attrKey, signalAttrVal);
     });
   });
@@ -237,7 +236,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
       signalledChildren.forEach(({ index, childSignal }) => {
         effect(() => {
           if (!childSignal.value) return;
-          if (!currentPhaseIs("run")) return;
+          if (!phase.currentIs("run")) return;
           const newChildNode = getElementFromChild(childSignal.value);
           const prevChildNode = parentNode.childNodes[index];
 
@@ -292,17 +291,14 @@ export const createElementGetter = (
   propsOrChildren: PropsOrChildren
 ): MHtmlElementGetter => {
   const elemGetter: MHtmlElementGetter = () => {
-    if (currentPhaseIs("none") && tagName === "html") {
-      /**
-       * If current phase is 'none' that means it's not build environment.
-       * So, 'mpunt' (Dom Access) phase should start with 'html' node.
-       */
-      startPhase("mount");
-    }
     const elementId = idGen.getNewId();
 
+    if (!phase.currentIs("mount")) {
+      console.log(`Creating ${tagName} element with id ${elementId}`);
+    }
+
     const mHtmlElem = (
-      currentPhaseIs("mount")
+      phase.currentIs("mount")
         ? document.querySelector(`[data-elem-id="${elementId}"]`)
         : document.createElement(tagName)
     ) as MHtmlElement;
@@ -312,7 +308,7 @@ export const createElementGetter = (
       ? { children: propsOrChildren as Children }
       : (propsOrChildren as Props);
 
-    if (!currentPhaseIs("run")) {
+    if (!phase.currentIs("run")) {
       /**
        * The attribute "data-elem-id" is only required for mounting. I.e. when
        * the generated static site is loaded, the script need to find the html nodes
@@ -329,7 +325,7 @@ export const createElementGetter = (
     handleAttributeProps(mHtmlElem, allProps.attributeProps);
     handleChildrenProp(mHtmlElem, allProps.children);
 
-    if (!currentPhaseIs("build")) {
+    if (!phase.currentIs("build")) {
       /**
        * Keep removing attribute "data-elem-id" when mounting on
        * that html node is done.

@@ -11,6 +11,7 @@ import {
 } from "@cyftech/signal";
 import type {
   Child,
+  MHtmlElement,
   MHtmlElementGetter,
   Object,
 } from "../../../index.types.ts";
@@ -49,11 +50,20 @@ const getMappedChild = <T extends object>(
 ): MappedChild<T> => {
   const indexSignal = signal(i);
   const itemSignal = signal(item);
-  const child = mutableMap(
-    derived(() => itemSignal.value),
-    derived(() => indexSignal.value)
-  )();
-  const childGetter: MHtmlElementGetter = () => child;
+  let child: MHtmlElement<HTMLElement>;
+  let executedOnce = false;
+
+  const childGetter: MHtmlElementGetter = () => {
+    if (executedOnce && child) return child;
+
+    executedOnce = true;
+    child = mutableMap(
+      derived(() => itemSignal.value),
+      derived(() => indexSignal.value)
+    )();
+
+    return child;
+  };
   childGetter.isElementGetter = true;
 
   return {
@@ -173,8 +183,8 @@ export const forElement: ForElement = <
     return (list as Signal<Object<T>[]>).value;
   });
 
-  const mappedChildren = derived<MappedChild<T>[]>((prevChildrenMap) => {
-    if (!prevChildrenMap || !previousItems) {
+  const mappedChildren = derived<MappedChild<T>[]>((prevMappedChildren) => {
+    if (!prevMappedChildren || !previousItems) {
       const initialItems = currentItems.value;
       return initialItems.map((item, i) =>
         getMappedChild(item as Object<T>, i, map as MutableMapFn<T>)
@@ -188,7 +198,7 @@ export const forElement: ForElement = <
     );
 
     return muts.map((mut, i) => {
-      const oldMappedChild = (prevChildrenMap || [])[mut.oldIndex];
+      const oldMappedChild = (prevMappedChildren || [])[mut.oldIndex];
       console.assert(
         (mut.type === "add" && mut.oldIndex === -1 && !oldMappedChild) ||
           (mut.oldIndex > -1 && !!oldMappedChild),
