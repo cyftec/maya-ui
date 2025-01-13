@@ -67,7 +67,7 @@ export const installPackageOrEverything = async (
   regeneratableFiles: RegeneratableFilesMap
 ) => {
   const cwd = process.cwd();
-  const packageJsonExist = await exists(`${cwd}/"package.json"`);
+  const packageJsonExist = await exists(`${cwd}/package.json`);
 
   if (!packageArgs.length || !packageJsonExist) {
     await installAllConfigsAndPackages(cwd, karmaConfig, regeneratableFiles);

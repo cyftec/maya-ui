@@ -4,13 +4,13 @@ import type { KarmaConfig } from "../sample-app/karma-types";
 
 export const syncPackageJsonToKarma = async (appRootPath: string) => {
   const packageJsonPath = `${appRootPath}/package.json`;
-  const karmaJsonPath = `${appRootPath}/karma.ts`;
-  const { config } = await nonCachedImport(karmaJsonPath);
+  const karmaPath = `${appRootPath}/karma.ts`;
+  const { config } = await nonCachedImport(karmaPath);
   const pjText = (await exists(packageJsonPath))
     ? await Bun.file(packageJsonPath).text()
     : JSON.stringify((config as KarmaConfig).packageJson, null, 2);
   const packageJsonText = JSON.stringify(JSON.parse(pjText), null, 2);
-  const karmaText = await Bun.file(karmaJsonPath).text();
+  const karmaText = await Bun.file(karmaPath).text();
   const pjSplitter = "packageJson:";
   const [prePjKarmaText, nextText] = karmaText.split(pjSplitter);
 
@@ -36,5 +36,5 @@ export const syncPackageJsonToKarma = async (appRootPath: string) => {
 
   const postPjKarmaText = nextText.slice(postPjKarmaTextStartIndex);
   const syncedKarmaText = `${prePjKarmaText}${pjSplitter}${packageJsonText}${postPjKarmaText}`;
-  await Bun.write(karmaJsonPath, syncedKarmaText);
+  await Bun.write(karmaPath, syncedKarmaText);
 };
