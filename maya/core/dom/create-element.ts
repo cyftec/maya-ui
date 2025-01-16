@@ -293,10 +293,6 @@ export const createElementGetter = (
   const elemGetter: MHtmlElementGetter = () => {
     const elementId = idGen.getNewId();
 
-    if (!phase.currentIs("mount")) {
-      console.log(`Creating ${tagName} element with id ${elementId}`);
-    }
-
     const mHtmlElem = (
       phase.currentIs("mount")
         ? document.querySelector(`[data-elem-id="${elementId}"]`)

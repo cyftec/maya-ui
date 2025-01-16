@@ -1,6 +1,6 @@
 import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
-import { syncPackageJsonToKarma } from "../common/file-syncer.ts";
+import { syncPackageJsonToKarma } from "../utils/file-syncer.ts";
 import type {
   KarmaConfig,
   RegeneratableFilesMap,

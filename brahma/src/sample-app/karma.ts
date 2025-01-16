@@ -24,6 +24,7 @@ export const config: KarmaConfig = {
       stagingDirName: RG.STAGING_DIRNAME,
       publishDirName: RG.PUBLISH_DIRNAME,
       srcPageFileName: "page.ts",
+      srcManifestFileName: "manifest.ts",
       ignoreDelimiter: "@",
     },
     localServer: {

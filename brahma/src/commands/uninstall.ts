@@ -1,7 +1,7 @@
 import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import type { RegeneratableFilesMap } from "../sample-app/karma-types";
-import { syncPackageJsonToKarma } from "../common/file-syncer";
+import { syncPackageJsonToKarma } from "../utils/file-syncer";
 
 export const removeInstalledFiles = async (
   appRootPath: string,

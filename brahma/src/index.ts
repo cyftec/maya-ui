@@ -10,9 +10,9 @@ import {
   stageApp,
   uninstallPackageOrEverything,
 } from "./commands/index.ts";
-import { getParsedCommands } from "./common/command-parser.ts";
+import { getParsedCommands } from "./utils/command-parser.ts";
 import { readdir, exists } from "node:fs/promises";
-import { getKarma, validateMayaAppDir } from "./common/utils.ts";
+import { getKarma, validateMayaAppDir } from "./utils/common.ts";
 import type { Karma } from "./sample-app/karma-types.ts";
 
 const execCli = async () => {

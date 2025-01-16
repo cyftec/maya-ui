@@ -1,6 +1,6 @@
 import { buildApp } from "../builder";
-import { runLocalServer } from "../common/local-server.ts";
-import { getKarma } from "../common/utils.ts";
+import { runLocalServer } from "../utils/local-server.ts";
+import { getKarma } from "../utils/common.ts";
 
 export const publishApp = async () => {
   const cwd = process.cwd();

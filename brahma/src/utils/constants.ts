@@ -6,6 +6,8 @@ export const DEST_JS_FILE_EXT = ".js";
 export const NO_HTML_ERROR = "no html";
 export const NO_JS_ERROR = "no js";
 
+export const DS_STORE_REGEX = /.DS_Store/;
+
 export const ACCEPTED_COMMANDS = [
   { long: "help", short: "h", withArg: false },
   { long: "version", short: "v", withArg: false },

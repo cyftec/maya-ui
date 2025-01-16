@@ -1,11 +1,17 @@
-import chokidar from "chokidar";
+import chokidar, { type Matcher } from "chokidar";
 import { onProcessSigInt } from "./process-helpers";
+import type { Stats } from "node:fs";
 
 export const watchFileChange = (
   watchableDirPath: string,
-  onFileChange: (path: string) => void
+  ignorePaths: Matcher | Matcher[] | undefined,
+  onFileChange: (path: string, stats?: Stats | undefined) => void
 ) => {
-  const watcher = chokidar.watch(watchableDirPath).on("change", onFileChange);
+  const watcher = chokidar
+    .watch(watchableDirPath, {
+      ignored: ignorePaths,
+    })
+    .on("change", onFileChange);
   console.log(`Watching changes in "${watchableDirPath}"`);
 
   const onExit = () => {

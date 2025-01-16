@@ -1,10 +1,15 @@
 import { exists, lstat, readdir, rm } from "node:fs/promises";
-import { NO_HTML_ERROR, NO_JS_ERROR } from "../common/constants.ts";
+import {
+  DS_STORE_REGEX,
+  NO_HTML_ERROR,
+  NO_JS_ERROR,
+} from "../utils/constants.ts";
 import {
   createDirIfNotExist,
+  getAppSrcPath,
   getFileNameFromPath,
   nonCachedImport,
-} from "../common/utils.ts";
+} from "../utils/common.ts";
 import type { KarmaConfig } from "../sample-app/karma-types.ts";
 import {
   buildHtmlFnDef,
@@ -14,6 +19,7 @@ import {
   isSrcPageFile,
   mountAndRunFnDef,
 } from "./build-helpers.ts";
+import type { BunFile } from "bun";
 
 type BuildData = {
   appRootPath: string;
@@ -91,6 +97,11 @@ const minifyJsFile = async (destJsPath: string) => {
 };
 
 const buildFile = async (srcFilePath: string, destDirPath: string) => {
+  if (DS_STORE_REGEX.test(srcFilePath)) {
+    console.log(`Ignoring file: ${srcFilePath}`);
+    return;
+  }
+  console.log(`Building file: ${srcFilePath}`);
   if (isSrcPageFile(srcFilePath, buildData.config)) {
     const srcPagePath = srcFilePath;
     const { htmlFileName, jsFileName } = getBuildFileNames(
@@ -106,12 +117,35 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
     return;
   }
 
-  if (srcFilePath.endsWith(".ts")) return;
+  const manifestFileName = buildData.config.brahma.build.srcManifestFileName;
+  const appSrcPath = getAppSrcPath(buildData.appRootPath, buildData.config);
+  let filePath: string;
+  let fileData: string | BunFile;
+  if (
+    srcFilePath.endsWith(manifestFileName) &&
+    srcFilePath.slice(0, -(manifestFileName.length + 1)) === appSrcPath
+  ) {
+    const { default: manifest } = await nonCachedImport(srcFilePath);
+    filePath = `${destDirPath}/manifest.json`;
+    fileData = JSON.stringify(manifest, null, "\t");
+  } else if (srcFilePath.endsWith(".ts")) {
+    const fileName = getFileNameFromPath(srcFilePath);
+    filePath = `${destDirPath}/${fileName.slice(0, -3)}.js`;
+    const jsBuild = await Bun.build({ entrypoints: [srcFilePath] });
+    fileData = await jsBuild.outputs.map(async (o) => await o.text())[0];
+  } else {
+    const fileName = getFileNameFromPath(srcFilePath);
+    filePath = `${destDirPath}/${fileName}`;
+    fileData = Bun.file(srcFilePath);
+  }
 
-  const fileData = Bun.file(srcFilePath);
-  const fileName = getFileNameFromPath(srcFilePath);
-  const filePath = `${destDirPath}/${fileName}`;
-  await Bun.write(filePath, fileData);
+  try {
+    await Bun.write(filePath, fileData);
+  } catch (error) {
+    console.log(filePath);
+    console.log(fileData);
+    throw error;
+  }
 };
 
 export const buildDir = async (srcDirPath: string): Promise<void> => {
@@ -123,7 +157,7 @@ export const buildDir = async (srcDirPath: string): Promise<void> => {
   );
 
   if (await exists(destDirPath)) {
-    console.log(`Deleing built dir: ${destDirPath}`);
+    console.log(`Deleting existing dir: ${destDirPath}`);
     await rm(destDirPath, { recursive: true });
   }
   console.log(`Building dir: ${destDirPath}`);
@@ -166,6 +200,6 @@ export const buildApp = async (
 ): Promise<void> => {
   if (!appRootPath || !config) throw `App root path or config is missing.`;
   await setupBuild({ appRootPath, config, isProd });
-  const sourcePath = `${appRootPath}/${config.brahma.build.sourceDirName}`;
+  const sourcePath = getAppSrcPath(appRootPath, config);
   return await buildDir(sourcePath);
 };

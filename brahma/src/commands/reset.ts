@@ -1,6 +1,6 @@
 import { copyFile, exists, rm, rename } from "node:fs/promises";
 import path from "node:path";
-import { getKarma } from "../common/utils.ts";
+import { getKarma } from "../utils/common.ts";
 
 export const resetApp = async () => {
   const cwd = process.cwd();

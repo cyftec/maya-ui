@@ -1,24 +1,23 @@
 import { exists } from "node:fs/promises";
-import { nonCachedImport } from "./utils";
 import type { KarmaConfig } from "../sample-app/karma-types";
 
 export const syncPackageJsonToKarma = async (appRootPath: string) => {
-  const packageJsonPath = `${appRootPath}/package.json`;
+  const pjPath = `${appRootPath}/package.json`;
   const karmaPath = `${appRootPath}/karma.ts`;
-  const { config } = await nonCachedImport(karmaPath);
-  const pjText = (await exists(packageJsonPath))
-    ? await Bun.file(packageJsonPath).text()
+  const { config } = await import(karmaPath);
+  const pjText = (await exists(pjPath))
+    ? await Bun.file(pjPath).text()
     : JSON.stringify((config as KarmaConfig).packageJson, null, 2);
-  const packageJsonText = JSON.stringify(JSON.parse(pjText), null, 2);
+  const formattedPjText = JSON.stringify(JSON.parse(pjText), null, 2);
   const karmaText = await Bun.file(karmaPath).text();
-  const pjSplitter = "packageJson:";
-  const [prePjKarmaText, nextText] = karmaText.split(pjSplitter);
+  const karmaPjSplitter = "packageJson:";
+  const [karmaPrePjText, restOfText] = karmaText.split(karmaPjSplitter);
 
   let bracketStarted = false;
   let bracesCount = 0;
-  let postPjKarmaTextStartIndex = -1;
-  for (const c of nextText) {
-    postPjKarmaTextStartIndex++;
+  let karmaPostPjTextStartIndex = -1;
+  for (const c of restOfText) {
+    karmaPostPjTextStartIndex++;
     if (!bracketStarted) {
       if (c === "{") {
         bracketStarted = true;
@@ -34,7 +33,7 @@ export const syncPackageJsonToKarma = async (appRootPath: string) => {
     break;
   }
 
-  const postPjKarmaText = nextText.slice(postPjKarmaTextStartIndex);
-  const syncedKarmaText = `${prePjKarmaText}${pjSplitter}${packageJsonText}${postPjKarmaText}`;
+  const karmaPostPjText = restOfText.slice(karmaPostPjTextStartIndex);
+  const syncedKarmaText = `${karmaPrePjText}${karmaPjSplitter}${formattedPjText}${karmaPostPjText}`;
   await Bun.write(karmaPath, syncedKarmaText);
 };

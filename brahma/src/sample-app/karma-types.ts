@@ -16,6 +16,7 @@ export type KarmaConfig = {
       // file or dir name prefixed with below delimiter gets ignored during build
       ignoreDelimiter: string;
       srcPageFileName: `${string}.ts`;
+      srcManifestFileName: `${string}.ts`;
     };
     localServer: {
       port: number;

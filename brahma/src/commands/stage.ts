@@ -1,8 +1,9 @@
 import { buildApp } from "../builder";
-import { watchFileChange } from "../common/file-change-watcher.ts";
-import { runLocalServer } from "../common/local-server.ts";
-import { startStdinListener } from "../common/stdin-listener.ts";
-import { getKarma } from "../common/utils.ts";
+import { DS_STORE_REGEX } from "../utils/constants.ts";
+import { watchFileChange } from "../utils/file-change-watcher.ts";
+import { runLocalServer } from "../utils/local-server.ts";
+import { startStdinListener } from "../utils/stdin-listener.ts";
+import { getKarma } from "../utils/common.ts";
 import type { KarmaConfig } from "../sample-app/karma-types.ts";
 
 const DEBOUNCE_TIME_IN_MS = 500;
@@ -35,13 +36,15 @@ export const stageApp = async () => {
   const { config } = karma;
   const sourceDirPath = `${cwd}/${config.brahma.build.sourceDirName}`;
   const stagingDirPath = `${cwd}/${config.brahma.build.stagingDirName}`;
+  const watchIgnorePaths = [DS_STORE_REGEX];
   const serverPort = config.brahma.localServer.port;
 
   await buildSrcDir(cwd, config);
-  watchFileChange(sourceDirPath, () => {
+  watchFileChange(sourceDirPath, watchIgnorePaths, (path) => {
     if (busyBuildingApp) return;
     onFileModification(async () => {
       busyBuildingApp = true;
+      console.log(`Change detected: ${path}`);
       await buildSrcDir(cwd, config);
       busyBuildingApp = false;
     });

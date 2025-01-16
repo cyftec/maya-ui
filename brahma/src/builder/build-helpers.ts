@@ -3,7 +3,7 @@ import {
   DEST_HTML_FILE_EXT,
   DEST_JS_DEFAULT_FILE_NAME,
   DEST_JS_FILE_EXT,
-} from "../common/constants";
+} from "../utils/constants";
 import type { KarmaConfig } from "../sample-app/karma-types";
 
 export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>

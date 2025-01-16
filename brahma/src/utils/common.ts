@@ -1,12 +1,19 @@
 import { exists, lstat, mkdir, readdir } from "node:fs/promises";
-import type { Karma } from "../sample-app/karma-types";
+import type { Karma, KarmaConfig } from "../sample-app/karma-types";
 
-export const nonCachedImport = (modulePath: string) =>
-  import(modulePath, { with: { type: `${Date.now()}` } });
+export const nonCachedImport = async (modulePath: string) => {
+  const mpWithParam = `${modulePath}?imported=${Date.now()}`;
+  return await import(mpWithParam);
+};
 
 export const createDirIfNotExist = async (dirPath: string) => {
   if (await exists(dirPath)) return;
-  await mkdir(dirPath);
+  try {
+    await mkdir(dirPath);
+  } catch (error) {
+    console.log(dirPath);
+    throw error;
+  }
 };
 
 export const getFileNameFromPath = (path: string) => {
@@ -20,6 +27,10 @@ export const hasKarmaConfigFile = async (dirPath: string): Promise<boolean> =>
 export const getKarma = async (dirPath: string): Promise<Karma | undefined> => {
   if (!(await hasKarmaConfigFile(dirPath))) return;
   return await import(`${dirPath}/karma.ts`);
+};
+
+export const getAppSrcPath = (appRootPath: string, config: KarmaConfig) => {
+  return `${appRootPath}/${config.brahma.build.sourceDirName}`;
 };
 
 export const validateMayaAppDir = async (
