@@ -31,6 +31,7 @@ export const config: KarmaConfig = {
       port: 3000,
       redirectOnStage: false,
       reloadPageOnFocus: false,
+      serveDirectory: RG.STAGING_DIRNAME,
     },
   },
   packageJson: {

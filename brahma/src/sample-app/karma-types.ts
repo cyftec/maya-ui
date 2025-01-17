@@ -22,6 +22,7 @@ export type KarmaConfig = {
       port: number;
       redirectOnStage: boolean;
       reloadPageOnFocus: boolean;
+      serveDirectory: string;
     };
   };
   packageJson: {

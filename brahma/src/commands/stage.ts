@@ -35,7 +35,7 @@ export const stageApp = async () => {
   if (!karma) return false;
   const { config } = karma;
   const sourceDirPath = `${cwd}/${config.brahma.build.sourceDirName}`;
-  const stagingDirPath = `${cwd}/${config.brahma.build.stagingDirName}`;
+  const stagingDirPath = `${cwd}/${config.brahma.localServer.serveDirectory}`;
   const watchIgnorePaths = [DS_STORE_REGEX];
   const serverPort = config.brahma.localServer.port;
 
