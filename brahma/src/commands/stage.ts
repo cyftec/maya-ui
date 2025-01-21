@@ -34,7 +34,7 @@ export const stageApp = async () => {
   const karma = await getKarma(cwd);
   if (!karma) return false;
   const { config } = karma;
-  const sourceDirPath = `${cwd}/${config.brahma.build.sourceDirName}`;
+  const sourceDirPath = `${cwd}/${config.maya.sourceDirName}`;
   const stagingDirPath = `${cwd}/${config.brahma.localServer.serveDirectory}`;
   const watchIgnorePaths = [DS_STORE_REGEX];
   const serverPort = config.brahma.localServer.port;
@@ -52,7 +52,7 @@ export const stageApp = async () => {
   runLocalServer(
     serverPort,
     stagingDirPath,
-    config.brahma.localServer.redirectOnStage
+    config.brahma.localServer.redirectOnStart
   );
 
   setTimeout(() => {

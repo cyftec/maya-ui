@@ -15,7 +15,7 @@ const showVersionOnly = async (cliRootPath: string) => {
   const packageJsonPath = `${cliRootPath}/package.json`;
   const brahmaPackageJsonText = await Bun.file(packageJsonPath).text();
   const brahmaV = getPackageVersion(brahmaPackageJsonText);
-  const mayaV = config.packageJson.dependencies["@mufw/maya"];
+  const mayaV = config.maya.packageJson.dependencies["@mufw/maya"];
   console.log(`brahma v${brahmaV}`);
   console.log(
     `\nWith base version of maya v${mayaV}.

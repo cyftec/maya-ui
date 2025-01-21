@@ -11,8 +11,8 @@ export const syncPackageJsonToKarma = async (appRootPath: string) => {
 
   const karmaPath = `${appRootPath}/karma.ts`;
   const pjText = await Bun.file(pjPath).text();
-  const karmaPjSplitter = "packageJson:";
-  await updateFileSection(karmaPath, pjText, karmaPjSplitter);
+  const karmaPjSplitters = ["config:", "maya:", "packageJson:"];
+  await updateFileSection(karmaPath, pjText, karmaPjSplitters);
 };
 
 export const addPackageDepToKarma = async (
@@ -21,10 +21,10 @@ export const addPackageDepToKarma = async (
 ) => {
   const { config } = (await nonCachedImport(karmaPath)) as Karma;
   const karmaPackageJson = {
-    ...config.packageJson,
-    dependencies: { ...config.packageJson.dependencies, ...dependency },
+    ...config.maya.packageJson,
+    dependencies: { ...config.maya.packageJson.dependencies, ...dependency },
   };
-  const karmaPjSplitter = "packageJson:";
+  const karmaPjSplitters = ["config:", "maya:", "packageJson:"];
   const karmaPackageJsonText = JSON.stringify(karmaPackageJson, null, "\t");
-  await updateFileSection(karmaPath, karmaPackageJsonText, karmaPjSplitter);
+  await updateFileSection(karmaPath, karmaPackageJsonText, karmaPjSplitters);
 };

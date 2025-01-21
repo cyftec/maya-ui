@@ -28,7 +28,6 @@ export const projectFileNames: ProjectFileNames = {
 export const config: KarmaConfig = {
   brahma: {
     build: {
-      sourceDirName: projectFileNames.static.sourceDir,
       stagingDirName: projectFileNames.generated.stagingDir,
       publishDirName: projectFileNames.generated.publishDir,
       buildablePageFileName: projectFileNames.buildable.pageFile,
@@ -42,20 +41,12 @@ export const config: KarmaConfig = {
       serveDirectory: `${projectFileNames.generated.stagingDir}`,
     },
   },
-  packageJson: {
-    dependencies: {},
-  },
-  git: {
-    ignore: [
-      projectFileNames.systemGenerated.dsStoreDir,
-      projectFileNames.static.karmaTypesFile,
-      projectFileNames.generated.bunLockBFile,
-      projectFileNames.generated.dotVscodeDir,
-      projectFileNames.generated.nodeModulesDir,
-      projectFileNames.generated.packageJsonFile,
-      `/${projectFileNames.generated.stagingDir}`,
-      `/${projectFileNames.generated.publishDir}`,
-    ],
+  maya: {
+    mode: "web",
+    sourceDirName: projectFileNames.static.sourceDir,
+    packageJson: {
+      dependencies: {},
+    },
   },
   vscode: {
     settings: {
@@ -71,5 +62,17 @@ export const config: KarmaConfig = {
         [projectFileNames.generated.packageJsonFile]: true,
       },
     },
+  },
+  git: {
+    ignore: [
+      projectFileNames.systemGenerated.dsStoreDir,
+      projectFileNames.static.karmaTypesFile,
+      projectFileNames.generated.bunLockBFile,
+      projectFileNames.generated.dotVscodeDir,
+      projectFileNames.generated.nodeModulesDir,
+      projectFileNames.generated.packageJsonFile,
+      `/${projectFileNames.generated.stagingDir}`,
+      `/${projectFileNames.generated.publishDir}`,
+    ],
   },
 };

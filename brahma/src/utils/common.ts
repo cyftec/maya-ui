@@ -30,7 +30,7 @@ export const getKarma = async (dirPath: string): Promise<Karma | undefined> => {
 };
 
 export const getAppSrcPath = (appRootPath: string, config: KarmaConfig) => {
-  return `${appRootPath}/${config.brahma.build.sourceDirName}`;
+  return `${appRootPath}/${config.maya.sourceDirName}`;
 };
 
 export const validateMayaAppDir = async (
@@ -59,9 +59,21 @@ export const validateMayaAppDir = async (
   const files = await readdir(dirPath);
   for (const file of files) {
     const fileStats = await lstat(`${dirPath}/${file}`);
-    if (file === config.brahma.build.sourceDirName && fileStats.isDirectory())
+    if (file === config.maya.sourceDirName && fileStats.isDirectory())
       return validState;
   }
 
   return { ...validState, srcDirMissing: true };
 };
+
+export const splitText = (
+  text: string,
+  splittersPath: string[]
+): [preTextIncludingSplitter: string, postSplitterText: string] =>
+  splittersPath.reduce(
+    ([presPlitter, postSplitter], splitter) => {
+      const [preText, postText] = postSplitter.split(splitter);
+      return [presPlitter + preText + splitter, postText];
+    },
+    ["", text]
+  );

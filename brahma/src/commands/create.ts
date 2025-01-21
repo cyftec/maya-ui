@@ -1,6 +1,6 @@
 import { exists, mkdir, cp } from "node:fs/promises";
 import path from "node:path";
-import type { AppType } from "../probes/karma/karma-types";
+import type { AppMode } from "../probes/karma/karma-types";
 import { NPM_DEPS } from "../utils/constants";
 import { addPackageDepToKarma } from "../utils/karma-file-updaters";
 
@@ -25,13 +25,13 @@ const copyProbe = async (relativeSrcPath: string, destAppPath: string) => {
 
 const getAppInfoArgs = (
   cmdArgs: string[]
-): [appName: string, appMode?: AppType] => {
+): [appName: string, appMode?: AppMode] => {
   if (!cmdArgs.length || cmdArgs.length > 2) {
     throw `ERROR: Max 2 args required for 'brahma create'.\nRun 'brahma help' for usage guide.`;
   }
 
   if (cmdArgs.length === 2) {
-    const appModes: AppType[] = ["web", "ext", "pwa"];
+    const appModes: AppMode[] = ["web", "ext", "pwa"];
     const [arg1, arg2] = cmdArgs;
     if (
       (arg1.startsWith("--") && arg2.startsWith("--")) ||
@@ -42,7 +42,7 @@ const getAppInfoArgs = (
 
     const dirName = arg2.startsWith("--") ? arg1 : arg2;
     const appModeArg = arg1 === dirName ? arg2 : arg1;
-    const appMode = appModeArg.slice(2, appModeArg.length) as AppType;
+    const appMode = appModeArg.slice(2, appModeArg.length) as AppMode;
 
     if (!appModes.includes(appMode)) {
       throw `ERROR: Incorrect app mode provided.\nRun 'brahma help' for usage guide.`;

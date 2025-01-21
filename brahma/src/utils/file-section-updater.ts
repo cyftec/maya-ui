@@ -1,3 +1,5 @@
+import { splitText } from "./common";
+
 const SectionEnclosers = {
   object: { start: "{", end: "}" },
   array: { start: "[", end: "]" },
@@ -6,11 +8,14 @@ const SectionEnclosers = {
 export const updateFileSection = async (
   filePath: string,
   updatedSectionText: string,
-  sectionSplitter: string,
+  sectionSplittersPath: string[],
   sectionType: keyof typeof SectionEnclosers = "object"
 ) => {
   const fileText = await Bun.file(filePath).text();
-  const [preSectionText, restOfText] = fileText.split(sectionSplitter);
+  const [preSectionText, restOfText] = splitText(
+    fileText,
+    sectionSplittersPath
+  );
 
   let sectionStarted = false;
   let enclosersCount = 0;
@@ -38,6 +43,6 @@ export const updateFileSection = async (
   }
 
   const postSectionText = restOfText.slice(postSectionTextStartIndex);
-  const updatedFileText = `${preSectionText}${sectionSplitter}${updatedSectionText}${postSectionText}`;
+  const updatedFileText = `${preSectionText}${updatedSectionText}${postSectionText}`;
   await Bun.write(filePath, updatedFileText);
 };

@@ -1,4 +1,4 @@
-export type AppType = "web" | "ext" | "pwa";
+export type AppMode = "web" | "ext" | "pwa";
 
 type FileNamesMap = { [f in string]: string };
 
@@ -17,7 +17,6 @@ export type Karma = {
 export type KarmaConfig = {
   brahma: {
     build: {
-      sourceDirName: string;
       stagingDirName: string;
       publishDirName: string;
       // file or dir name prefixed with below delimiter gets ignored during build
@@ -32,18 +31,22 @@ export type KarmaConfig = {
       serveDirectory: string;
     };
   };
-  packageJson: {
-    name?: string;
-    version?: string;
-    description?: string;
-    author?: string;
-    license?: string;
-    type?: "module";
-    devDependencies?: {
-      [dd in string]: string;
-    };
-    dependencies: {
-      [d in string]: string;
+  maya: {
+    mode: AppMode;
+    sourceDirName: string;
+    packageJson: {
+      name?: string;
+      version?: string;
+      description?: string;
+      author?: string;
+      license?: string;
+      type?: "module";
+      devDependencies?: {
+        [dd in string]: string;
+      };
+      dependencies: {
+        [d in string]: string;
+      };
     };
   };
   git: {
