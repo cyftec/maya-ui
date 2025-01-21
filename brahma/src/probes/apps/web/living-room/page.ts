@@ -1,7 +1,7 @@
 import { m } from "@mufw/maya";
 import { derived, dstring, signal } from "@cyftech/signal";
 import { Button } from "../@elements";
-import { Bulb, PhotoFrame } from "./components";
+import { Bulb, PhotoFrame } from "./@components";
 
 const isBulbOn = signal(false);
 const buttonColor = derived(() =>

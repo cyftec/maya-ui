@@ -1,5 +1,4 @@
 import { buildApp } from "../builder";
-import { runLocalServer } from "../utils/local-server.ts";
 import { getKarma } from "../utils/common.ts";
 
 export const publishApp = async () => {
@@ -12,5 +11,4 @@ export const publishApp = async () => {
   await buildApp(cwd, karma.config, true);
   const finish = performance.now();
   console.log(`Build done in ${(finish - start).toFixed(0)} ms.\n`);
-  runLocalServer(5000, `${cwd}/prod`, true);
 };
