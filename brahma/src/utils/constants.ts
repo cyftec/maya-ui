@@ -1,3 +1,9 @@
+export const NPM_DEPS = {
+  MAYA: { "@mufw/maya": "0.1.8" },
+  CHROME: { "@types/chrome": "0.0.297" },
+  PWA: { "@types/web-app-manifest": "1.0.8" },
+};
+
 export const DEST_HTML_DEFAULT_FILE_NAME = "index";
 export const DEST_JS_DEFAULT_FILE_NAME = "main";
 export const DEST_HTML_FILE_EXT = ".html";

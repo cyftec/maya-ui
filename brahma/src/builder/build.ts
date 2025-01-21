@@ -10,7 +10,6 @@ import {
   getFileNameFromPath,
   nonCachedImport,
 } from "../utils/common.ts";
-import type { KarmaConfig } from "../sample-app/karma-types.ts";
 import {
   buildHtmlFnDef,
   getBuildDirPath,
@@ -20,6 +19,7 @@ import {
   mountAndRunFnDef,
 } from "./build-helpers.ts";
 import type { BunFile } from "bun";
+import type { KarmaConfig } from "../probes/karma/karma-types.ts";
 
 type BuildData = {
   appRootPath: string;

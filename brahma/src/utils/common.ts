@@ -1,5 +1,5 @@
 import { exists, lstat, mkdir, readdir } from "node:fs/promises";
-import type { Karma, KarmaConfig } from "../sample-app/karma-types";
+import type { Karma, KarmaConfig } from "../probes/karma/karma-types";
 
 export const nonCachedImport = async (modulePath: string) => {
   const mpWithParam = `${modulePath}?imported=${Date.now()}`;

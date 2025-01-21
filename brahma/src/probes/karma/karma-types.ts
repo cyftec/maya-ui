@@ -1,3 +1,5 @@
+export type AppType = "web" | "ext" | "pwa";
+
 export type Karma = {
   config: KarmaConfig;
   regeneratables: RegeneratableFilesMap;
@@ -20,7 +22,7 @@ export type KarmaConfig = {
     };
     localServer: {
       port: number;
-      redirectOnStage: boolean;
+      redirectOnStart: boolean;
       reloadPageOnFocus: boolean;
       serveDirectory: string;
     };

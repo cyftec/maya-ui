@@ -1,10 +1,10 @@
 import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
-import { syncPackageJsonToKarma } from "../utils/file-syncer.ts";
+import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import type {
   KarmaConfig,
   RegeneratableFilesMap,
-} from "../sample-app/karma-types.ts";
+} from "../probes/karma/karma-types.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
 
 const installDotVsCodeDir = async (

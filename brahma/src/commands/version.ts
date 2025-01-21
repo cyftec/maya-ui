@@ -1,6 +1,6 @@
 import path from "node:path";
-import { config } from "../sample-app/karma";
 import { $ } from "bun";
+import { config } from "../probes/karma/karma";
 
 const getPackageVersion = (packageJsonText: string) =>
   packageJsonText

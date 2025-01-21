@@ -1,7 +1,6 @@
 import type { RegeneratableFilesMap, KarmaConfig } from "./karma-types.ts";
 
-const APP_ROOT_DIRNAME = "dev";
-
+const SOURCE_DIRNAME = "dev";
 const RG = {
   STAGING_DIRNAME: "stage",
   PUBLISH_DIRNAME: "prod",
@@ -20,7 +19,7 @@ export const regeneratables: RegeneratableFilesMap = RG;
 export const config: KarmaConfig = {
   brahma: {
     build: {
-      sourceDirName: APP_ROOT_DIRNAME,
+      sourceDirName: SOURCE_DIRNAME,
       stagingDirName: RG.STAGING_DIRNAME,
       publishDirName: RG.PUBLISH_DIRNAME,
       srcPageFileName: "page.ts",
@@ -29,15 +28,13 @@ export const config: KarmaConfig = {
     },
     localServer: {
       port: 3000,
-      redirectOnStage: false,
+      redirectOnStart: true,
       reloadPageOnFocus: false,
       serveDirectory: RG.STAGING_DIRNAME,
     },
   },
   packageJson: {
-    dependencies: {
-      "@mufw/maya": "0.1.8",
-    },
+    dependencies: {},
   },
   git: {
     ignore: [

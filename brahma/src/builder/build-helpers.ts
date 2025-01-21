@@ -1,10 +1,10 @@
+import type { KarmaConfig } from "../probes/karma/karma-types";
 import {
   DEST_HTML_DEFAULT_FILE_NAME,
   DEST_HTML_FILE_EXT,
   DEST_JS_DEFAULT_FILE_NAME,
   DEST_JS_FILE_EXT,
 } from "../utils/constants";
-import type { KarmaConfig } from "../sample-app/karma-types";
 
 export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>
   srcPagePath.endsWith(karmaConfig.brahma.build.srcPageFileName);

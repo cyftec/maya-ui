@@ -13,10 +13,14 @@ export const resetApp = async () => {
   - 'brahma reset' is used when 'karma.ts' file exists but is corrupted.`);
       process.exit(1);
     }
-    const srcKarmaPath = path.resolve(__dirname, "../sample-app/karma.ts");
+    const relativeKarmaPath = "../probes/karma";
+    const srcKarmaPath = path.resolve(
+      __dirname,
+      `${relativeKarmaPath}/karma.ts`
+    );
     const srcKarmaTypesPath = path.resolve(
       __dirname,
-      "../sample-app/karma-types.ts"
+      `${relativeKarmaPath}/karma-types.ts`
     );
     const destKarmaTempPath = `${cwd}/karma.temp.ts`;
     const destKarmaTypesTempPath = `${cwd}/karma-types.temp.ts`;

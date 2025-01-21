@@ -13,7 +13,7 @@ import {
 import { getParsedCommands } from "./utils/command-parser.ts";
 import { readdir, exists } from "node:fs/promises";
 import { getKarma, validateMayaAppDir } from "./utils/common.ts";
-import type { Karma } from "./sample-app/karma-types.ts";
+import type { Karma } from "./probes/karma/karma-types.ts";
 
 const execCli = async () => {
   const cwd = process.cwd();
