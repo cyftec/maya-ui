@@ -117,7 +117,8 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
     return;
   }
 
-  const manifestFileName = buildData.config.brahma.build.srcManifestFileName;
+  const manifestFileName =
+    buildData.config.brahma.build.buildableManifestFileName;
   const appSrcPath = getAppSrcPath(buildData.appRootPath, buildData.config);
   let filePath: string;
   let fileData: string | BunFile;

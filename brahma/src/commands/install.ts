@@ -3,7 +3,7 @@ import { exists, mkdir } from "node:fs/promises";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import type {
   KarmaConfig,
-  RegeneratableFilesMap,
+  ProjectFileNames,
 } from "../probes/karma/karma-types.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
 
@@ -44,7 +44,7 @@ const installPackages = async (
 const installAllConfigsAndPackages = async (
   appRootPath: string,
   karmaConfig: KarmaConfig,
-  regeneratableFiles: RegeneratableFilesMap
+  regeneratableFiles: ProjectFileNames["generated"]
 ) => {
   console.log(`Removing previously installed files...`);
   await removeInstalledFiles(appRootPath, regeneratableFiles);
@@ -64,7 +64,7 @@ const installSpecificPackage = async (bunAddPackageArgs: string[]) => {
 export const installPackageOrEverything = async (
   packageArgs: string[],
   karmaConfig: KarmaConfig,
-  regeneratableFiles: RegeneratableFilesMap
+  regeneratableFiles: ProjectFileNames["generated"]
 ) => {
   const cwd = process.cwd();
   const packageJsonExist = await exists(`${cwd}/package.json`);

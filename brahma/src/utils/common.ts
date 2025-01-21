@@ -49,8 +49,11 @@ export const validateMayaAppDir = async (
   if (!karma) {
     return { ...validState, karmaMissing: true };
   }
-  const { config, regeneratables } = karma;
-  if (!config || !regeneratables) {
+  const {
+    config,
+    projectFileNames: { generated: regeneratableFiles },
+  } = karma;
+  if (!config || !regeneratableFiles) {
     return { ...validState, karmaCorrupted: true };
   }
   const files = await readdir(dirPath);

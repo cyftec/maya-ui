@@ -1,11 +1,11 @@
 import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
-import type { RegeneratableFilesMap } from "../probes/karma/karma-types";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters";
+import type { ProjectFileNames } from "../probes/karma/karma-types";
 
 export const removeInstalledFiles = async (
   appRootPath: string,
-  regeneratableFiles: RegeneratableFilesMap
+  regeneratableFiles: ProjectFileNames["generated"]
 ) => {
   const files = Object.values(regeneratableFiles);
   for (const file of files) {
@@ -18,7 +18,7 @@ export const removeInstalledFiles = async (
 
 const uninstallAllConfigsAndPackages = async (
   appRootPath: string,
-  regeneratableFiles: RegeneratableFilesMap
+  regeneratableFiles: ProjectFileNames["generated"]
 ) => {
   console.log(`Removing installed config and packages...`);
   console.log(Object.values(regeneratableFiles));
@@ -35,7 +35,7 @@ const uninstallSpecificPackage = async (bunRemovePackageArgs: string[]) => {
 
 export const uninstallPackageOrEverything = async (
   packageArgs: string[],
-  regeneratableFiles: RegeneratableFilesMap
+  regeneratableFiles: ProjectFileNames["generated"]
 ) => {
   const cwd = process.cwd();
 

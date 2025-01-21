@@ -7,7 +7,7 @@ import {
 } from "../utils/constants";
 
 export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>
-  srcPagePath.endsWith(karmaConfig.brahma.build.srcPageFileName);
+  srcPagePath.endsWith(karmaConfig.brahma.build.buildablePageFileName);
 
 export const getBuiltJsMethodName = (
   filename: string,
@@ -19,7 +19,7 @@ export const getBuiltJsMethodName = (
     words
       .map((w, i) =>
         i === words.length - 1 && w === DEST_JS_DEFAULT_FILE_NAME
-          ? karmaConfig.brahma.build.srcPageFileName.slice(0, -3)
+          ? karmaConfig.brahma.build.buildablePageFileName.slice(0, -3)
           : w
       )
       .join("_") + "_default"
@@ -49,7 +49,7 @@ export const getBuildFileNames = (
   karmaConfig: KarmaConfig
 ) => {
   const pathWithoutFileName = srcPagePath.split(
-    karmaConfig.brahma.build.srcPageFileName
+    karmaConfig.brahma.build.buildablePageFileName
   )[0];
   const isPrefixed = pathWithoutFileName.endsWith(".");
   const prefixName = isPrefixed

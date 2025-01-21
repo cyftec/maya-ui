@@ -41,7 +41,10 @@ const execCli = async () => {
   }
 
   const karma = (await getKarma(cwd)) as Karma;
-  const { config, regeneratables: regeneratableFiles } = karma;
+  const {
+    config,
+    projectFileNames: { generated: regeneratableFiles },
+  } = karma;
 
   if (commands.uninstall)
     await uninstallPackageOrEverything(

@@ -1,12 +1,17 @@
 export type AppType = "web" | "ext" | "pwa";
 
-export type Karma = {
-  config: KarmaConfig;
-  regeneratables: RegeneratableFilesMap;
+type FileNamesMap = { [f in string]: string };
+
+export type ProjectFileNames = {
+  systemGenerated: FileNamesMap;
+  static: FileNamesMap;
+  generated: FileNamesMap;
+  buildable: { [f in string]: `${string}.ts` };
 };
 
-export type RegeneratableFilesMap = {
-  [f in string]: string;
+export type Karma = {
+  config: KarmaConfig;
+  projectFileNames: ProjectFileNames;
 };
 
 export type KarmaConfig = {
@@ -17,8 +22,8 @@ export type KarmaConfig = {
       publishDirName: string;
       // file or dir name prefixed with below delimiter gets ignored during build
       ignoreDelimiter: string;
-      srcPageFileName: `${string}.ts`;
-      srcManifestFileName: `${string}.ts`;
+      buildablePageFileName: `${string}.ts`;
+      buildableManifestFileName: `${string}.ts`;
     };
     localServer: {
       port: number;
