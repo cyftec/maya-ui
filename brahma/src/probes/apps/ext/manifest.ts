@@ -32,7 +32,7 @@ const manifest: chrome.runtime.ManifestV3 = {
       "32": "assets/images/logo.png",
     },
     default_title: APP_NAME,
-    default_popup: "popup/index.html",
+    default_popup: "popup.html",
   },
   manifest_version: 3,
 };

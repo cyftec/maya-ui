@@ -1,7 +1,4 @@
-import { signal } from "@cyftech/signal";
 import { m } from "@mufw/maya";
-
-const sub = signal("a");
 
 export default m.Html({
   lang: "en",
@@ -22,15 +19,8 @@ export default m.Html({
     }),
     m.Body({
       children: [
-        m.Script({ src: "main.js", defer: "true" }),
-        m.Div([
-          m.H1("Home page"),
-          "go to ",
-          m.A({
-            href: "/popup/about.html",
-            children: "about page",
-          }),
-        ]),
+        m.Script({ src: "popup.main.js", defer: "true" }),
+        m.Div([m.H1("Home Page"), m.P("My extention home page")]),
       ],
     }),
   ],

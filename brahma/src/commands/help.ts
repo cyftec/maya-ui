@@ -16,9 +16,6 @@ export const showHelp = () => {
                |                      | If mode is provided, the scaffold app is
                |                      | created with that mode. Accepted modes are
                |                      | 'web' (default), 'ext' & 'pwa'
-               |                      | 
-  e, enable    | <mode>               | Shifts app from current mode to
-               |                      | specified mode - 'web', 'ext' & 'pwa'
                |                      |
   i, install   | <?npmpackage>        | If no package name is provided, it
                |                      | installs the entire app based on karma.ts.
@@ -46,7 +43,6 @@ export const showHelp = () => {
     - brahma create my-app        // creates new scaffold app in 'web' mode
     - brahma c my-app             // same as 'brahma create my-app'
     - brahma create my-app --ext  // creates scaffold app in chrome-extension mode
-    - brahma enable pwa           // shifts from current mode to 'pwa' mode
     - brahma stage                // builds the app and starts local server
     - brahma install              // installs entire app
     - brahma install lodash       // installs only 'lodash' package

@@ -15,12 +15,12 @@ export const NO_JS_ERROR = "no js";
 export const DS_STORE_REGEX = /.DS_Store/;
 
 export const ACCEPTED_COMMANDS = [
-  { long: "help", short: "h", withArg: false },
-  { long: "version", short: "v", withArg: false },
   { long: "create", short: "c", withArg: true },
-  { long: "reset", short: "r", withArg: false },
+  { long: "help", short: "h", withArg: false },
   { long: "install", short: "i", withArg: true },
-  { long: "uninstall", short: "u", withArg: true },
-  { long: "stage", short: "s", withArg: false },
   { long: "publish", short: "p", withArg: false },
+  { long: "reset", short: "r", withArg: false },
+  { long: "stage", short: "s", withArg: false },
+  { long: "uninstall", short: "u", withArg: true },
+  { long: "version", short: "v", withArg: false },
 ] as const;
