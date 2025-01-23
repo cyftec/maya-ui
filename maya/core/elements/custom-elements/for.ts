@@ -24,7 +24,7 @@ type MutableMapFn<T> = (
 type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
   items: MaybeSignalValue<T[]>;
   itemKey?: ItemKey;
-  map: (T extends object ? keyof T : null) extends ItemKey
+  map: (T extends object ? keyof T : never) extends ItemKey
     ? MapFn<T>
     : MutableMapFn<T>;
   n?: number;
