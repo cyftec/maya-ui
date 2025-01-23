@@ -23,7 +23,7 @@ const execCli = async () => {
   if (commands.help || commands.nocmd) showHelp();
   if (commands.version) await showVersion(commands.version.args);
   if (commands.create) await createApp(commands.create.args);
-  if (commands.reset) await resetApp();
+  if (commands.reset) await resetApp(commands.reset.args);
 
   const { karmaMissing, karmaCorrupted, srcDirMissing } =
     await validateMayaAppDir(cwd);

@@ -1,7 +1,7 @@
 export type AppMode = "web" | "ext" | "pwa";
+export type KarmaResetMode = "soft" | "hard";
 
 type FileNamesMap = { [f in string]: string };
-
 export type ProjectFileNames = {
   systemGenerated: FileNamesMap;
   static: FileNamesMap;

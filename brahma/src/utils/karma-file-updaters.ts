@@ -1,5 +1,5 @@
 import { exists } from "node:fs/promises";
-import { updateFileSection } from "./file-section-updater";
+import { updateSectionInFile } from "./file-section-updater";
 import { nonCachedImport } from "./common";
 import type { Karma } from "../probes/karma/karma-types";
 
@@ -12,7 +12,7 @@ export const syncPackageJsonToKarma = async (appRootPath: string) => {
   const karmaPath = `${appRootPath}/karma.ts`;
   const pjText = await Bun.file(pjPath).text();
   const karmaPjSplitters = ["config:", "maya:", "packageJson:"];
-  await updateFileSection(karmaPath, pjText, karmaPjSplitters);
+  await updateSectionInFile(karmaPath, karmaPjSplitters, pjText);
 };
 
 export const addPackageDepToKarma = async (
@@ -26,5 +26,5 @@ export const addPackageDepToKarma = async (
   };
   const karmaPjSplitters = ["config:", "maya:", "packageJson:"];
   const karmaPackageJsonText = JSON.stringify(karmaPackageJson, null, "\t");
-  await updateFileSection(karmaPath, karmaPackageJsonText, karmaPjSplitters);
+  await updateSectionInFile(karmaPath, karmaPjSplitters, karmaPackageJsonText);
 };

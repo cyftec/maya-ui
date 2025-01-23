@@ -33,9 +33,17 @@ export const showHelp = () => {
   p, publish   |                      | Builds the minified static version of
                |                      | the app for deployment to prod
                |                      |
-  r, reset     |                      | Resets the karma file to base karma.ts
+  r, reset     | <?--resetMode>       | Resets the karma file to base karma.ts
                |                      | state. Any change made to karma.ts file
                |                      | gets lost with this command.
+               |                      | Acepptable rest modes are - 'hard' and
+               |                      | 'soft' (default).
+               |                      | If no or 'soft' reset mode is provided
+               |                      | a soft reset is done preserving the
+               |                      | app mode, i.e. 'web', 'ext' or 'pwa'.
+               |                      | If 'hard' reset mode is provided, it
+               |                      | resets the app to absolute base version
+               |                      | of karma, i.e. a karma for 'web' app mode.
   --------------------------------------------------------------------------------
 
 
@@ -49,6 +57,7 @@ export const showHelp = () => {
     - brahma version              // only shows the version e.g. v0.1.0
     - brahma version latest       // upgrades to @mufw/brahma@latest
     - brahma version 0.1.0        // shifts to @mufw/brahma@0.1.0
+    - brahma reset --hard         // resets the karma for 'web' app mode
 `);
 
   process.exit();

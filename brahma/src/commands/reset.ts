@@ -1,8 +1,24 @@
-import { copyFile, exists, rm, rename } from "node:fs/promises";
+import { cp, exists, rm } from "node:fs/promises";
 import path from "node:path";
 import { getKarma } from "../utils/common.ts";
+import { NPM_DEPS } from "../utils/constants.ts";
+import { updateObjectPropInFile } from "../utils/file-section-updater.ts";
+import { addPackageDepToKarma } from "../utils/karma-file-updaters.ts";
+import type { KarmaResetMode } from "../probes/karma/karma-types.ts";
 
-export const resetApp = async () => {
+export const resetApp = async (cmdArgs: string[]) => {
+  const resetModeSpecifier = cmdArgs.length ? cmdArgs[0] : "--soft";
+  const resetMode = resetModeSpecifier.slice(2) as KarmaResetMode;
+  if (
+    !resetModeSpecifier.startsWith("--") ||
+    !["soft", "hard"].includes(resetMode)
+  ) {
+    console.log(`ERROR: Bad reset mode specifier '${cmdArgs[0]}' provided.
+    - valid reset modes are 'hard' and 'soft'
+    - accepted specifier should be either --hard or --soft`);
+    process.exit(1);
+  }
+
   const cwd = process.cwd();
   console.log(`Resetting 'karma.ts' file...`);
 
@@ -13,36 +29,34 @@ export const resetApp = async () => {
   - 'brahma reset' is used when 'karma.ts' file exists but is corrupted.`);
       process.exit(1);
     }
+    const appMode = karma.config.maya.mode;
     const relativeKarmaPath = "../probes/karma";
-    const srcKarmaPath = path.resolve(
-      __dirname,
-      `${relativeKarmaPath}/karma.ts`
-    );
-    const srcKarmaTypesPath = path.resolve(
-      __dirname,
-      `${relativeKarmaPath}/karma-types.ts`
-    );
-    const destKarmaTempPath = `${cwd}/karma.temp.ts`;
-    const destKarmaTypesTempPath = `${cwd}/karma-types.temp.ts`;
-    if (await exists(destKarmaTempPath)) {
-      await rm(destKarmaTempPath);
+    const karmaPath = `${cwd}/karma.ts`;
+    const karmaTypesPath = `${cwd}/karma-types.ts`;
+    if (await exists(karmaPath)) {
+      await rm(karmaPath);
     }
-    if (await exists(destKarmaTypesTempPath)) {
-      await rm(destKarmaTypesTempPath);
+    if (await exists(karmaTypesPath)) {
+      await rm(karmaTypesPath);
     }
-    await copyFile(srcKarmaPath, destKarmaTempPath);
-    await copyFile(srcKarmaTypesPath, destKarmaTypesTempPath);
+    const baseKarmaPath = path.resolve(__dirname, relativeKarmaPath);
+    await cp(baseKarmaPath, cwd, { recursive: true });
+    await addPackageDepToKarma(karmaPath, NPM_DEPS.MAYA);
+    if (resetMode === "hard") process.exit();
 
-    const destKarmaPath = `${cwd}/karma.ts`;
-    const destKarmaTypesPath = `${cwd}/karma-types.ts`;
-    if (await exists(destKarmaPath)) {
-      await rm(destKarmaPath);
+    await updateObjectPropInFile(
+      karmaPath,
+      ["config:", "maya:", "mode:"],
+      "web",
+      appMode
+    );
+
+    if (appMode === "ext") {
+      await addPackageDepToKarma(karmaPath, NPM_DEPS.CHROME);
     }
-    if (await exists(destKarmaTypesPath)) {
-      await rm(destKarmaTypesPath);
+    if (appMode === "pwa") {
+      await addPackageDepToKarma(karmaPath, NPM_DEPS.PWA);
     }
-    await rename(destKarmaTempPath, destKarmaPath);
-    await rename(destKarmaTypesTempPath, destKarmaTypesPath);
   } catch (error) {
     console.log(error);
     process.exit(1);

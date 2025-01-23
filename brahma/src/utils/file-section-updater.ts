@@ -5,10 +5,10 @@ const SectionEnclosers = {
   array: { start: "[", end: "]" },
 } as const;
 
-export const updateFileSection = async (
+export const updateSectionInFile = async (
   filePath: string,
-  updatedSectionText: string,
   sectionSplittersPath: string[],
+  updatedSectionText: string,
   sectionType: keyof typeof SectionEnclosers = "object"
 ) => {
   const fileText = await Bun.file(filePath).text();
@@ -44,5 +44,21 @@ export const updateFileSection = async (
 
   const postSectionText = restOfText.slice(postSectionTextStartIndex);
   const updatedFileText = `${preSectionText}${updatedSectionText}${postSectionText}`;
+  await Bun.write(filePath, updatedFileText);
+};
+
+export const updateObjectPropInFile = async (
+  filePath: string,
+  splittersPath: string[],
+  currentPropValue: string | number | boolean,
+  updatedPropValue: string | number | boolean
+) => {
+  const fileText = await Bun.file(filePath).text();
+  const [prePropValueText, restOfText] = splitText(fileText, splittersPath);
+  const currentPropValueJSON = JSON.stringify(currentPropValue);
+  const postPropValueText = restOfText.split(currentPropValueJSON)[1];
+  const updatedPropValueText = JSON.stringify(updatedPropValue);
+  const updatedFileText = `${prePropValueText}${updatedPropValueText}${postPropValueText}`;
+
   await Bun.write(filePath, updatedFileText);
 };
