@@ -33,6 +33,7 @@ import type {
 } from "../../index.types.ts";
 import {
   customEventKeys,
+  decodeEntity,
   eventKeys,
   htmlEventKeys,
   idGen,
@@ -150,7 +151,7 @@ const getElementFromChild = (
   }
 
   if (typeof child === "string") {
-    return document.createTextNode(child);
+    return document.createTextNode(decodeEntity(child));
   }
 
   if (validChild(child)) {
