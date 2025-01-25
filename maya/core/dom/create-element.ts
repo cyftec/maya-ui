@@ -30,6 +30,7 @@ import type {
   MHtmlElementGetter,
   Props,
   SignalAttributeProps,
+  HtmlEventValue,
 } from "../../index.types.ts";
 import {
   customEventKeys,
@@ -77,12 +78,12 @@ const handleEventProps = (
         if (eventKey === "keypress") {
           e.preventDefault();
         }
-        listenerFn(e);
+        (listenerFn as HtmlEventValue)(e);
       });
     } else if (attributeIsCustomEvent(eventName, listenerFn)) {
       if (eventName === "onmount" && !phase.currentIs("build")) {
         const onMount = listenerFn as CustomEventValue;
-        setTimeout(() => onMount(), 0);
+        setTimeout(() => onMount(mHtmlElem), 0);
       }
       if (eventName === "onunmount") {
         startUnmountObserver();

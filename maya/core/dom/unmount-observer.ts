@@ -55,7 +55,7 @@ const execSubtreeUnmountListeners = (
     const elChild = elChildren[i] as MHtmlElement;
     execSubtreeUnmountListeners(elChild, elChild.unmountListener);
   }
-  elUnmountListener && elUnmountListener();
+  elUnmountListener && elUnmountListener(element);
   if (removedNodesRecord[element.elementId])
     delete removedNodesRecord[element.elementId];
 };

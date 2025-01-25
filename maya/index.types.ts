@@ -21,7 +21,7 @@ export type HtmlEventKey = (typeof htmlEventKeys)[number];
 export type CustomEventKey = (typeof customEventKeys)[number];
 export type DomEventKey = HtmlEventKey | CustomEventKey;
 export type HtmlEventValue = (event: Event) => void;
-export type CustomEventValue = () => void;
+export type CustomEventValue = (currentElement: MHtmlElement) => void;
 export type DomEventValue = HtmlEventValue | CustomEventValue | undefined;
 
 /**
