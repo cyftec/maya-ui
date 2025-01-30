@@ -12,6 +12,7 @@ export const projectFileNames: ProjectFileNames = {
   generated: {
     stagingDir: "stage",
     publishDir: "prod",
+    bunLockFile: "bun.lock",
     bunLockBFile: "bun.lockb",
     gitIgnoreFile: ".gitignore",
     dotVscodeDir: ".vscode",
@@ -55,6 +56,7 @@ export const config: KarmaConfig = {
         [projectFileNames.static.karmaTypesFile]: true,
         [projectFileNames.generated.stagingDir]: false,
         [projectFileNames.generated.publishDir]: false,
+        [projectFileNames.generated.bunLockFile]: true,
         [projectFileNames.generated.bunLockBFile]: true,
         [projectFileNames.generated.gitIgnoreFile]: true,
         [projectFileNames.generated.dotVscodeDir]: true,
@@ -67,6 +69,7 @@ export const config: KarmaConfig = {
     ignore: [
       projectFileNames.systemGenerated.dsStoreDir,
       projectFileNames.static.karmaTypesFile,
+      projectFileNames.generated.bunLockFile,
       projectFileNames.generated.bunLockBFile,
       projectFileNames.generated.dotVscodeDir,
       projectFileNames.generated.nodeModulesDir,
