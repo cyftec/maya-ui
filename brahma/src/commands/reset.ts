@@ -4,7 +4,7 @@ import { getKarma } from "../utils/common.ts";
 import { NPM_DEPS } from "../utils/constants.ts";
 import { updateObjectPropInFile } from "../utils/file-section-updater.ts";
 import { addPackageDepToKarma } from "../utils/karma-file-updaters.ts";
-import type { KarmaResetMode } from "../probes/karma/karma-types.ts";
+import type { AppMode, KarmaResetMode } from "../probes/karma/karma-types.ts";
 
 export const resetApp = async (cmdArgs: string[]) => {
   const resetModeSpecifier = cmdArgs.length ? cmdArgs[0] : "--soft";
@@ -29,7 +29,9 @@ export const resetApp = async (cmdArgs: string[]) => {
   - 'brahma reset' is used when 'karma.ts' file exists but is corrupted.`);
       process.exit(1);
     }
-    const appMode = karma.config.maya.mode;
+    // older versions of karma.ts might not have latest config structure
+    // thus, '?' in 'karma.config.maya?.mode'
+    const appMode = karma.config.maya?.mode as AppMode | undefined;
     const relativeKarmaPath = "../probes/karma";
     const karmaPath = `${cwd}/karma.ts`;
     const karmaTypesPath = `${cwd}/karma-types.ts`;
@@ -42,7 +44,7 @@ export const resetApp = async (cmdArgs: string[]) => {
     const baseKarmaPath = path.resolve(__dirname, relativeKarmaPath);
     await cp(baseKarmaPath, cwd, { recursive: true });
     await addPackageDepToKarma(karmaPath, NPM_DEPS.MAYA);
-    if (resetMode === "hard") process.exit();
+    if (resetMode === "hard" || !appMode) process.exit();
 
     await updateObjectPropInFile(
       karmaPath,
