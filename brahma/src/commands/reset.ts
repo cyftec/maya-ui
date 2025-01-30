@@ -31,7 +31,7 @@ export const resetApp = async (cmdArgs: string[]) => {
     }
     // older versions of karma.ts might not have latest config structure
     // thus, '?' in 'karma.config.maya?.mode'
-    const appMode = karma.config.maya?.mode as AppMode | undefined;
+    const appMode = karma.config?.maya?.mode as AppMode | undefined;
     const relativeKarmaPath = "../probes/karma";
     const karmaPath = `${cwd}/karma.ts`;
     const karmaTypesPath = `${cwd}/karma-types.ts`;
