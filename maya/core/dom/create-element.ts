@@ -129,7 +129,6 @@ const handleAttributeProps = (
       signalAttributeProps[attrKey as AttributeKey] =
         attrVal as Signal<AttributeValue>;
     }
-    if (phase.currentIs("mount")) return;
     setAttribute(mHtmlElem, attrKey, attrVal);
   });
 
