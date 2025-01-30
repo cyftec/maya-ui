@@ -1,6 +1,8 @@
 import { $ } from "bun";
 import path from "node:path";
 import { NPM_DEPS } from "../utils/constants";
+import { nonCachedImport } from "../utils/common";
+import type { Karma } from "../probes/karma/karma-types";
 
 const getPackageVersion = (packageJsonText: string) =>
   packageJsonText
@@ -15,13 +17,30 @@ const showVersionOnly = async (cliRootPath: string) => {
   const packageJsonPath = `${cliRootPath}/package.json`;
   const brahmaPackageJsonText = await Bun.file(packageJsonPath).text();
   const brahmaV = getPackageVersion(brahmaPackageJsonText);
-  const mayaV = NPM_DEPS.MAYA["@mufw/maya"];
-  console.log(`brahma v${brahmaV}`);
-  console.log(
-    `\nWith base version of maya v${mayaV}.
-Resetting version with 'brahma reset' resets maya version to ${mayaV}.
-Check 'karma.ts' after resetting.`
-  );
+  const baseMayaV = NPM_DEPS.MAYA["@mufw/maya"];
+  let currentMayaV: string = "";
+  try {
+    const karmaPath = `${process.cwd()}/karma.ts`;
+    const karma = (await nonCachedImport(karmaPath)) as Karma;
+    currentMayaV =
+      karma?.config?.maya?.packageJson?.dependencies?.["@mufw/maya"];
+  } catch (error) {}
+
+  if (!currentMayaV) {
+    console.log(`brahma - v${brahmaV}`);
+  }
+  if (currentMayaV && currentMayaV === baseMayaV) {
+    console.log(`brahma - v${brahmaV}`);
+    console.log(`maya   - v${currentMayaV}`);
+  }
+  if (currentMayaV && currentMayaV !== baseMayaV) {
+    console.log(`brahma         - v${brahmaV}`);
+    console.log(`maya (current) - v${currentMayaV}`);
+    console.log(`maya (base)    - v${baseMayaV}`);
+    console.log(
+      `\nResetting karma with 'brahma reset' resets current maya version to base version ${baseMayaV}. \nCheck 'karma.ts' after resetting.`
+    );
+  }
 };
 
 export const showVersion = async (cmdArgs: string[]) => {
