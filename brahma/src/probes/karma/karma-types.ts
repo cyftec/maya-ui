@@ -23,6 +23,7 @@ export type KarmaConfig = {
       ignoreDelimiter: string;
       buildablePageFileName: `${string}.ts`;
       buildableManifestFileName: `${string}.ts`;
+      skipErrorAndBuildNext: boolean;
     };
     localServer: {
       port: number;

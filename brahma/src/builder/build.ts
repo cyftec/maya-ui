@@ -20,6 +20,7 @@ import {
 } from "./build-helpers.ts";
 import type { BunFile } from "bun";
 import type { KarmaConfig } from "../probes/karma/karma-types.ts";
+import { setupBuild } from "./build-setup.ts";
 
 type BuildData = {
   appRootPath: string;
@@ -38,7 +39,15 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
     await Bun.write(destHtmlPath, html);
   } catch (error) {
     console.log(error);
-    console.log(destHtmlPath);
+    console.log(
+      "\x1b[33m%s\x1b[0m",
+      `If the error is similar to a "Can't find variable: <variable-name>" and the variable is one of the properties of window (or globalThis) object in a Browser environment, then it is occuring because 'build' phase of the app runs in a NODE environment. And in NODE environment, such variable might not be present in Node's 'globalThis' object.
+      \nTry using element's 'onmount' event for such logic. The 'onmount' event only runs during 'mount' and 'run' phases of the app, which means, only in a Browser environment.
+      \nExample, \n\n// ERROR: 'Can't find variable: location' \nm.Div({\n  children: location.href,\n}) \n\n// NO ERROR: \nmDiv({\n  onmount: (thisEl) => (thisEl.innerText = location.href),\n  children: "",\n})`
+    );
+    console.log(`\nerror building html file '${destHtmlPath}'`);
+    const skipToNextBuild = buildData.config.brahma.build.skipErrorAndBuildNext;
+    if (!skipToNextBuild) throw ``;
   }
 };
 
@@ -180,27 +189,16 @@ export const buildDir = async (srcDirPath: string): Promise<void> => {
   }
 };
 
-export const setupBuild = async (newBuildData: BuildData) => {
-  buildData.appRootPath = newBuildData.appRootPath;
-  buildData.config = newBuildData.config;
-  buildData.isProd = newBuildData.isProd;
-
-  if (!globalThis.document || globalThis.MutationObserver) {
-    const { JSDOM } = await import("jsdom");
-    const jsdom = new JSDOM("", { url: "https://localhost/" });
-    globalThis.window = jsdom.window as unknown as Window & typeof globalThis;
-    globalThis.document = jsdom.window.document;
-    globalThis.MutationObserver = jsdom.window.MutationObserver;
-  }
-};
-
 export const buildApp = async (
   appRootPath: string,
   config: KarmaConfig,
   isProd: boolean
 ): Promise<void> => {
   if (!appRootPath || !config) throw `App root path or config is missing.`;
-  await setupBuild({ appRootPath, config, isProd });
+  buildData.appRootPath = appRootPath;
+  buildData.config = config;
+  buildData.isProd = isProd;
+  await setupBuild();
   const sourcePath = getAppSrcPath(appRootPath, config);
   return await buildDir(sourcePath);
 };
