@@ -38,16 +38,20 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
     if (!html) throw new Error(NO_HTML_ERROR);
     await Bun.write(destHtmlPath, html);
   } catch (error) {
+    console.log(
+      `\x1b[31m%s\x1b[0m`,
+      `ERROR:`,
+      `building html '${destHtmlPath}'\n`
+    );
     console.log(error);
     console.log(
       "\x1b[33m%s\x1b[0m",
-      `If the error is similar to a "Can't find variable: <variable-name>" and the variable is one of the properties of window (or globalThis) object in a Browser environment, then it is occuring because 'build' phase of the app runs in a NODE environment. And in NODE environment, such variable might not be present in Node's 'globalThis' object.
+      `If the above error is similar to "Can't find variable: <variable-name>" and the variable is one of the properties of window (or globalThis) object in a Browser environment, then it is occuring because 'build' phase of the app runs in a NODE environment. And in NODE environment, such variable might not be present in Node's 'globalThis' object.
       \nTry using element's 'onmount' event for such logic. The 'onmount' event only runs during 'mount' and 'run' phases of the app, which means, only in a Browser environment.
-      \nExample, \n\n// ERROR: 'Can't find variable: location' \nm.Div({\n  children: location.href,\n}) \n\n// NO ERROR: \nmDiv({\n  onmount: (thisEl) => (thisEl.innerText = location.href),\n  children: "",\n})`
+      \nExample, \n// ERROR: 'Can't find variable: location' \nm.Div({\n  children: location.href,\n}) \n\n// NO ERROR \nmDiv({\n  onmount: (thisEl) => (thisEl.innerText = location.href),\n  children: "",\n})`
     );
-    console.log(`\nerror building html file '${destHtmlPath}'`);
     const skipToNextBuild = buildData.config.brahma.build.skipErrorAndBuildNext;
-    if (!skipToNextBuild) throw ``;
+    if (!skipToNextBuild) process.exit(1);
   }
 };
 
