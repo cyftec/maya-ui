@@ -1,25 +1,31 @@
 import {
   derived,
   val,
+  valueIsSignal,
   type DerivedSignal,
-  type MaybeSignalValue,
+  type Signal,
 } from "@cyftech/signal";
 import type { Child } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
-type IfProps = {
-  condition: MaybeSignalValue<any>;
+type IfReturnComponent<C> = C extends Signal<any>
+  ? DerivedSignal<Child>
+  : Child;
+
+export const ifElement = <C>({
+  condition,
+  isTruthy,
+  isFalsy,
+}: {
+  condition: C;
   isTruthy?: Child;
   isFalsy?: Child;
-};
-export type IfElement = (props: IfProps) => DerivedSignal<Child>;
+}): IfReturnComponent<C> => {
+  const deadComponent = m.Span({ style: "display: none;" });
+  const compGetter = () =>
+    (!!val(condition) ? isTruthy : isFalsy) || deadComponent;
 
-export const ifElement: IfElement = ({ condition, isTruthy, isFalsy }) => {
-  const conditionIsTruthy = derived(() => !!val(condition));
-
-  return derived(
-    () =>
-      (conditionIsTruthy.value ? isTruthy : isFalsy) ||
-      m.Span({ style: "display: none;" })
-  );
+  return (
+    valueIsSignal(condition) ? derived(compGetter) : compGetter()
+  ) as IfReturnComponent<typeof condition>;
 };
