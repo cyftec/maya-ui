@@ -3,7 +3,6 @@ import {
   derived,
   signal,
   val,
-  valueIsSignal,
   type DerivedSignal,
   type MaybeSignalValue,
   type Signal,
@@ -16,13 +15,13 @@ import type {
   Object,
 } from "../../../index.types.ts";
 
-type MapFn<T> = (item: T, index: number) => MHtmlElementGetter;
+type MapFn<T> = (item: T, index: number) => Child;
 type MutableMapFn<T> = (
   item: DerivedSignal<T>,
   index: DerivedSignal<number>
-) => MHtmlElementGetter;
+) => Child;
 type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
-  items: MaybeSignalValue<T[]>;
+  subject: MaybeSignalValue<T[]>;
   itemKey?: ItemKey;
   map: (T extends object ? keyof T : never) extends ItemKey
     ? MapFn<T>
@@ -40,7 +39,7 @@ export type ForElement = <
 type MappedChild<T> = {
   indexSignal: SourceSignal<number>;
   itemSignal: SourceSignal<T>;
-  mappedChild: MHtmlElementGetter;
+  mappedChild: Child;
 };
 
 const getMappedChild = <T extends object>(
@@ -50,27 +49,30 @@ const getMappedChild = <T extends object>(
 ): MappedChild<T> => {
   const indexSignal = signal(i);
   const itemSignal = signal(item);
-  let child: MHtmlElement<HTMLElement>;
-  let executedOnce = false;
+  const child = mutableMap(
+    derived(() => itemSignal.value),
+    derived(() => indexSignal.value)
+  );
+  let mappedChild: Child;
+  let elem: MHtmlElement<HTMLElement>;
+  let computedMHtmlElementGetterOnce = false;
 
-  const childGetter: MHtmlElementGetter = () => {
-    if (executedOnce && child) return child;
+  if ((child as MHtmlElementGetter)?.isElementGetter) {
+    mappedChild = (() => {
+      if (computedMHtmlElementGetterOnce && elem) return elem;
 
-    executedOnce = true;
-    child = mutableMap(
-      derived(() => itemSignal.value),
-      derived(() => indexSignal.value)
-    )();
+      elem = (child as MHtmlElementGetter)();
+      computedMHtmlElementGetterOnce = true;
+      return elem;
+    }) as MHtmlElementGetter;
+    mappedChild.isElementGetter = true;
+  } else if (typeof child === "string") {
+    mappedChild = child as string;
+  } else {
+    throw `One of the child, ${child} passed in ForElement is invalid.`;
+  }
 
-    return child;
-  };
-  childGetter.isElementGetter = true;
-
-  return {
-    indexSignal,
-    itemSignal,
-    mappedChild: childGetter,
-  };
+  return { indexSignal, itemSignal, mappedChild };
 };
 
 const getChildrenAfterInjection = (
@@ -86,14 +88,14 @@ const getChildrenAfterInjection = (
 };
 
 /**
- * For is a maya-custom-element which takes 'items' and a 'map' method and returns
- * a signal of list of maya-html-elements.
+ * For is a maya-custom-element which takes 'subject' (a list) and a 'map' method
+ * and returns a signal of list of maya-html-elements.
  * 
  * For mutable nodes list, 'itemKey' must be provided, for which item in 'itmes' must be
  * an object and 'itemKey' is the name of field in item whose value are unique among
  * all items. Similar to an id field in an SQL record (object).
  * 
- * Mutable nodes doesn't get recreated when input 'items' value gets changed,
+ * Mutable nodes doesn't get recreated when input 'subject' value gets changed,
  * rather nodes remain the same and only individual item (as signal) value
  * changes and subsequently updates the nodes.
  * 
@@ -138,7 +140,7 @@ export const forElement: ForElement = <
   T,
   ItemKey extends T extends object ? keyof T : never
 >({
-  items,
+  subject,
   itemKey,
   map,
   n,
@@ -153,9 +155,10 @@ export const forElement: ForElement = <
     );
   }
 
-  const list = valueIsSignal(items)
-    ? (items as Signal<T[]>)
-    : signal(val(items) as T[]);
+  const list = derived(() => {
+    const items = val(subject);
+    return Array.isArray(items) ? items : [];
+  });
 
   if (!itemKey) {
     return derived(() =>
