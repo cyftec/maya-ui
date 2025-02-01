@@ -8,22 +8,22 @@ import {
 import type { Child } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
-type IfReturnComponent<C> = C extends Signal<any>
+type IfReturn<Subject> = Subject extends Signal<any>
   ? DerivedSignal<Child>
   : Child;
 
-export type IfElement = <C>(props: {
-  condition: C;
+export type IfElement = <S>(props: {
+  subject: S;
   isTruthy?: Child;
   isFalsy?: Child;
-}) => IfReturnComponent<C>;
+}) => IfReturn<S>;
 
-export const ifElement: IfElement = ({ condition, isTruthy, isFalsy }) => {
+export const ifElement: IfElement = ({ subject, isTruthy, isFalsy }) => {
   const deadComponent = m.Span({ style: "display: none;" });
   const compGetter = () =>
-    (!!val(condition) ? isTruthy : isFalsy) || deadComponent;
+    (!!val(subject) ? isTruthy : isFalsy) || deadComponent;
 
   return (
-    valueIsSignal(condition) ? derived(compGetter) : compGetter()
-  ) as IfReturnComponent<typeof condition>;
+    valueIsSignal(subject) ? derived(compGetter) : compGetter()
+  ) as IfReturn<typeof subject>;
 };
