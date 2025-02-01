@@ -12,15 +12,13 @@ type IfReturnComponent<C> = C extends Signal<any>
   ? DerivedSignal<Child>
   : Child;
 
-export const ifElement = <C>({
-  condition,
-  isTruthy,
-  isFalsy,
-}: {
+export type IfElement = <C>(props: {
   condition: C;
   isTruthy?: Child;
   isFalsy?: Child;
-}): IfReturnComponent<C> => {
+}) => IfReturnComponent<C>;
+
+export const ifElement: IfElement = ({ condition, isTruthy, isFalsy }) => {
   const deadComponent = m.Span({ style: "display: none;" });
   const compGetter = () =>
     (!!val(condition) ? isTruthy : isFalsy) || deadComponent;
