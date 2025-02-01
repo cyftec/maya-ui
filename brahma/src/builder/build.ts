@@ -17,6 +17,7 @@ import {
   getBuiltJsMethodName,
   isSrcPageFile,
   mountAndRunFnDef,
+  zipAndDeleteDir,
 } from "./build-helpers.ts";
 import type { BunFile } from "bun";
 import type { KarmaConfig } from "../probes/karma/karma-types.ts";
@@ -162,7 +163,10 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
   }
 };
 
-export const buildDir = async (srcDirPath: string): Promise<void> => {
+export const buildDir = async (
+  srcDirPath: string,
+  isRootDir: boolean = false
+): Promise<void> => {
   const destDirPath = getBuildDirPath(
     buildData.appRootPath,
     srcDirPath,
@@ -191,6 +195,10 @@ export const buildDir = async (srcDirPath: string): Promise<void> => {
     console.log(`Deleting empty built dir: ${destDirPath}`);
     await rm(destDirPath, { recursive: true });
   }
+
+  if (isRootDir && buildData.isProd && buildData.config.maya?.mode === "ext") {
+    await zipAndDeleteDir(destDirPath, `${destDirPath}.zip`);
+  }
 };
 
 export const buildApp = async (
@@ -204,5 +212,5 @@ export const buildApp = async (
   buildData.isProd = isProd;
   await setupBuild();
   const sourcePath = getAppSrcPath(appRootPath, config);
-  return await buildDir(sourcePath);
+  return await buildDir(sourcePath, true);
 };

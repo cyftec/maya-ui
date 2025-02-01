@@ -5,11 +5,13 @@
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
   "devDependencies": {
+    "@types/archiver": "^6.0.3",
     "@types/bun": "^1.1.14",
     "@types/jsdom": "^21.1.7",
     "@types/live-server": "^1.2.3"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "chokidar": "^4.0.3",
     "jsdom": "^24.1.0",
     "live-server": "^1.2.2"

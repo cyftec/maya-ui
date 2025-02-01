@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises";
 import type { KarmaConfig } from "../probes/karma/karma-types";
 import {
   DEST_HTML_DEFAULT_FILE_NAME,
@@ -5,6 +6,7 @@ import {
   DEST_JS_DEFAULT_FILE_NAME,
   DEST_JS_FILE_EXT,
 } from "../utils/constants";
+import { zipTheFolder } from "../utils/zip-the-folder";
 
 export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>
   srcPagePath.endsWith(karmaConfig.brahma.build.buildablePageFileName);
@@ -60,6 +62,17 @@ export const getBuildFileNames = (
     DEST_HTML_FILE_EXT;
   const jsFileName = prefixName + DEST_JS_DEFAULT_FILE_NAME + DEST_JS_FILE_EXT;
   return { htmlFileName, jsFileName };
+};
+
+export const zipAndDeleteDir = async (
+  srcDirPath: string,
+  destZipFilePath: `${string}.zip`
+) => {
+  console.log(`Archiving dir: ${srcDirPath}`);
+  await zipTheFolder(srcDirPath, destZipFilePath);
+  console.log(`Archive zip file generated: ${destZipFilePath}`);
+  console.log(`Deleting archived dir: ${srcDirPath}`);
+  await rm(srcDirPath, { recursive: true });
 };
 
 export const buildHtmlFnDef = `
