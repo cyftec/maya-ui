@@ -3,7 +3,7 @@ import { onProcessSigInt } from "./process-helpers";
 import type { Stats } from "node:fs";
 
 export const watchFileChange = (
-  watchableDirPath: string,
+  watchableDirPath: string | string[],
   ignorePaths: Matcher | Matcher[] | undefined,
   onFileChange: (path: string, stats?: Stats | undefined) => void
 ) => {

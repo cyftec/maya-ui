@@ -35,20 +35,27 @@ export const stageApp = async () => {
   if (!karma) return false;
   const { config } = karma;
   const sourceDirPath = `${cwd}/${config.maya.sourceDirName}`;
+  const otherDirPaths = config.brahma.localServer.otherWatchDirs.map(
+    (dirPath) => `${cwd}/${dirPath}`
+  );
   const stagingDirPath = `${cwd}/${config.brahma.localServer.serveDirectory}`;
   const watchIgnorePaths = [DS_STORE_REGEX];
   const serverPort = config.brahma.localServer.port;
 
   await buildSrcDir(cwd, config);
-  watchFileChange(sourceDirPath, watchIgnorePaths, (path) => {
-    if (busyBuildingApp) return;
-    onFileModification(async () => {
-      busyBuildingApp = true;
-      console.log(`Change detected: ${path}`);
-      await buildSrcDir(cwd, config);
-      busyBuildingApp = false;
-    });
-  });
+  watchFileChange(
+    [sourceDirPath, ...otherDirPaths],
+    watchIgnorePaths,
+    (path) => {
+      if (busyBuildingApp) return;
+      onFileModification(async () => {
+        busyBuildingApp = true;
+        console.log(`Change detected: ${path}`);
+        await buildSrcDir(cwd, config);
+        busyBuildingApp = false;
+      });
+    }
+  );
   runLocalServer(
     serverPort,
     stagingDirPath,

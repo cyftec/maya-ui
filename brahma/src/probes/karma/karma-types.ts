@@ -29,7 +29,10 @@ export type KarmaConfig = {
       port: number;
       redirectOnStart: boolean;
       reloadPageOnFocus: boolean;
+      // Serving directory path excluding parent directory path
       serveDirectory: string;
+      // Directories other than source directory, on which change should trigger rebuild
+      otherWatchDirs: string[];
     };
   };
   maya: {
