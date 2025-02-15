@@ -117,7 +117,7 @@ export default Page({
     children: [
       Navbar({
         children: m.For({
-          items: navList,
+          subject: navList,
           n: Infinity,
           nthChild: m.P({
             class: "gray f6",

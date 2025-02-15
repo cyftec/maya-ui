@@ -34,12 +34,13 @@ export const config: KarmaConfig = {
       buildablePageFileName: projectFileNames.buildable.pageFile,
       buildableManifestFileName: projectFileNames.buildable.manifestFile,
       ignoreDelimiter: "@",
-      skipErrorAndBuildNext: false,
+      skipErrorAndBuildNext: true,
     },
     localServer: {
       port: 3000,
       redirectOnStart: false,
       reloadPageOnFocus: true,
+      otherWatchDirs: [],
       serveDirectory: `${projectFileNames.generated.stagingDir}`,
     },
   },
@@ -48,7 +49,7 @@ export const config: KarmaConfig = {
     sourceDirName: projectFileNames.static.sourceDir,
     packageJson: {
       dependencies: {
-        "@mufw/maya": "0.1.12",
+        "@mufw/maya": "0.1.14",
         "@cyftech/immutjs": "0.1.0",
         "@cyftech/signal": "0.1.4",
       },
@@ -80,6 +81,7 @@ export const config: KarmaConfig = {
       projectFileNames.generated.nodeModulesDir,
       projectFileNames.generated.packageJsonFile,
       `/${projectFileNames.generated.stagingDir}`,
+      `/${projectFileNames.generated.publishDir}`,
     ],
   },
 };

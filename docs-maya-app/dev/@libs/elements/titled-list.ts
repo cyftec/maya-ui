@@ -33,7 +33,7 @@ export const TitledList = component<TitledListProps>(
         }),
         m.Div(
           m.For({
-            items: links,
+            subject: links,
             map: (link) =>
               m.Div({
                 class: itemClassNames,
@@ -48,7 +48,7 @@ export const TitledList = component<TitledListProps>(
           })
         ),
         m.If({
-          condition: bottomComponent,
+          subject: bottomComponent,
           isTruthy: bottomComponent as Child,
         }),
       ],

@@ -12,7 +12,7 @@ export const Footer = ViewFrame({
           children: [
             m.A({
               class: "flex items-center justify-start no-underline",
-              href: "/",
+              href: "https://www.cyfer.tech",
               children: [
                 m.Img({
                   src: `/assets/images/cyfer-logo.png`,
@@ -39,7 +39,7 @@ export const Footer = ViewFrame({
             }),
             Link({
               classNames: "underline",
-              href: "maya",
+              href: "https://maya.cyfer.tech",
               label: "Maya",
             }),
             m.Span({

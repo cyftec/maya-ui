@@ -6,3 +6,4 @@ bun.lockb
 node_modules
 package.json
 /stage
+/prod

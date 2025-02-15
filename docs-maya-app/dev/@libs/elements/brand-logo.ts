@@ -21,7 +21,7 @@ export const BrandLogo = component<BrandLogoProps>(
           width: size,
         }),
         m.If({
-          condition: labelComponent,
+          subject: labelComponent,
           isTruthy: labelComponent as Child,
         }),
       ],

@@ -59,7 +59,7 @@ export const Header = () => {
         m.Div({
           class: "flex items-center justify-end",
           children: m.For({
-            items: links,
+            subject: links,
             itemKey: "label",
             n: Infinity,
             nthChild: GithubLink({
