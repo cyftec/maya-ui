@@ -13,6 +13,10 @@ export const Page = component<PageProps>(({ title, app: appChildElement }) => {
     lang: "en",
     children: [
       m.Head([
+        m.Meta({
+          name: "viewport",
+          content: "width=device-width, initial-scale=1",
+        }),
         m.Title(title),
         m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
         m.Link({

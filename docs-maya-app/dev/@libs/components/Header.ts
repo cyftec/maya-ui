@@ -1,7 +1,7 @@
 import { derived, dprops } from "@cyftech/signal";
 import { m } from "@mufw/maya";
 import { BASE_MAYA_VERSION } from "../constants";
-import { BrandLogo, GithubLink, Link, ViewFrame } from "../elements";
+import { BrandLogo, GithubLink, Icon, Link, ViewFrame } from "../elements";
 import { path } from "../router";
 
 const links = derived(() => {
@@ -31,6 +31,7 @@ const links = derived(() => {
 
 export const Header = () => {
   return ViewFrame({
+    contentClassNames: "ph0-l ph3",
     children: m.Div({
       class: "pv3 bg-pale flex items-center justify-between",
       children: [
@@ -62,14 +63,28 @@ export const Header = () => {
             subject: links,
             itemKey: "label",
             n: Infinity,
-            nthChild: GithubLink({
-              classNames: "ml3",
-              url: "https://github.com/cyftec/maya-ui",
+            nthChild: m.Div({
+              class: "flex items-center",
+              children: [
+                m.Span({
+                  class: "db dn-ns",
+                  children: Icon({
+                    size: 32,
+                    name: "menu",
+                    onClick: () => {},
+                  }),
+                }),
+                GithubLink({
+                  size: 42,
+                  classNames: "ml3",
+                  url: "https://github.com/cyftec/maya-ui",
+                }),
+              ],
             }),
             map: (link) => {
               const dlink = dprops(link);
               return Link({
-                classNames: "ml3 pv1 ph2",
+                classNames: "db-ns dn ml3 pv1 ph2",
                 isSelected: dlink.isSelected,
                 colorCss: dlink.colorCss,
                 target: dlink.target,

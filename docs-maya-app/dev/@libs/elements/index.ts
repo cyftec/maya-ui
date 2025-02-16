@@ -3,6 +3,7 @@ export * from "./breadcrumbs";
 export * from "./button";
 export * from "./divider";
 export * from "./github-link";
+export * from "./icon";
 export * from "./link";
 export * from "./navbar";
 export * from "./titled-list";

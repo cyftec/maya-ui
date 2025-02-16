@@ -1,20 +1,21 @@
 import { dstring } from "@cyftech/signal";
-import { component, m } from "@mufw/maya";
+import { Child, component, m } from "@mufw/maya";
 
 type ButtonProps = {
   classNames?: string;
+  labelClassNames?: string;
   href?: string;
-  label: string;
+  label: Child;
   onClick?: () => void;
 };
 
 export const Button = component<ButtonProps>(
-  ({ classNames, href, label, onClick }) => {
+  ({ classNames, labelClassNames, href, label, onClick }) => {
     return m.Button({
-      class: dstring`pv2 ph3 pointer bg-transparent hover-bg-gray b--gray ba bw1 br-pill ${classNames}`,
+      class: dstring`flex justify-stretch pointer hover-bg-gray b--gray ba bw1 br-pill ${classNames}`,
       onclick: onClick,
       children: m.A({
-        class: "no-underline dark-gray hover-white",
+        class: dstring`no-underline bg-transparent dark-gray hover-white pv2 ph3 ${labelClassNames}`,
         href: href,
         children: label,
       }),

@@ -3,7 +3,7 @@ import { Divider, GithubLink, Link, TitledList, ViewFrame } from "../elements";
 
 export const Footer = ViewFrame({
   classNames: "bg-pale-dark",
-  contentClassNames: "flex items-start justify-between pv4",
+  contentClassNames: "flex flex-wrap items-start justify-between pv4",
   children: [
     m.Div({
       class: "flex flex-column items-stretch justify-between",
@@ -50,7 +50,7 @@ export const Footer = ViewFrame({
       ],
     }),
     m.Div({
-      class: "flex items-start justify-between",
+      class: "flex flex-wrap items-start justify-between",
       children: [
         TitledList({
           justifyRight: true,
