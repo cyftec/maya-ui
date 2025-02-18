@@ -6,9 +6,10 @@ type TitledListProps = {
   classNames?: string;
   titleClassNames?: string;
   itemClassNames?: string;
-  header: string;
+  title: string;
   justifyRight?: boolean;
-  links: { label: string; href: string }[];
+  links: { title: string; href?: string; isSelected?: boolean }[];
+  onLinkClick?: (linkIndex: number) => void;
   linkColorCss?: string;
   bottomComponent?: Children;
 };
@@ -18,9 +19,10 @@ export const TitledList = component<TitledListProps>(
     classNames,
     titleClassNames,
     itemClassNames,
-    header,
+    title,
     justifyRight,
     links,
+    onLinkClick,
     linkColorCss,
     bottomComponent,
   }) =>
@@ -29,19 +31,21 @@ export const TitledList = component<TitledListProps>(
       children: [
         m.P({
           class: dstring`space-mono mt0 f3 lh-solid ${titleClassNames}`,
-          children: header,
+          children: title,
         }),
         m.Div(
           m.For({
             subject: links,
-            map: (link) =>
+            map: ({ title, href, isSelected }, linkIndex) =>
               m.Div({
                 class: itemClassNames,
                 children: [
                   Link({
                     colorCss: linkColorCss,
-                    href: link.href,
-                    label: link.label,
+                    label: title,
+                    onClick: () => onLinkClick && onLinkClick(linkIndex),
+                    href,
+                    isSelected,
                   }),
                 ],
               }),

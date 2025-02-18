@@ -17,7 +17,7 @@ export const MAYA_FEATURES_TITLE = "With your favourite web framework, now";
 export const MAYA_FEATURES = [
   [
     `You can write your app completely in one language - TypeScript.`,
-    `You don't need mutiple (transpilers or pre/post processor) languages like JSX or SCSS to develop a simple app.`,
+    `You don't need mutiple (transpilers or pre/post processor) languages like JSX or SCSS to develop a simple app. Besides, unlike JSX, Maya's templating syntax is completely TypeScript and is naturally very similar to HTML.`,
   ],
   [
     `You get dynamic behaviour in your app with a static site structure.`,

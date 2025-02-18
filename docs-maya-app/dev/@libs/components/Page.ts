@@ -6,35 +6,39 @@ import { ViewFrame } from "../elements";
 type PageProps = {
   title: string;
   app: Child;
+  headElements?: Child[];
 };
 
-export const Page = component<PageProps>(({ title, app: appChildElement }) => {
-  return m.Html({
-    lang: "en",
-    children: [
-      m.Head([
-        m.Meta({
-          name: "viewport",
-          content: "width=device-width, initial-scale=1",
-        }),
-        m.Title(title),
-        m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
-        m.Link({
-          rel: "icon",
-          type: "image/x-icon",
-          href: "/assets/favicon.ico",
-        }),
-      ]),
-      m.Body({
-        children: [
-          m.Script({ src: "main.js", defer: true }),
-          Header(),
-          ViewFrame({
-            children: appChildElement,
+export const Page = component<PageProps>(
+  ({ title, app: appChildElement, headElements }) => {
+    return m.Html({
+      lang: "en",
+      children: [
+        m.Head([
+          m.Meta({
+            name: "viewport",
+            content: "width=device-width, initial-scale=1",
           }),
-          Footer,
-        ],
-      }),
-    ],
-  });
-});
+          m.Title(title),
+          m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
+          m.Link({
+            rel: "icon",
+            type: "image/x-icon",
+            href: "/assets/favicon.ico",
+          }),
+          ...(headElements || []),
+        ]),
+        m.Body({
+          children: [
+            m.Script({ src: "main.js", defer: true }),
+            Header(),
+            ViewFrame({
+              children: appChildElement,
+            }),
+            Footer,
+          ],
+        }),
+      ],
+    });
+  }
+);

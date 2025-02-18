@@ -56,22 +56,22 @@ export const Footer = ViewFrame({
           justifyRight: true,
           classNames: "pr3",
           itemClassNames: "mb3",
-          header: "Company",
+          title: "Company",
           links: [
             {
-              label: "About us",
+              title: "About us",
               href: "#about-us",
             },
             {
-              label: "Blogs",
+              title: "Blogs",
               href: "#blogs",
             },
             {
-              label: "Team",
+              title: "Team",
               href: "#about-us",
             },
             {
-              label: "Career",
+              title: "Career",
               href: "/careers",
             },
           ],
@@ -81,22 +81,22 @@ export const Footer = ViewFrame({
           justifyRight: true,
           classNames: "pr3",
           itemClassNames: "mb3",
-          header: "Products",
+          title: "Products",
           links: [
             {
-              label: "Maya",
+              title: "Maya",
               href: "/products/maya",
             },
             {
-              label: "KarmaJs",
+              title: "KarmaJs",
               href: "/karma",
             },
             {
-              label: "Yajman",
+              title: "Yajman",
               href: "/yajman",
             },
             {
-              label: "Batua",
+              title: "Batua",
               href: "/batua",
             },
           ],
@@ -107,18 +107,18 @@ export const Footer = ViewFrame({
             TitledList({
               justifyRight: true,
               itemClassNames: "mb3",
-              header: "Relations",
+              title: "Relations",
               links: [
                 {
-                  label: "Sponsor Us",
+                  title: "Sponsor Us",
                   href: "/sponsor-us",
                 },
                 {
-                  label: "FAQs",
+                  title: "FAQs",
                   href: "/faqs",
                 },
                 {
-                  label: "Feedback",
+                  title: "Feedback",
                   href: "/feedback",
                 },
               ],

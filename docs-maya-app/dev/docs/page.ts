@@ -2,132 +2,132 @@ import { m } from "@mufw/maya";
 import { Page } from "../@libs/components/Page";
 import { Navbar, TitledList, ViewFrame } from "../@libs/elements";
 
-const navList = [
+const chapters = [
   {
-    label: "1. Overview",
-    nodes: [
+    title: "1. Overview",
+    topics: [
       {
-        label: "Getting familiar",
+        title: "Getting familiar",
         href: "/",
       },
       {
-        label: "Prerequisite",
+        title: "Prerequisite",
         href: "/",
       },
       {
-        label: "Installation",
+        title: "Installation",
         href: "/",
       },
       {
-        label: "App structure",
+        title: "App structure",
         href: "/",
       },
       {
-        label: "Brahma, Karma & Maya",
+        title: "Brahma, Karma & Maya",
         href: "/",
       },
       {
-        label: "Karma config",
+        title: "Karma config",
         href: "/",
       },
     ],
   },
   {
-    label: "2. Brahma (CLI)",
-    nodes: [
+    title: "2. Brahma (CLI)",
+    topics: [
       {
-        label: "Why the CLI?",
+        title: "Why the CLI?",
         href: "/",
       },
       {
-        label: "brahma create",
+        title: "brahma create",
         href: "/",
       },
       {
-        label: "brahma install",
+        title: "brahma install",
         href: "/",
       },
       {
-        label: "brahma add",
+        title: "brahma add",
         href: "/",
       },
       {
-        label: "brahma remove",
+        title: "brahma remove",
         href: "/",
       },
       {
-        label: "brahma publish",
-        href: "/",
-      },
-    ],
-  },
-  {
-    label: "3. Maya",
-    nodes: [
-      {
-        label: "Syntax",
-        href: "/",
-      },
-      {
-        label: "Overview",
-        href: "/",
-      },
-      {
-        label: "Element",
-        href: "/",
-      },
-      {
-        label: "component",
-        href: "/",
-      },
-      {
-        label: "Props",
-        href: "/",
-      },
-      {
-        label: "Page",
+        title: "brahma publish",
         href: "/",
       },
     ],
   },
   {
-    label: "4. Signal",
-    nodes: [
+    title: "3. Maya",
+    topics: [
       {
-        label: "What is signal?",
+        title: "Syntax",
         href: "/",
       },
       {
-        label: "Custom implementation",
+        title: "Overview",
         href: "/",
       },
       {
-        label: "Effect",
+        title: "Element",
         href: "/",
       },
       {
-        label: "Derived signals",
+        title: "component",
         href: "/",
       },
       {
-        label: "Signal for mutating list",
+        title: "Props",
+        href: "/",
+      },
+      {
+        title: "Page",
         href: "/",
       },
     ],
   },
   {
-    label: "5. Toolbox",
-    nodes: [
+    title: "4. Signal",
+    topics: [
       {
-        label: "Default HTML page",
+        title: "What is signal?",
         href: "/",
       },
       {
-        label: "Router",
+        title: "Custom implementation",
         href: "/",
       },
       {
-        label: "UI toolkit",
+        title: "Effect",
+        href: "/",
+      },
+      {
+        title: "Derived signals",
+        href: "/",
+      },
+      {
+        title: "Signal for mutating list",
+        href: "/",
+      },
+    ],
+  },
+  {
+    title: "5. Toolbox",
+    topics: [
+      {
+        title: "Default HTML page",
+        href: "/",
+      },
+      {
+        title: "Router",
+        href: "/",
+      },
+      {
+        title: "UI toolkit",
         href: "/",
       },
     ],
@@ -141,17 +141,14 @@ export default Page({
     children: [
       Navbar({
         children: [
-          ...navList.map((nav) =>
+          ...chapters.map(({ title, topics }) =>
             TitledList({
               classNames: "mb4 pb3",
               titleClassNames: "f4",
               itemClassNames: "mb2 pb1 f6",
               linkColorCss: "purple",
-              header: nav.label,
-              links: nav.nodes.map(({ href, label }) => ({
-                href,
-                label,
-              })),
+              title: title,
+              links: topics,
             })
           ),
           m.P({

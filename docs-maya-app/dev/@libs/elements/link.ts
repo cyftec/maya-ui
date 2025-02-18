@@ -6,20 +6,22 @@ type LinkProps = {
   colorCss?: string;
   target?: string;
   isSelected?: boolean;
-  href: string;
+  href?: string;
+  onClick?: () => void;
   label: string;
 };
 
 export const Link = component<LinkProps>(
-  ({ classNames, colorCss, target, isSelected, href, label }) => {
+  ({ classNames, colorCss, target, isSelected, href, onClick, label }) => {
     console.log(JSON.stringify(isSelected));
     return m.A({
-      class: dstring`link underline ${() => colorCss?.value || "red"} ${() =>
+      class: dstring`link underline ${href || onClick ? "pointer" : ""} ${() =>
         isSelected?.value
-          ? `bg-${colorCss?.value || "red"}`
-          : ""} ${classNames}`,
+          ? `bg-${colorCss?.value || "red"} white`
+          : `${colorCss?.value || "red"}`} ${classNames}`,
       target: target,
       href: href,
+      onclick: onClick,
       children: label,
     });
   }

@@ -15,7 +15,7 @@ export const Button = component<ButtonProps>(
       class: dstring`flex justify-stretch pointer hover-bg-gray b--gray ba bw1 br-pill ${classNames}`,
       onclick: onClick,
       children: m.A({
-        class: dstring`no-underline bg-transparent dark-gray hover-white pv2 ph3 ${labelClassNames}`,
+        class: dstring`w-100 no-underline bg-transparent dark-gray hover-white pv2 ph3 ${labelClassNames}`,
         href: href,
         children: label,
       }),
