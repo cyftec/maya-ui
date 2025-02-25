@@ -29,6 +29,7 @@ export const Page = component<PageProps>(
           ...(headElements || []),
         ]),
         m.Body({
+          class: "ph3",
           children: [
             m.Script({ src: "main.js", defer: true }),
             Header(),

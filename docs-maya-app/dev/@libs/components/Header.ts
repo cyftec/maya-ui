@@ -5,7 +5,6 @@ import { BrandLogo, GithubLink, Icon, Link, ViewFrame } from "../elements";
 import { path } from "../router";
 
 const links = derived(() => {
-  console.log(`current path is ${path.value}`);
   return [
     {
       isSelected: path.value.startsWith("/docs"),
@@ -31,7 +30,6 @@ const links = derived(() => {
 
 export const Header = () => {
   return ViewFrame({
-    contentClassNames: "ph3 ph0-ns",
     children: m.Div({
       class: "pv3 bg-pale flex items-center justify-between",
       children: [

@@ -2,7 +2,7 @@ import { m } from "@mufw/maya";
 import { Divider, GithubLink, Link, TitledList, ViewFrame } from "../elements";
 
 export const Footer = ViewFrame({
-  classNames: "bg-pale-dark",
+  classNames: "bg-pale-dark nl3 nr3 nb3 w-auto",
   contentClassNames: "flex flex-wrap items-start justify-between pv4",
   children: [
     m.Div({

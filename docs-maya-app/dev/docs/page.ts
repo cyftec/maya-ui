@@ -11,7 +11,7 @@ const chapters = [
         href: "/",
       },
       {
-        title: "Prerequisite",
+        title: "Prerequisites",
         href: "/",
       },
       {

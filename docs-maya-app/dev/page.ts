@@ -14,7 +14,8 @@ export default Page({
     contentClassNames: "pb5",
     children: [
       m.Div({
-        class: "flex flex-wrap justify-center sticky top-0 bg-pale",
+        class:
+          "flex flex-wrap justify-center sticky top-0 nl3 nr3 mh0-l bg-pale",
         children: [
           m.Div({
             class: "w-100 flex items-center justify-between pa4 bg-maya",

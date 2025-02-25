@@ -6,5 +6,6 @@ export * from "./github-link";
 export * from "./icon";
 export * from "./link";
 export * from "./navbar";
+export * from "./text-with-links";
 export * from "./titled-list";
 export * from "./view-frame";

@@ -13,7 +13,6 @@ type LinkProps = {
 
 export const Link = component<LinkProps>(
   ({ classNames, colorCss, target, isSelected, href, onClick, label }) => {
-    console.log(JSON.stringify(isSelected));
     return m.A({
       class: dstring`link underline ${href || onClick ? "pointer" : ""} ${() =>
         isSelected?.value

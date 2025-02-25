@@ -1,4 +1,4 @@
-import { dstring } from "@cyftech/signal";
+import { dprops, dstring } from "@cyftech/signal";
 import { Child, Children, component, m } from "@mufw/maya";
 import { Link } from "./link";
 
@@ -36,19 +36,22 @@ export const TitledList = component<TitledListProps>(
         m.Div(
           m.For({
             subject: links,
-            map: ({ title, href, isSelected }, linkIndex) =>
-              m.Div({
+            itemKey: "title",
+            map: (link, linkIndex) => {
+              const { title, href, isSelected } = dprops(link);
+              return m.Div({
                 class: itemClassNames,
                 children: [
                   Link({
                     colorCss: linkColorCss,
                     label: title,
-                    onClick: () => onLinkClick && onLinkClick(linkIndex),
+                    onClick: () => onLinkClick && onLinkClick(linkIndex.value),
                     href,
                     isSelected,
                   }),
                 ],
-              }),
+              });
+            },
           })
         ),
         m.If({
