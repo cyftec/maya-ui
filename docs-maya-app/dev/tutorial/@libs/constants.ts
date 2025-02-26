@@ -1,3 +1,4 @@
+import { ComingSoon } from "../../@libs/components/ComingSoon";
 import {
   Disclaimer,
   GettingFamiliar,
@@ -32,15 +33,15 @@ export const chapters = [
       },
       {
         title: "Create your first app",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Understanding app structure",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Brahma, Karma & Maya",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
     ],
   },
@@ -49,31 +50,31 @@ export const chapters = [
     topics: [
       {
         title: "Syntax",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Overview",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Element",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "component",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Props",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Page",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "App structure",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
     ],
   },
@@ -82,23 +83,23 @@ export const chapters = [
     topics: [
       {
         title: "What is signal?",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Custom implementation",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Effect",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Derived signals",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Signal for mutating list",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
     ],
   },
@@ -107,15 +108,15 @@ export const chapters = [
     topics: [
       {
         title: "Default HTML page",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "Router",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
       {
         title: "UI toolkit",
-        article: GettingFamiliar,
+        article: ComingSoon,
       },
     ],
   },

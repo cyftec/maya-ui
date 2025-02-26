@@ -11,7 +11,7 @@ type Section = {
 };
 
 export const SETUP: Section = {
-  TITLE: `Environment setup`,
+  TITLE: `Setup environment`,
   PARA: `Firstly, make sure that below environments are ready.`,
   STEPS: [
     {
@@ -28,7 +28,7 @@ export const SETUP: Section = {
 };
 
 export const INSTALLATIONS: Section = {
-  TITLE: `Install packages and CLI library for Maya`,
+  TITLE: `Install packages`,
   PARA: `After environment is set up, install below packages which is required
         for the development.`,
   STEPS: [
