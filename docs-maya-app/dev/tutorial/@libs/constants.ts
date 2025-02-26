@@ -6,7 +6,7 @@ import {
 } from "./chapters/before-starting";
 import { InstallationAndSetup } from "./chapters/project-setup";
 
-export const chapters = [
+export const TUTORIAL_CHAPTERS = [
   {
     title: "Before Starting",
     topics: [

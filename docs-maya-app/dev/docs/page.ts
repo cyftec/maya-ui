@@ -1,166 +1,150 @@
 import { m } from "@mufw/maya";
-import { Page } from "../@libs/components/Page";
-import { Navbar, TitledList, ViewFrame } from "../@libs/elements";
+import { ChaptersPage } from "../@libs/components";
+import { ComingSoon } from "../@libs/components/ComingSoon";
 
-const chapters = [
+const DOCS_CHAPTERS = [
   {
-    title: "1. Overview",
+    title: "Overview",
     topics: [
       {
         title: "Getting familiar",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Prerequisites",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Installation",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "App structure",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Brahma, Karma & Maya",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Karma config",
-        href: "/",
+        article: ComingSoon,
       },
     ],
   },
   {
-    title: "2. Brahma (CLI)",
+    title: "Brahma (CLI)",
     topics: [
       {
         title: "Why the CLI?",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "brahma create",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "brahma install",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "brahma add",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "brahma remove",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "brahma publish",
-        href: "/",
+        article: ComingSoon,
       },
     ],
   },
   {
-    title: "3. Maya",
+    title: "Maya",
     topics: [
       {
         title: "Syntax",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Overview",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Element",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "component",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Props",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Page",
-        href: "/",
+        article: ComingSoon,
       },
     ],
   },
   {
-    title: "4. Signal",
+    title: "Signal",
     topics: [
       {
         title: "What is signal?",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Custom implementation",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Effect",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Derived signals",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Signal for mutating list",
-        href: "/",
+        article: ComingSoon,
       },
     ],
   },
   {
-    title: "5. Toolbox",
+    title: "Toolbox",
     topics: [
       {
         title: "Default HTML page",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "Router",
-        href: "/",
+        article: ComingSoon,
       },
       {
         title: "UI toolkit",
-        href: "/",
+        article: ComingSoon,
       },
     ],
   },
 ];
 
-export default Page({
-  title: "",
-  app: m.Div({
-    class: "flex mt3",
-    children: [
-      Navbar({
-        children: [
-          ...chapters.map(({ title, topics }) =>
-            TitledList({
-              classNames: "mb4 pb3",
-              titleClassNames: "f4",
-              itemClassNames: "mb2 pb1 f6",
-              linkColorCss: "purple",
-              title: title,
-              links: topics,
-            })
-          ),
-          m.P({
-            class: "gray f6",
-            children: "** end of list **",
-          }),
-        ],
-      }),
-      m.P({
-        class: "ph5 mt3 f5 gray flex-grow-1 space-mono",
-        children: "Docs  >  Overview  >  Getting familiar",
-      }),
-    ],
-  }),
+export default ChaptersPage({
+  htmlTitle: "Docs - Maya",
+  pageTitle: "Docs",
+  headElements: [
+    m.Link({
+      rel: "stylesheet",
+      href: "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/night-owl.css",
+    }),
+    m.Script({
+      src: "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+    }),
+  ],
+  chapters: DOCS_CHAPTERS,
 });

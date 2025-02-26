@@ -2,7 +2,7 @@ import { dstring, effect, Signal } from "@cyftech/signal";
 import { Child, Children, component, m, MHtmlElement } from "@mufw/maya";
 import { Navbar } from "../elements";
 
-type PageLayoutProps = {
+type NavigatorPageProps = {
   headerClassNames?: string;
   headerTitle: string;
   headerComponent?: Child;
@@ -14,7 +14,7 @@ type PageLayoutProps = {
   scrollToTopCounterSignal?: Signal<number>;
 };
 
-export const PageLayout = component<PageLayoutProps>(
+export const NavigatorPage = component<NavigatorPageProps>(
   ({
     headerClassNames,
     headerTitle,
