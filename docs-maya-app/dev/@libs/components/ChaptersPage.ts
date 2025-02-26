@@ -98,8 +98,7 @@ export const ChaptersPage = component<ChaptersPageProps>(
       app: NavigatorPage({
         headerTitle: pageTitle,
         headerComponent: m.Div({
-          class:
-            "flex flex-wrap items-center ml3 ml0-ns f7 b silver light-silver-ns",
+          class: "flex flex-wrap items-center f7 b silver light-silver-ns",
           children: m.For({
             subject: selectedTopicPathNames,
             map: (pathName) =>
