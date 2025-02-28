@@ -37,6 +37,9 @@ type Component<P extends object> = (props: Props<P>) => MHtmlElementGetter;
 export const component =
   <P extends object>(argComponent: ArgComp<P>): Component<P> =>
   (props) => {
+    for (const key of Object.keys(props)) {
+      if (props[key as keyof P] === undefined) delete props[key as keyof P];
+    }
     const argCompProps: ArgCompProps<P> = Object.entries(props).reduce(
       (map, prop) => {
         const [propKey, propValue] = prop as [keyof P, Props<P>[keyof P]];
