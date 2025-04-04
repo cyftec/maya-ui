@@ -1,6 +1,6 @@
 import {
-  derived,
-  val,
+  derive,
+  value,
   valueIsSignal,
   type DerivedSignal,
   type Signal,
@@ -21,9 +21,9 @@ export type IfElement = <S>(props: {
 export const ifElement: IfElement = ({ subject, isTruthy, isFalsy }) => {
   const deadComponent = m.Span({ style: "display: none;" });
   const compGetter = () =>
-    (!!val(subject) ? isTruthy : isFalsy) || deadComponent;
+    (!!value(subject) ? isTruthy : isFalsy) || deadComponent;
 
   return (
-    valueIsSignal(subject) ? derived(compGetter) : compGetter()
+    valueIsSignal(subject) ? derive(compGetter) : compGetter()
   ) as IfReturn<typeof subject>;
 };

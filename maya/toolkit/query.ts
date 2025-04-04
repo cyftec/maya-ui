@@ -1,4 +1,4 @@
-import { dpromise, dprops, effect, signal } from "@cyftech/signal";
+import { dpromise, dobject, effect, signal } from "@cyftech/signal";
 
 type QueryState<D> = {
   isLoading: boolean;
@@ -9,7 +9,7 @@ type QueryState<D> = {
 export const query = <T>(
   url: string,
   options: RequestInit | undefined,
-  onComplete: () => void
+  onComplete?: () => void
 ) => {
   const abortController = new AbortController();
   const state = signal<QueryState<T>>({
@@ -18,19 +18,23 @@ export const query = <T>(
     error: undefined,
   });
 
-  const [runQuery, fResult, fError] = dpromise(() => {
-    const prevData = state.value.data;
-    state.value = {
-      isLoading: true,
-      data: prevData,
-      error: undefined,
-    };
-    return fetch(url, {
-      signal: abortController.signal,
-      ...options,
-      method: "get",
-    });
-  }, onComplete);
+  const [runQuery, fResult, fError] = dpromise(
+    () => {
+      const prevData = state.value.data;
+      state.value = {
+        isLoading: true,
+        data: prevData,
+        error: undefined,
+      };
+      return fetch(url, {
+        signal: abortController.signal,
+        ...options,
+        method: "get",
+      });
+    },
+    undefined,
+    onComplete
+  );
 
   effect(() => {
     if (fError.value) {
@@ -49,7 +53,7 @@ export const query = <T>(
           state.value = {
             isLoading: false,
             error: undefined,
-            data: data,
+            data: data as T,
           };
         })
         .catch((e) => {
@@ -83,7 +87,7 @@ export const query = <T>(
   };
 
   return {
-    ...dprops(state),
+    ...dobject(state).props,
     runQuery,
     abortQuery,
     clearCache,

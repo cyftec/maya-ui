@@ -1,6 +1,6 @@
 import {
-  derived,
-  val,
+  derive,
+  value,
   valueIsSignal,
   type DerivedSignal,
   type Signal,
@@ -28,7 +28,7 @@ export const switchElement: SwitchElement = ({
   cases,
 }): SwitchReturn<typeof subject> => {
   const switchReturnGetter = () => {
-    const subjectValue = val(subject);
+    const subjectValue = value(subject);
     let component: Child | undefined = undefined;
     for (const [key, comp] of Object.entries(cases)) {
       if ((caseMatcher && caseMatcher(subject, key)) || subjectValue === key) {
@@ -40,6 +40,6 @@ export const switchElement: SwitchElement = ({
   };
 
   return (
-    valueIsSignal(subject) ? derived(switchReturnGetter) : switchReturnGetter()
+    valueIsSignal(subject) ? derive(switchReturnGetter) : switchReturnGetter()
   ) as SwitchReturn<typeof subject>;
 };

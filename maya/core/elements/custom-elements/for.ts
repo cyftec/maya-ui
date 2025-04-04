@@ -1,8 +1,8 @@
 import { getArrayMutations } from "@cyftech/immutjs";
 import {
-  derived,
+  derive,
   signal,
-  val,
+  value,
   type DerivedSignal,
   type MaybeSignalValue,
   type Signal,
@@ -50,8 +50,8 @@ const getMappedChild = <T extends object>(
   const indexSignal = signal(i);
   const itemSignal = signal(item);
   const child = mutableMap(
-    derived(() => itemSignal.value),
-    derived(() => indexSignal.value)
+    derive(() => itemSignal.value),
+    derive(() => indexSignal.value)
   );
   let mappedChild: Child;
   let elem: MHtmlElement<HTMLElement>;
@@ -155,13 +155,13 @@ export const forElement: ForElement = <
     );
   }
 
-  const list = derived(() => {
-    const items = val(subject);
+  const list = derive(() => {
+    const items = value(subject);
     return Array.isArray(items) ? items : [];
   });
 
   if (!itemKey) {
-    return derived(() =>
+    return derive(() =>
       getChildrenAfterInjection(list.value.map(map as MapFn<T>), n, nthChild)
     );
   }
@@ -181,12 +181,12 @@ export const forElement: ForElement = <
     throw new Error("for mutable map, item in the list must be an object");
 
   let previousItems: Object<T>[] | null = null;
-  const currentItems = derived((prevItems: Object<T>[] | undefined) => {
+  const currentItems = derive((prevItems: Object<T>[] | undefined) => {
     previousItems = prevItems || previousItems;
     return (list as Signal<Object<T>[]>).value;
   });
 
-  const mappedChildren = derived<MappedChild<T>[]>((prevMappedChildren) => {
+  const mappedChildren = derive<MappedChild<T>[]>((prevMappedChildren) => {
     if (!prevMappedChildren || !previousItems) {
       const initialItems = currentItems.value;
       return initialItems.map((item, i) =>
@@ -225,7 +225,7 @@ export const forElement: ForElement = <
     });
   });
 
-  const mappedChildrenSignal = derived(() =>
+  const mappedChildrenSignal = derive(() =>
     getChildrenAfterInjection(
       mappedChildren.value.map((item) => item.mappedChild),
       n,

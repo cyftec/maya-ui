@@ -1,5 +1,5 @@
 import {
-  val,
+  value,
   valueIsSignal,
   type MaybeSignalObject,
   type Signal,
@@ -56,7 +56,7 @@ export const component =
             ? {
                 type: "non-signal",
                 get value() {
-                  return val(propValue);
+                  return value(propValue);
                 },
               }
             : // string child(ren) will be filtered out from other type of Children
@@ -65,7 +65,7 @@ export const component =
             : {
                 type: "non-signal",
                 get value() {
-                  return val(propValue);
+                  return value(propValue);
                 },
               };
         map[propKey] = internalPropValue as ArgCompProps<P>[keyof P];
