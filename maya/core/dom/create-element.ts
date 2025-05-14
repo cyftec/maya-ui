@@ -271,6 +271,7 @@ const getNodesEventsAndAttributes = (
   Object.entries(props).forEach(([propKey, propValue]) => {
     if (propKey === "children") {
       if (validChildren(propValue)) children = propValue as Children;
+      else if (propValue === undefined) children = propValue;
       else
         throw new Error(
           `Invalid children prop for node with tagName: ${tagName}\n\n ${JSON.stringify(
