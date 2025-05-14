@@ -1,4 +1,4 @@
-import { derived, signal } from "@cyftech/signal";
+import { derive, signal } from "@cyftech/signal";
 import { m } from "@mufw/maya";
 import { ATTENTION, SELECTOR, UI_ELEM_ID } from "./@libs/constants";
 import { getNumberFromElement } from "./@libs/utils";
@@ -20,7 +20,7 @@ import { getNumberFromElement } from "./@libs/utils";
 
 const videoUpdatedCount = signal(0);
 
-const attentionScore = derived(() => {
+const attentionScore = derive(() => {
   if (!videoUpdatedCount.value) return "0";
 
   const lang = document.documentElement.lang;
@@ -34,7 +34,7 @@ const attentionScore = derived(() => {
   return scoreString;
 });
 
-const attentionEmoji = derived(() => {
+const attentionEmoji = derive(() => {
   const attentionScoreNum = parseFloat(attentionScore.value);
   if (attentionScoreNum < 10) return ATTENTION.OKAY;
   if (attentionScoreNum < 25) return ATTENTION.GOOD;

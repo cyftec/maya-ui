@@ -1,10 +1,10 @@
 import { m } from "@mufw/maya";
-import { derived, dstring, signal } from "@cyftech/signal";
+import { derive, dstring, signal } from "@cyftech/signal";
 import { Button } from "../@elements";
 import { Bulb, PhotoFrame } from "./@components";
 
 const isBulbOn = signal(false);
-const buttonColor = derived(() =>
+const buttonColor = derive(() =>
   isBulbOn.value ? "bg-light-gray black" : "bg-mid-gray light-gray"
 );
 
