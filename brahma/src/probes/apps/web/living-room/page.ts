@@ -1,5 +1,5 @@
 import { m } from "@mufw/maya";
-import { derive, dstring, signal } from "@cyftech/signal";
+import { derive, tmpl, signal } from "@cyftech/signal";
 import { Button } from "../@elements";
 import { Bulb, PhotoFrame } from "./@components";
 
@@ -34,7 +34,7 @@ export default m.Html({
       children: [
         m.Script({ src: "main.js", defer: "true" }),
         m.Div({
-          class: dstring`absolute--fill vh-100 ${() =>
+          class: tmpl`absolute--fill vh-100 ${() =>
             isBulbOn.value ? "bg-light-yellow" : "bg-dark-gray"}`,
           children: [
             Bulb({

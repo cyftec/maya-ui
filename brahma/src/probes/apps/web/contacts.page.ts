@@ -1,5 +1,5 @@
 import { m } from "@mufw/maya";
-import { dstring, signal } from "@cyftech/signal";
+import { tmpl, signal } from "@cyftech/signal";
 import { Header } from "./@elements/index.ts";
 
 const toggled = signal(false);
@@ -28,7 +28,7 @@ export default m.Html({
           children: [
             Header(),
             m.H1({
-              style: dstring`color: ${() =>
+              style: tmpl`color: ${() =>
                 toggled.value ? "red" : "green"}; user-select: none;`,
               onclick: () => (toggled.value = !toggled.value),
               children: "Contact Page",

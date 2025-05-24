@@ -1,4 +1,4 @@
-import { dstring, signal } from "@cyftech/signal";
+import { tmpl, signal } from "@cyftech/signal";
 import { component, DomEventValue, m } from "@mufw/maya";
 import { Header } from "./@elements/index.ts";
 
@@ -21,12 +21,11 @@ type BulbProps = {
 const Bulb = component<BulbProps>(({ fontColor, changeFontColor }) => {
   const isOn = signal(false);
   return m.Div({
-    class: dstring`mv2 pa4 ${() =>
-      isOn.value ? "bg-yellow" : "bg-light-gray"}`,
+    class: tmpl`mv2 pa4 ${() => (isOn.value ? "bg-yellow" : "bg-light-gray")}`,
     onclick: () => (isOn.value = !isOn.value),
     children: m.Div({
       class: fontColor,
-      children: dstring`${() => (isOn.value ? "ON" : "OFF")}`,
+      children: tmpl`${() => (isOn.value ? "ON" : "OFF")}`,
       onclick: changeFontColor,
     }),
   });
@@ -64,7 +63,7 @@ export default m.Html({
               children: `Turn ${topBulbIsOn.value ? "off" : "on"} bulb`,
             }),
             m.Switch({
-              subject: dstring`${3}`,
+              subject: tmpl`${3}`,
               defaultCase: m.Div({
                 class: `bg-silver pa4`,
                 children: "DISCONNECTED",
