@@ -1,4 +1,4 @@
-import { tmpl, signal } from "@cyftech/signal";
+import { tmpl, signal, op } from "@cyftech/signal";
 import { component, DomEventValue, m } from "@mufw/maya";
 import { Header } from "./@elements/index.ts";
 
@@ -21,10 +21,10 @@ type BulbProps = {
 const Bulb = component<BulbProps>(({ fontColor, changeFontColor }) => {
   const isOn = signal(false);
   return m.Div({
-    class: tmpl`mv2 pa4 ${() => (isOn.value ? "bg-yellow" : "bg-light-gray")}`,
+    class: tmpl`mv2 pa4 ${op(isOn).ternary("bg-yellow", "bg-light-gray")}`,
     onclick: () => (isOn.value = !isOn.value),
     children: m.Div({
-      class: fontColor,
+      class: tmpl`pointer hover-bg-washed-yellow ${fontColor}`,
       children: tmpl`${() => (isOn.value ? "ON" : "OFF")}`,
       onclick: changeFontColor,
     }),
@@ -74,7 +74,7 @@ export default m.Html({
               },
             }),
             m.If({
-              condition: topBulbIsOn,
+              subject: topBulbIsOn,
               isTruthy: m.Div({ class: `bg-yellow pa4`, children: "ON" }),
               isFalsy: m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
             }),
@@ -96,7 +96,7 @@ export default m.Html({
             }),
             m.Div(
               m.For({
-                items: bulbStates,
+                subject: bulbStates,
                 itemKey: "i",
                 n: 3,
                 nthChild: "Some injectable title",
