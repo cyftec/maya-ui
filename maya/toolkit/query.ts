@@ -1,4 +1,4 @@
-import { dpromise, dobject, effect, signal } from "@cyftech/signal";
+import { effect, promstates, signal, trap } from "@cyftech/signal";
 
 type QueryState<D> = {
   isLoading: boolean;
@@ -18,7 +18,7 @@ export const query = <T>(
     error: undefined,
   });
 
-  const [runQuery, fResult, fError] = dpromise(
+  const [runQuery, fResult, fError] = promstates(
     () => {
       const prevData = state.value.data;
       state.value = {
@@ -87,7 +87,7 @@ export const query = <T>(
   };
 
   return {
-    ...dobject(state).props,
+    ...trap(state).props,
     runQuery,
     abortQuery,
     clearCache,
