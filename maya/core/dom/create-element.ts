@@ -113,7 +113,7 @@ const setAttribute = (
   } else if (attrKey === "value") {
     mHtmlElement.value = attrValue;
   } else {
-    if (attrValue) mHtmlElement.setAttribute(attrKey, attrValue);
+    mHtmlElement.setAttribute(attrKey, attrValue);
   }
 };
 
