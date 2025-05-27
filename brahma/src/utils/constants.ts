@@ -1,6 +1,6 @@
 export const NPM_DEPS = {
   MAYA: {
-    "@mufw/maya": "0.1.20",
+    "@mufw/maya": "0.1.23",
     "@cyftech/immutjs": "0.1.0",
     "@cyftech/signal": "0.1.8",
   },
