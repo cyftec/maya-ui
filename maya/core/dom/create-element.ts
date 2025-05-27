@@ -17,7 +17,6 @@ import type {
   Child,
   ChildSignal,
   Children,
-  PropsOrChildren,
   ChildrenSignal,
   CustomEventKey,
   CustomEventValue,
@@ -25,20 +24,22 @@ import type {
   DomEventValue,
   EventProps,
   HtmlEventKey,
+  HtmlEventValue,
   HtmlTagName,
   MHtmlElement,
   MHtmlElementGetter,
   Props,
+  PropsOrChildren,
   SignalAttributeProps,
-  HtmlEventValue,
 } from "../../index.types.ts";
 import {
   customEventKeys,
-  decodeEntity,
+  decodeHTMLEntities,
   eventKeys,
   htmlEventKeys,
   idGen,
   phase,
+  sanitizeAttributeValue,
   validChild,
   validChildren,
   validChildrenSignal,
@@ -102,10 +103,10 @@ const setAttribute = (
   attrKey: string,
   attributePropValue: MaybeSignalValue<AttributeValue>
 ): void => {
-  const attrValue =
-    (valueIsMaybeSignalObject(attributePropValue)
-      ? (attributePropValue as MaybeSignalObject<AttributeValue>).value
-      : (attributePropValue as AttributeValue)) ?? "";
+  const unsafeAttrValue = valueIsMaybeSignalObject(attributePropValue)
+    ? (attributePropValue as MaybeSignalObject<AttributeValue>).value
+    : (attributePropValue as AttributeValue);
+  const attrValue = sanitizeAttributeValue(attrKey, unsafeAttrValue);
 
   if (typeof attrValue === "boolean") {
     if (attrValue) mHtmlElement.setAttribute(attrKey, "");
@@ -151,7 +152,7 @@ const getElementFromChild = (
   }
 
   if (typeof child === "string") {
-    return document.createTextNode(decodeEntity(child));
+    return document.createTextNode(decodeHTMLEntities(child));
   }
 
   if (validChild(child)) {
