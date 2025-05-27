@@ -112,9 +112,9 @@ const setAttribute = (
     if (attrValue) mHtmlElement.setAttribute(attrKey, "");
     else mHtmlElement.removeAttribute(attrKey);
   } else if (attrKey === "value") {
-    mHtmlElement.value = attrValue;
+    mHtmlElement.value = attrValue || "";
   } else {
-    mHtmlElement.setAttribute(attrKey, attrValue);
+    mHtmlElement.setAttribute(attrKey, attrValue || "");
   }
 };
 

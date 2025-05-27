@@ -48,18 +48,17 @@ export const sanitizeStyle = (input: string) =>
 export const sanitizeAttributeValue = (
   attribKey: string,
   attribValue: AttributeValue
-): NonNullable<AttributeValue> => {
-  const attrVal = attribValue || "";
+): AttributeValue => {
   if (attribKey === "href") {
-    if (typeof attrVal === "boolean")
+    if (typeof attribValue === "boolean")
       throw `The value of 'href' attribute should not be a boolean`;
-    return sanitizeHref(attrVal);
+    return sanitizeHref(attribValue || "");
   }
   if (attribKey === "style") {
-    if (typeof attrVal === "boolean")
+    if (typeof attribValue === "boolean")
       throw `The value of 'style' attribute should not be a boolean`;
-    return sanitizeStyle(attrVal);
+    return sanitizeStyle(attribValue || "");
   }
 
-  return attrVal;
+  return attribValue;
 };
