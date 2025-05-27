@@ -6,7 +6,7 @@ export type ProjectFileNames = {
   systemGenerated: FileNamesMap;
   static: FileNamesMap;
   generated: FileNamesMap;
-  buildable: { [f in string]: `${string}.ts` };
+  built: FileNamesMap;
 };
 
 export type Karma = {
@@ -21,8 +21,8 @@ export type KarmaConfig = {
       publishDirName: string;
       // file or dir name prefixed with below delimiter gets ignored during build
       ignoreDelimiter: string;
-      buildablePageFileName: `${string}.ts`;
-      buildableManifestFileName: `${string}.ts`;
+      buildablePageFileName: string;
+      buildableManifestFileName: string;
       skipErrorAndBuildNext: boolean;
     };
     localServer: {

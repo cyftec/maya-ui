@@ -11,7 +11,6 @@ export const projectFileNames: ProjectFileNames = {
   },
   generated: {
     stagingDir: "stage",
-    publishDir: "prod",
     bunLockFile: "bun.lock",
     bunLockBFile: "bun.lockb",
     gitIgnoreFile: ".gitignore",
@@ -19,7 +18,8 @@ export const projectFileNames: ProjectFileNames = {
     nodeModulesDir: "node_modules",
     packageJsonFile: "package.json",
   },
-  buildable: {
+  built: {
+    publishDir: "prod",
     pageFile: "page.ts",
     manifestFile: "manifest.ts",
   },
@@ -31,8 +31,8 @@ export const config: KarmaConfig = {
     build: {
       stagingDirName: projectFileNames.generated.stagingDir,
       publishDirName: projectFileNames.generated.publishDir,
-      buildablePageFileName: projectFileNames.buildable.pageFile,
-      buildableManifestFileName: projectFileNames.buildable.manifestFile,
+      buildablePageFileName: projectFileNames.built.pageFile,
+      buildableManifestFileName: projectFileNames.built.manifestFile,
       ignoreDelimiter: "@",
       skipErrorAndBuildNext: false,
     },
@@ -57,13 +57,13 @@ export const config: KarmaConfig = {
       "files.exclude": {
         [projectFileNames.static.karmaTypesFile]: true,
         [projectFileNames.generated.stagingDir]: false,
-        [projectFileNames.generated.publishDir]: false,
         [projectFileNames.generated.bunLockFile]: true,
         [projectFileNames.generated.bunLockBFile]: true,
         [projectFileNames.generated.gitIgnoreFile]: true,
         [projectFileNames.generated.dotVscodeDir]: true,
         [projectFileNames.generated.nodeModulesDir]: true,
         [projectFileNames.generated.packageJsonFile]: true,
+        [projectFileNames.built.publishDir]: false,
       },
     },
   },
@@ -77,7 +77,6 @@ export const config: KarmaConfig = {
       projectFileNames.generated.nodeModulesDir,
       projectFileNames.generated.packageJsonFile,
       `/${projectFileNames.generated.stagingDir}`,
-      `/${projectFileNames.generated.publishDir}`,
     ],
   },
 };
