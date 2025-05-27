@@ -30,7 +30,7 @@ export const config: KarmaConfig = {
   brahma: {
     build: {
       stagingDirName: projectFileNames.generated.stagingDir,
-      publishDirName: projectFileNames.generated.publishDir,
+      publishDirName: projectFileNames.built.publishDir,
       buildablePageFileName: projectFileNames.built.pageFile,
       buildableManifestFileName: projectFileNames.built.manifestFile,
       ignoreDelimiter: "@",
