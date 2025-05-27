@@ -66,8 +66,8 @@ const getMappedChild = <T extends object>(
       return elem;
     }) as MHtmlElementGetter;
     mappedChild.isElementGetter = true;
-  } else if (typeof child === "string") {
-    mappedChild = child as string;
+  } else if (!child || typeof child === "string") {
+    mappedChild = child || "";
   } else {
     throw `One of the child, ${child} passed in ForElement is invalid.`;
   }
@@ -169,7 +169,7 @@ export const forElement: ForElement = <
   /**
    * Mutable nodes list logic below
    */
-  let injectableElement: Child | undefined = nthChild;
+  let injectableElement: Child = nthChild;
   if (nthChild && typeof nthChild !== "string") {
     const element = nthChild();
     const injectable: MHtmlElementGetter = () => element;

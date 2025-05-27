@@ -15,7 +15,7 @@ import {
 } from "./custom-elements/index.ts";
 
 type MayaTagName = Capitalize<HtmlTagName>;
-type MayaElement = (propsOrChildren: PropsOrChildren) => MHtmlElementGetter;
+type MayaElement = (propsOrChildren?: PropsOrChildren) => MHtmlElementGetter;
 type MayaElementsMap = {
   [key in MayaTagName]: MayaElement;
 };
@@ -25,7 +25,7 @@ const mayaElementsMap: MayaElementsMap = htmlTagNames.reduce(
       .split("")
       .map((char, index) => (!index ? char.toUpperCase() : char))
       .join("") as MayaTagName;
-    const mHtmlComp: MayaElement = (propsOrChildren: PropsOrChildren) =>
+    const mHtmlComp: MayaElement = (propsOrChildren?: PropsOrChildren) =>
       createElementGetter(htmlTagName, propsOrChildren);
     map[mayaTagName] = mHtmlComp;
     return map;

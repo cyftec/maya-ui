@@ -15,7 +15,7 @@ type ArgCompProps<P extends object> = {
     ? P[K]
     : P[K] extends string | string[] | undefined
     ? MaybeSignalObject<P[K]>
-    : P[K] extends Children | undefined
+    : P[K] extends Children
     ? P[K]
     : MaybeSignalObject<P[K]>;
 };
@@ -26,7 +26,7 @@ type Props<P extends object> = {
     ? P[K]
     : P[K] extends string | string[] | undefined
     ? MaybeSignalValue<P[K]>
-    : P[K] extends Children | undefined
+    : P[K] extends Children
     ? P[K]
     : MaybeSignalValue<P[K]>;
 };

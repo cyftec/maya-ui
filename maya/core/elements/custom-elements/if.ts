@@ -9,8 +9,8 @@ import type { Child } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
 type IfReturn<Subject> = Subject extends Signal<any>
-  ? DerivedSignal<Child>
-  : Child;
+  ? DerivedSignal<NonNullable<Child>>
+  : NonNullable<Child>;
 
 export type IfElement = <S>(props: {
   subject: S;

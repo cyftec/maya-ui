@@ -9,8 +9,8 @@ import type { Child } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
 type SwitchReturn<Subject> = Subject extends Signal<any>
-  ? DerivedSignal<Child>
-  : Child;
+  ? DerivedSignal<NonNullable<Child>>
+  : NonNullable<Child>;
 
 export type SwitchElement = <S>(props: {
   subject: S;
@@ -29,7 +29,7 @@ export const switchElement: SwitchElement = ({
 }): SwitchReturn<typeof subject> => {
   const switchReturnGetter = () => {
     const subjectValue = value(subject);
-    let component: Child | undefined = undefined;
+    let component: Child = undefined;
     for (const [key, comp] of Object.entries(cases)) {
       if ((caseMatcher && caseMatcher(subject, key)) || subjectValue === key) {
         component = comp;

@@ -151,11 +151,13 @@ const getElementFromChild = (
     return getElementFromChild(nonSignalChild);
   }
 
-  if (typeof child === "string") {
-    return document.createTextNode(decodeHTMLEntities(child));
+  if (!child || typeof child === "string") {
+    return document.createTextNode(decodeHTMLEntities(child || ""));
   }
 
   if (validChild(child)) {
+    // the valid child is only 'MHtmlElementGetter' now and not
+    // 'undefined' or 'string' as that case is handled above already
     const elem = (child as MHtmlElementGetter)();
     if (!valueIsMHtmlElement(elem)) {
       throw new Error(
@@ -261,11 +263,11 @@ const getNodesEventsAndAttributes = (
   props: Props,
   tagName: string
 ): {
-  children: Children | undefined;
+  children: Children;
   eventProps: EventProps;
   attributeProps: AttributeProps;
 } => {
-  let children: Children | undefined = undefined;
+  let children: Children = undefined;
   const eventProps: EventProps = {};
   const attributeProps: AttributeProps = {};
 
@@ -291,7 +293,7 @@ const getNodesEventsAndAttributes = (
 
 export const createElementGetter = (
   tagName: HtmlTagName,
-  propsOrChildren: PropsOrChildren
+  propsOrChildren?: PropsOrChildren
 ): MHtmlElementGetter => {
   const elemGetter: MHtmlElementGetter = () => {
     const elementId = idGen.getNewId();

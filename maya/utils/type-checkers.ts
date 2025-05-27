@@ -15,6 +15,7 @@ export const validChild = (value: any): boolean =>
    * becaue value() will trigger idGen.getNewId() and it will mess up
    * entire build and mount processes.
    */
+  value === undefined ||
   typeof value === "string" ||
   (typeof value === "function" && value.isElementGetter);
 

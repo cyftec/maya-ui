@@ -43,12 +43,13 @@ export type MHtmlElementGetter = {
   (): MHtmlElement;
   isElementGetter: true;
 };
-export type Child = string | MHtmlElementGetter;
+export type RawChild = undefined | string;
+export type Child = RawChild | MHtmlElementGetter;
 export type ChildSignal = Signal<Child>;
 export type ChildrenSignal = Signal<MaybeArray<Child>>;
 export type ChildrenPlain =
-  | NonSignal<string>
-  | NonSignal<string[]>
+  | NonSignal<RawChild>
+  | NonSignal<RawChild[]>
   | MaybeArray<MaybeSignal<Child>>;
 export type Children = ChildrenSignal | ChildrenPlain;
 
