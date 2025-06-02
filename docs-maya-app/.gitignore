@@ -1,9 +1,0 @@
-.DS_Store
-karma-types.ts
-bun.lock
-bun.lockb
-.vscode
-node_modules
-package.json
-/stage
-/prod
