@@ -3,6 +3,7 @@ import {
   derive,
   signal,
   value,
+  valueIsSignal,
   type DerivedSignal,
   type MaybeSignalValue,
   type Signal,
@@ -20,21 +21,36 @@ type MutableMapFn<T> = (
   item: DerivedSignal<T>,
   index: DerivedSignal<number>
 ) => Child;
-type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
-  subject: MaybeSignalValue<T[]>;
+type ForProps<
+  T,
+  Sub extends MaybeSignalValue<T[]>,
+  ItemKey extends T extends object ? keyof T : never
+> = {
+  subject: Sub;
   itemKey?: ItemKey;
-  map: (T extends object ? keyof T : never) extends ItemKey
-    ? MapFn<T>
-    : MutableMapFn<T>;
+  map: (
+    Sub extends MaybeSignalValue<(infer R)[]>
+      ? R extends object
+        ? keyof R
+        : never
+      : never
+  ) extends ItemKey
+    ? MapFn<Sub extends MaybeSignalValue<(infer R)[]> ? R : never>
+    : MutableMapFn<Sub extends MaybeSignalValue<(infer R)[]> ? R : never>;
   n?: number;
   nthChild?: Child;
 };
 export type ForElement = <
   T,
-  ItemKey extends T extends object ? keyof T : never
+  Sub extends MaybeSignalValue<T[]>,
+  ItemKey extends Sub extends MaybeSignalValue<(infer R)[]>
+    ? R extends object
+      ? keyof R
+      : never
+    : never
 >(
-  props: ForProps<T, ItemKey>
-) => DerivedSignal<Child[]>;
+  props: ForProps<T, Sub, ItemKey>
+) => Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
 
 type MappedChild<T> = {
   indexSignal: SourceSignal<number>;
@@ -138,14 +154,19 @@ const getChildrenAfterInjection = (
  */
 export const forElement: ForElement = <
   T,
-  ItemKey extends T extends object ? keyof T : never
+  Sub extends MaybeSignalValue<T[]>,
+  ItemKey extends Sub extends MaybeSignalValue<(infer R)[]>
+    ? R extends object
+      ? keyof R
+      : never
+    : never
 >({
   subject,
   itemKey,
   map,
   n,
   nthChild,
-}: ForProps<T, ItemKey>) => {
+}: ForProps<T, Sub, ItemKey>) => {
   if (
     (nthChild && n === undefined) ||
     (n !== undefined && n > -1 && !nthChild)
@@ -153,6 +174,14 @@ export const forElement: ForElement = <
     throw new Error(
       "Either both 'n' and 'nthChild' be passed or none of them."
     );
+  }
+
+  if (!valueIsSignal(subject)) {
+    return getChildrenAfterInjection(
+      value(subject).map(map as MapFn<T>),
+      n,
+      nthChild
+    ) as Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
   }
 
   const list = derive(() => {
@@ -163,7 +192,7 @@ export const forElement: ForElement = <
   if (!itemKey) {
     return derive(() =>
       getChildrenAfterInjection(list.value.map(map as MapFn<T>), n, nthChild)
-    );
+    ) as Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
   }
 
   /**
@@ -233,5 +262,7 @@ export const forElement: ForElement = <
     )
   );
 
-  return mappedChildrenSignal;
+  return mappedChildrenSignal as Sub extends Signal<any[]>
+    ? DerivedSignal<Child[]>
+    : Child[];
 };
