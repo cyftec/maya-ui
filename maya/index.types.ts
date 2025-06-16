@@ -3,6 +3,7 @@ import {
   type MaybeSignalValue,
   type NonSignal,
   type Signal,
+  type SignalsEffect,
 } from "@cyftech/signal";
 import type {
   customEventKeys,
@@ -36,6 +37,7 @@ export type AttributeValue = string | boolean | undefined;
 export type HtmlTagName = (typeof htmlTagNames)[number];
 export type MHtmlElement<H extends HTMLElement = HTMLElement> = H & {
   elementId: number;
+  effects: SignalsEffect[];
   unmountListener: CustomEventValue | undefined;
   value?: string; // for HTMLInputElement
 };

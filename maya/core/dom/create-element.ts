@@ -88,7 +88,12 @@ const handleEventProps = (
       }
       if (eventName === "onunmount") {
         startUnmountObserver();
-        mHtmlElem.unmountListener = listenerFn as CustomEventValue;
+        const topLevelUnmountListener = mHtmlElem.unmountListener;
+        mHtmlElem.unmountListener = (currentElement: MHtmlElement) => {
+          (listenerFn as CustomEventValue)(currentElement);
+          if (typeof topLevelUnmountListener === "function")
+            topLevelUnmountListener(currentElement);
+        };
       }
     } else {
       console.error(
@@ -133,7 +138,7 @@ const handleAttributeProps = (
     setAttribute(mHtmlElem, attrKey, attrVal);
   });
 
-  effect(() => {
+  const attributesUpdator = effect(() => {
     Object.entries(signalAttributeProps).forEach((signalAttributeProp) => {
       const [attrKey, attrVal] = signalAttributeProp;
       const signalAttrVal = (attrVal as Signal<AttributeValue>).value;
@@ -141,6 +146,7 @@ const handleAttributeProps = (
       setAttribute(mHtmlElem, attrKey, signalAttrVal);
     });
   });
+  mHtmlElem.effects.push(attributesUpdator);
 };
 
 const getElementFromChild = (
@@ -174,7 +180,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
   if (!children) return;
 
   if (validChildrenSignal(children)) {
-    effect(() => {
+    const childrenSignalUpdator = effect(() => {
       const childrenSignal = children as ChildrenSignal;
       const childrenSignalValue = childrenSignal.value;
       const childrenList = (
@@ -202,6 +208,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
         if (childNode) parentNode.removeChild(childNode);
       }
     });
+    parentNode.effects.push(childrenSignalUpdator);
   }
 
   if (validPlainChildren(children)) {
@@ -238,7 +245,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
 
     if (signalledChildren.length) {
       signalledChildren.forEach(({ index, childSignal }) => {
-        effect(() => {
+        const signalledChildUpdator = effect(() => {
           if (!childSignal.value) return;
           if (!phase.currentIs("run")) return;
           const newChildNode = getElementFromChild(childSignal.value);
@@ -254,6 +261,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
             );
           }
         });
+        parentNode.effects.push(signalledChildUpdator);
       });
     }
   }
@@ -304,7 +312,10 @@ export const createElementGetter = (
         : document.createElement(tagName)
     ) as MHtmlElement;
     mHtmlElem.elementId = elementId;
-    mHtmlElem.unmountListener = undefined;
+    mHtmlElem.effects = [];
+    mHtmlElem.unmountListener = () => {
+      mHtmlElem.effects.forEach((eff) => eff.dispose());
+    };
     const props: Props = validChildren(propsOrChildren)
       ? { children: propsOrChildren as Children }
       : (propsOrChildren as Props);
