@@ -1,27 +1,38 @@
 import {
+  getNonSignalObject,
   value,
+  valueIsMaybeSignalObject,
   valueIsSignal,
   type MaybeSignalObject,
-  type Signal,
   type MaybeSignalValue,
+  type NonSignal,
+  type PlainValue,
+  type Signal,
 } from "@cyftech/signal";
-import type { Children, MHtmlElementGetter } from "../index.types";
-import { validChildren } from "../utils";
+import type {
+  Child,
+  Children,
+  MHtmlElementGetter,
+  NonSignalChild,
+  SignalChild,
+} from "../index.types";
 
-type ArgCompProps<P extends object> = {
+type InnerCompProps<P extends object> = {
   [K in keyof P]: P[K] extends
     | (Signal<any> | undefined)
     | (((...args: any) => any) | undefined)
     ? P[K]
     : P[K] extends string | string[] | undefined
     ? MaybeSignalObject<P[K]>
+    : P[K] extends NonSignal<(Child | NonSignalChild | SignalChild)[]>
+    ? PlainValue<P[K]>
     : P[K] extends Children
     ? P[K]
     : MaybeSignalObject<P[K]>;
 };
 type Props<P extends object> = {
   [K in keyof P]: P[K] extends
-    | Signal<any>
+    | (Signal<any> | undefined)
     | (((...args: any) => any) | undefined)
     ? P[K]
     : P[K] extends string | string[] | undefined
@@ -31,47 +42,36 @@ type Props<P extends object> = {
     : MaybeSignalValue<P[K]>;
 };
 
-type ArgComp<P extends object> = (p: ArgCompProps<P>) => MHtmlElementGetter;
+type InnerComp<P extends object> = (p: InnerCompProps<P>) => MHtmlElementGetter;
 type Component<P extends object> = (props: Props<P>) => MHtmlElementGetter;
 
+const possiblyNonSignalArrayWithMaybeSignalObjectItem = (input: any) => {
+  const val = value(input);
+  return (
+    Array.isArray(val) &&
+    (val as unknown[]).some((v) => valueIsMaybeSignalObject(v))
+  );
+};
 export const component =
-  <P extends object>(argComponent: ArgComp<P>): Component<P> =>
+  <P extends object>(innerComponent: InnerComp<P>): Component<P> =>
   (props) => {
     for (const key of Object.keys(props)) {
       if (props[key as keyof P] === undefined) delete props[key as keyof P];
     }
-    const argCompProps: ArgCompProps<P> = Object.entries(props).reduce(
+    const innerCompProps: InnerCompProps<P> = Object.entries(props).reduce(
       (map, prop) => {
         const [propKey, propValue] = prop as [keyof P, Props<P>[keyof P]];
 
-        const isPossiblyStringChild = typeof propValue === "string";
-        const isPossiblyStringArrayChildren =
-          Array.isArray(propValue) &&
-          propValue.every((v) => typeof v === "string");
-
-        const internalPropValue =
+        const innerPropValue =
           valueIsSignal(propValue) || typeof propValue === "function"
             ? propValue
-            : isPossiblyStringChild || isPossiblyStringArrayChildren
-            ? {
-                type: "non-signal",
-                get value() {
-                  return value(propValue);
-                },
-              }
-            : // string child(ren) will be filtered out from other type of Children
-            validChildren(propValue)
-            ? propValue
-            : {
-                type: "non-signal",
-                get value() {
-                  return value(propValue);
-                },
-              };
-        map[propKey] = internalPropValue as ArgCompProps<P>[keyof P];
+            : possiblyNonSignalArrayWithMaybeSignalObjectItem(propValue)
+            ? value(propValue)
+            : getNonSignalObject(value(propValue));
+        map[propKey] = innerPropValue as InnerCompProps<P>[keyof P];
         return map;
       },
-      {} as ArgCompProps<P>
+      {} as InnerCompProps<P>
     );
-    return argComponent(argCompProps);
+    return innerComponent(innerCompProps);
   };

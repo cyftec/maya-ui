@@ -1,5 +1,4 @@
 import {
-  type MaybeSignal,
   type MaybeSignalValue,
   type NonSignal,
   type Signal,
@@ -47,13 +46,22 @@ export type MHtmlElementGetter = {
 };
 export type RawChild = undefined | string;
 export type Child = RawChild | MHtmlElementGetter;
-export type ChildSignal = Signal<Child>;
-export type ChildrenSignal = Signal<MaybeArray<Child>>;
-export type ChildrenPlain =
-  | NonSignal<RawChild>
-  | NonSignal<RawChild[]>
-  | MaybeArray<MaybeSignal<Child>>;
-export type Children = ChildrenSignal | ChildrenPlain;
+
+export type NonSignalChild = NonSignal<Child>;
+export type NonSignalChildren = NonSignal<Child[]>;
+export type NonSignalChildOrChildren = NonSignalChild | NonSignalChildren;
+
+export type SignalChild = Signal<Child>;
+export type SignalChildren = Signal<Child[]>;
+export type SignalChildOrChildren = SignalChild | SignalChildren;
+
+export type PlainChildren = (Child | NonSignal<Child> | Signal<Child>)[];
+export type PlainChildOrChildren =
+  | Child
+  | NonSignalChildOrChildren
+  | PlainChildren;
+
+export type Children = PlainChildOrChildren | SignalChildOrChildren;
 
 /**
  * Props type-defs

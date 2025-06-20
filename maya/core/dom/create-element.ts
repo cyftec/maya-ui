@@ -1,10 +1,9 @@
 import {
   effect,
+  value,
   valueIsMaybeSignalObject,
-  valueIsNonSignalString,
-  valueIsNonSignalStringArray,
+  valueIsNonSignal,
   valueIsSignal,
-  type MaybeSignal,
   type MaybeSignalObject,
   type MaybeSignalValue,
   type NonSignal,
@@ -15,9 +14,7 @@ import type {
   AttributeProps,
   AttributeValue,
   Child,
-  ChildSignal,
   Children,
-  ChildrenSignal,
   CustomEventKey,
   CustomEventValue,
   DomEventKey,
@@ -28,9 +25,14 @@ import type {
   HtmlTagName,
   MHtmlElement,
   MHtmlElementGetter,
+  NonSignalChild,
+  NonSignalChildren,
+  PlainChildren,
   Props,
   PropsOrChildren,
   SignalAttributeProps,
+  SignalChild,
+  SignalChildOrChildren,
 } from "../../index.types.ts";
 import {
   customEventKeys,
@@ -42,9 +44,11 @@ import {
   sanitizeAttributeValue,
   validChild,
   validChildren,
-  validChildrenSignal,
+  validChildrenProp,
+  validNonSignalChild,
   validPlainChildren,
   validSignalChild,
+  validSignalChildOrChildren,
   valueIsArray,
   valueIsMHtmlElement,
 } from "../../utils/index.ts";
@@ -149,14 +153,7 @@ const handleAttributeProps = (
   mHtmlElem.effects.push(attributesUpdator);
 };
 
-const getElementFromChild = (
-  child: MaybeSignal<Child>
-): MHtmlElement | Text => {
-  if (validSignalChild(child)) {
-    const nonSignalChild = (child as ChildSignal).value;
-    return getElementFromChild(nonSignalChild);
-  }
-
+const getElementFromChild = (child: Child): MHtmlElement | Text => {
   if (!child || typeof child === "string") {
     return document.createTextNode(decodeHTMLEntities(child || ""));
   }
@@ -176,31 +173,37 @@ const getElementFromChild = (
   throw new Error(`Invalid child. Type of child: ${typeof child}`);
 };
 
+const setChild = (
+  parentNode: MHtmlElement,
+  child: Child,
+  childPositionIndex: number
+) => {
+  const prevChildNode = parentNode.childNodes[childPositionIndex];
+  const newChildNode = getElementFromChild(child);
+  if (prevChildNode && newChildNode) {
+    parentNode.replaceChild(newChildNode, prevChildNode);
+  } else if (newChildNode) {
+    parentNode.appendChild(newChildNode);
+  } else {
+    console.error(
+      `No child found for node with tagName: ${parentNode.tagName}`
+    );
+  }
+};
+
 const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
   if (!children) return;
 
-  if (validChildrenSignal(children)) {
-    const childrenSignalUpdator = effect(() => {
-      const childrenSignal = children as ChildrenSignal;
-      const childrenSignalValue = childrenSignal.value;
-      const childrenList = (
-        valueIsArray(childrenSignalValue)
-          ? childrenSignalValue
-          : [childrenSignalValue]
-      ) as Array<Child>;
-      childrenList.forEach((child, index) => {
-        const prevChildNode = parentNode.childNodes[index];
-        const newChildNode = getElementFromChild(child);
-        if (prevChildNode && newChildNode) {
-          parentNode.replaceChild(newChildNode, prevChildNode);
-        } else if (newChildNode) {
-          parentNode.appendChild(newChildNode);
-        } else {
-          console.error(
-            `No child found for node with tagName: ${parentNode.tagName}`
-          );
-        }
-      });
+  if (validSignalChildOrChildren(children)) {
+    const signalChildrenUpdator = effect(() => {
+      const signalChildOrChildrenValue = (children as SignalChildOrChildren)
+        .value;
+      const childrenList = valueIsArray(signalChildOrChildrenValue)
+        ? (signalChildOrChildrenValue as Child[])
+        : [signalChildOrChildrenValue as Child];
+      childrenList.forEach((child, index) =>
+        setChild(parentNode, child, index)
+      );
 
       const newChildrenCount = childrenList.length;
       while (newChildrenCount < parentNode.childNodes.length) {
@@ -208,62 +211,48 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
         if (childNode) parentNode.removeChild(childNode);
       }
     });
-    parentNode.effects.push(childrenSignalUpdator);
+    parentNode.effects.push(signalChildrenUpdator);
   }
 
-  if (validPlainChildren(children)) {
-    const sureArrayChildren = (
-      valueIsNonSignalString(children)
-        ? [(children as NonSignal<string>).value]
-        : valueIsNonSignalStringArray(children)
-        ? (children as NonSignal<string[]>).value
-        : valueIsArray(children)
-        ? (children as MaybeSignal<Child>[])
-        : [children as MaybeSignal<Child>]
-    ) as Array<MaybeSignal<Child>>;
-    const signalledChildren: { index: number; childSignal: ChildSignal }[] = [];
+  const childrenList: (Child | SignalChild)[] = validChild(children)
+    ? [children as Child]
+    : valueIsNonSignal(children)
+    ? validChild((children as NonSignal<any>).value)
+      ? [(children as NonSignal<any>).value as Child]
+      : validChildren((children as NonSignal<any>).value)
+      ? (children as NonSignalChildren).value
+      : []
+    : validPlainChildren(children)
+    ? (children as PlainChildren).map((ch) =>
+        validSignalChild(ch)
+          ? (ch as SignalChild)
+          : validNonSignalChild(ch)
+          ? (ch as NonSignalChild).value
+          : (ch as Child)
+      )
+    : [];
 
-    sureArrayChildren.forEach((maybeSignalChild, index) => {
-      if (validSignalChild(maybeSignalChild)) {
-        signalledChildren.push({
-          index,
-          childSignal: maybeSignalChild as ChildSignal,
-        });
-      }
-      const newChildNode = getElementFromChild(maybeSignalChild);
-      const prevChildNode = parentNode.childNodes[index];
-      if (prevChildNode && newChildNode) {
-        parentNode.replaceChild(newChildNode, prevChildNode);
-      } else if (!prevChildNode && newChildNode) {
-        parentNode.appendChild(newChildNode);
-      } else {
-        console.error(
-          `No child found for node with tagName: ${parentNode.tagName}`
-        );
-      }
-    });
-
-    if (signalledChildren.length) {
-      signalledChildren.forEach(({ index, childSignal }) => {
-        const signalledChildUpdator = effect(() => {
-          if (!childSignal.value) return;
-          if (!phase.currentIs("run")) return;
-          const newChildNode = getElementFromChild(childSignal.value);
-          const prevChildNode = parentNode.childNodes[index];
-
-          if (prevChildNode && newChildNode) {
-            parentNode.replaceChild(newChildNode, prevChildNode);
-          } else if (!prevChildNode && newChildNode) {
-            parentNode.appendChild(newChildNode);
-          } else {
-            console.error(
-              `No child found for node with tagName: ${parentNode.tagName}`
-            );
-          }
-        });
-        parentNode.effects.push(signalledChildUpdator);
+  const signalChildren: { index: number; signalChild: SignalChild }[] = [];
+  childrenList.forEach((maybeSignalChild, index) => {
+    if (validSignalChild(maybeSignalChild)) {
+      signalChildren.push({
+        index,
+        signalChild: maybeSignalChild as SignalChild,
       });
     }
+    const childValue = value(maybeSignalChild);
+    setChild(parentNode, childValue, index);
+  });
+
+  if (signalChildren.length) {
+    signalChildren.forEach(({ index, signalChild }) => {
+      const signalChildUpdator = effect(() => {
+        const childValue = signalChild.value;
+        if (!phase.currentIs("run")) return;
+        setChild(parentNode, childValue, index);
+      });
+      parentNode.effects.push(signalChildUpdator);
+    });
   }
 };
 
@@ -281,8 +270,7 @@ const getNodesEventsAndAttributes = (
 
   Object.entries(props).forEach(([propKey, propValue]) => {
     if (propKey === "children") {
-      if (validChildren(propValue)) children = propValue as Children;
-      else if (propValue === undefined) children = propValue;
+      if (validChildrenProp(propValue)) children = propValue as Children;
       else
         throw new Error(
           `Invalid children prop for node with tagName: ${tagName}\n\n ${JSON.stringify(
@@ -316,7 +304,7 @@ export const createElementGetter = (
     mHtmlElem.unmountListener = () => {
       mHtmlElem.effects.forEach((eff) => eff.dispose());
     };
-    const props: Props = validChildren(propsOrChildren)
+    const props: Props = validChildrenProp(propsOrChildren)
       ? { children: propsOrChildren as Children }
       : (propsOrChildren as Props);
 
