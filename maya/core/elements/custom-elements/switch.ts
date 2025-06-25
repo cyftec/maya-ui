@@ -3,6 +3,7 @@ import {
   value,
   valueIsSignal,
   type DerivedSignal,
+  type MaybeSignalValue,
   type Signal,
 } from "@cyftech/signal";
 import type { Child } from "../../../index.types.ts";
@@ -12,13 +13,25 @@ type SwitchReturn<Subject> = Subject extends Signal<any>
   ? DerivedSignal<NonNullable<Child>>
   : NonNullable<Child>;
 
-export type SwitchElement = <S>(props: {
+type SubjectValue<S extends MaybeSignalValue<string | number>> =
+  S extends MaybeSignalValue<number>
+    ? number
+    : S extends MaybeSignalValue<string>
+    ? string
+    : never;
+
+export type SwitchElement = <
+  S extends MaybeSignalValue<string | number>
+>(props: {
   subject: S;
-  caseMatcher?: (subject: S, matchingCase: string) => boolean;
+  caseMatcher?: (
+    subjectValue: SubjectValue<S>,
+    matchingCase: string
+  ) => boolean;
   defaultCase?: Child;
-  cases: {
-    [x in string]: Child;
-  };
+  cases:
+    | MaybeSignalValue<{ [x in string]: Child }>
+    | (S extends MaybeSignalValue<number> ? MaybeSignalValue<Child[]> : never);
 }) => SwitchReturn<S>;
 
 export const switchElement: SwitchElement = ({
@@ -28,10 +41,16 @@ export const switchElement: SwitchElement = ({
   cases,
 }): SwitchReturn<typeof subject> => {
   const switchReturnGetter = () => {
-    const subjectValue = value(subject);
+    const subjectValue = value(subject) as SubjectValue<typeof subject>;
+    const casesValue = value(cases);
     let component: Child = undefined;
-    for (const [key, comp] of Object.entries(cases)) {
-      if ((caseMatcher && caseMatcher(subject, key)) || subjectValue === key) {
+
+    for (const [currentCaseKey, comp] of Object.entries(casesValue)) {
+      const matchWithCaseMatcher =
+        caseMatcher && caseMatcher(subjectValue, currentCaseKey);
+      const normalCaseMatch = `${subjectValue}` === currentCaseKey;
+
+      if (matchWithCaseMatcher || normalCaseMatch) {
         component = comp;
         break;
       }
