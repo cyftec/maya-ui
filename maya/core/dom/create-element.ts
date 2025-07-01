@@ -1,10 +1,10 @@
 import {
   effect,
   value,
-  valueIsMaybeSignalObject,
+  valueIsSignalifiedObject,
   valueIsNonSignal,
   valueIsSignal,
-  type MaybeSignalObject,
+  type SignalifiedObject,
   type MaybeSignalValue,
   type NonSignal,
   type Signal,
@@ -112,8 +112,8 @@ const setAttribute = (
   attrKey: string,
   attributePropValue: MaybeSignalValue<AttributeValue>
 ): void => {
-  const unsafeAttrValue = valueIsMaybeSignalObject(attributePropValue)
-    ? (attributePropValue as MaybeSignalObject<AttributeValue>).value
+  const unsafeAttrValue = valueIsSignalifiedObject(attributePropValue)
+    ? (attributePropValue as SignalifiedObject<AttributeValue>).value
     : (attributePropValue as AttributeValue);
   const attrValue = sanitizeAttributeValue(attrKey, unsafeAttrValue);
 

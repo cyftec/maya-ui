@@ -1,9 +1,9 @@
 import {
   getNonSignalObject,
   value,
-  valueIsMaybeSignalObject,
   valueIsSignal,
-  type MaybeSignalObject,
+  valueIsSignalifiedObject,
+  type SignalifiedObject,
   type MaybeSignalValue,
   type NonSignal,
   type PlainValue,
@@ -23,12 +23,14 @@ type InnerCompProps<P extends object> = {
     | (((...args: any) => any) | undefined)
     ? P[K]
     : P[K] extends string | string[] | undefined
-    ? MaybeSignalObject<P[K]>
+    ? SignalifiedObject<P[K]>
     : P[K] extends NonSignal<(Child | NonSignalChild | SignalChild)[]>
     ? PlainValue<P[K]>
+    : P[K] extends Child[]
+    ? MaybeSignalValue<P[K]>
     : P[K] extends Children
     ? P[K]
-    : MaybeSignalObject<P[K]>;
+    : SignalifiedObject<P[K]>;
 };
 type Props<P extends object> = {
   [K in keyof P]: P[K] extends
@@ -45,11 +47,11 @@ type Props<P extends object> = {
 type InnerComp<P extends object> = (p: InnerCompProps<P>) => MHtmlElementGetter;
 type Component<P extends object> = (props: Props<P>) => MHtmlElementGetter;
 
-const possiblyNonSignalArrayWithMaybeSignalObjectItem = (input: any) => {
+const arrayWithSignalifiedObjectItems = (input: any) => {
   const val = value(input);
   return (
     Array.isArray(val) &&
-    (val as unknown[]).some((v) => valueIsMaybeSignalObject(v))
+    (val as unknown[]).some((v) => valueIsSignalifiedObject(v))
   );
 };
 export const component =
@@ -65,7 +67,7 @@ export const component =
         const innerPropValue =
           valueIsSignal(propValue) || typeof propValue === "function"
             ? propValue
-            : possiblyNonSignalArrayWithMaybeSignalObjectItem(propValue)
+            : arrayWithSignalifiedObjectItems(propValue)
             ? value(propValue)
             : getNonSignalObject(value(propValue));
         map[propKey] = innerPropValue as InnerCompProps<P>[keyof P];
