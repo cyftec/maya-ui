@@ -32,8 +32,8 @@ export default m.Html({
          * and it should be loaded for every single page
          * like below.
          */
-        m.Script({ src: "app.js", defer: "true" }),
-        m.Script({ src: "main.js", defer: "true" }),
+        m.Script({ src: "app.js", defer: true }),
+        m.Script({ src: "main.js", defer: true }),
         m.Div([m.H1("My first PWA")]),
       ],
     }),

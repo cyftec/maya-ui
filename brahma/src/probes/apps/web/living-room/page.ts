@@ -32,7 +32,7 @@ export default m.Html({
     }),
     m.Body({
       children: [
-        m.Script({ src: "main.js", defer: "true" }),
+        m.Script({ src: "main.js", defer: true }),
         m.Div({
           class: tmpl`absolute--fill vh-100 ${() =>
             isBulbOn.value ? "bg-light-yellow" : "bg-dark-gray"}`,

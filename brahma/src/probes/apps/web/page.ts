@@ -23,7 +23,7 @@ export default m.Html({
     }),
     m.Body({
       children: [
-        m.Script({ src: "main.js", defer: "true" }),
+        m.Script({ src: "main.js", defer: true }),
         m.Div({
           children: [
             Header(),
@@ -33,9 +33,9 @@ export default m.Html({
             m.Switch({
               subject: sub,
               cases: {
-                a: "A",
-                b: "B",
-                c: "C",
+                a: () => "A",
+                b: () => "B",
+                c: () => "C",
               },
             }),
             m.Button({

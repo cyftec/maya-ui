@@ -54,7 +54,7 @@ export default m.Html({
     }),
     m.Body({
       children: [
-        m.Script({ src: "examples.main.js", defer: "true" }),
+        m.Script({ src: "examples.main.js", defer: true }),
         m.Div({
           children: [
             Header(),
@@ -64,19 +64,22 @@ export default m.Html({
             }),
             m.Switch({
               subject: tmpl`${3}`,
-              defaultCase: m.Div({
-                class: `bg-silver pa4`,
-                children: "DISCONNECTED",
-              }),
+              defaultCase: () =>
+                m.Div({
+                  class: `bg-silver pa4`,
+                  children: "DISCONNECTED",
+                }),
               cases: {
-                true: m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
-                false: m.Div({ class: `bg-yellow pa4`, children: "ON" }),
+                true: () =>
+                  m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
+                false: () => m.Div({ class: `bg-yellow pa4`, children: "ON" }),
               },
             }),
             m.If({
               subject: topBulbIsOn,
-              isTruthy: m.Div({ class: `bg-yellow pa4`, children: "ON" }),
-              isFalsy: m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
+              isTruthy: () => m.Div({ class: `bg-yellow pa4`, children: "ON" }),
+              isFalsy: () =>
+                m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
             }),
             m.Button({
               onclick: () =>

@@ -20,7 +20,7 @@ export default m.Html({
     }),
     m.Body({
       children: [
-        m.Script({ src: "main.js", defer: "true" }),
+        m.Script({ src: "main.js", defer: true }),
         m.Div({
           children: [Header(), m.H1("About Page")],
         }),

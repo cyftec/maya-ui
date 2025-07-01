@@ -23,7 +23,7 @@ export default m.Html({
     }),
     m.Body({
       children: [
-        m.Script({ src: "contacts.main.js", defer: "true" }),
+        m.Script({ src: "contacts.main.js", defer: true }),
         m.Div({
           children: [
             Header(),
