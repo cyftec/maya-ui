@@ -3,6 +3,7 @@ import {
   value,
   valueIsSignal,
   type DerivedSignal,
+  type NonNullSignalValue,
   type Signal,
 } from "@cyftech/signal";
 import type { Child } from "../../../index.types.ts";
@@ -14,14 +15,20 @@ type IfReturn<Subject> = Subject extends Signal<any>
 
 export type IfElement = <S>(props: {
   subject: S;
-  isTruthy?: Child;
-  isFalsy?: Child;
+  isTruthy?: (nonNullSubject: NonNullSignalValue<S>) => Child;
+  isFalsy?: (subject: S) => Child;
 }) => IfReturn<S>;
 
 export const ifElement: IfElement = ({ subject, isTruthy, isFalsy }) => {
   const deadComponent = m.Span({ style: "display: none;" });
   const compGetter = () =>
-    (!!value(subject) ? isTruthy : isFalsy) || deadComponent;
+    !!value(subject)
+      ? isTruthy
+        ? isTruthy(subject as NonNullSignalValue<typeof subject>)
+        : deadComponent
+      : isFalsy
+      ? isFalsy(subject)
+      : deadComponent;
 
   return (
     valueIsSignal(subject) ? derive(compGetter) : compGetter()

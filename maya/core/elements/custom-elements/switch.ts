@@ -28,10 +28,8 @@ export type SwitchElement = <
     subjectValue: SubjectValue<S>,
     matchingCase: string
   ) => boolean;
-  defaultCase?: Child;
-  cases:
-    | MaybeSignalValue<{ [x in string]: Child }>
-    | (S extends MaybeSignalValue<number> ? MaybeSignalValue<Child[]> : never);
+  defaultCase?: () => Child;
+  cases: MaybeSignalValue<{ [x in string]: () => Child }>;
 }) => SwitchReturn<S>;
 
 export const switchElement: SwitchElement = ({
@@ -51,11 +49,15 @@ export const switchElement: SwitchElement = ({
       const normalCaseMatch = `${subjectValue}` === currentCaseKey;
 
       if (matchWithCaseMatcher || normalCaseMatch) {
-        component = comp;
+        component = comp();
         break;
       }
     }
-    return component || defaultCase || m.Span({ style: "display: none;" });
+    return (
+      component ||
+      (defaultCase && defaultCase()) ||
+      m.Span({ style: "display: none;" })
+    );
   };
 
   return (
