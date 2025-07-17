@@ -175,12 +175,19 @@ export const forElement: ForElement = <
       "Either both 'n' and 'nthChild' be passed or none of them."
     );
   }
+  let injectableChild: Child = nthChild;
+  if (nthChild && typeof nthChild !== "string") {
+    const element = nthChild();
+    const injectable: MHtmlElementGetter = () => element;
+    injectable.isElementGetter = true;
+    injectableChild = injectable;
+  }
 
   if (!valueIsSignal(subject)) {
     return getChildrenAfterInjection(
       value(subject).map(map as MapFn<T>),
       n,
-      nthChild
+      injectableChild
     ) as Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
   }
 
@@ -191,20 +198,17 @@ export const forElement: ForElement = <
 
   if (!itemKey) {
     return derive(() =>
-      getChildrenAfterInjection(list.value.map(map as MapFn<T>), n, nthChild)
+      getChildrenAfterInjection(
+        list.value.map(map as MapFn<T>),
+        n,
+        injectableChild
+      )
     ) as Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
   }
 
   /**
    * Mutable nodes list logic below
    */
-  let injectableElement: Child = nthChild;
-  if (nthChild && typeof nthChild !== "string") {
-    const element = nthChild();
-    const injectable: MHtmlElementGetter = () => element;
-    injectable.isElementGetter = true;
-    injectableElement = injectable;
-  }
   const itemsValue = list.value;
   if (itemsValue.length && typeof itemsValue[0] !== "object")
     throw new Error("for mutable map, item in the list must be an object");
@@ -258,7 +262,7 @@ export const forElement: ForElement = <
     getChildrenAfterInjection(
       mappedChildren.value.map((item) => item.mappedChild),
       n,
-      injectableElement
+      injectableChild
     )
   );
 
