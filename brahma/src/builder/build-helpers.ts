@@ -34,13 +34,13 @@ export const getBuildDirPath = (
   karmaConfig: KarmaConfig,
   buildProd: boolean
 ) => {
-  const { brahma, maya } = karmaConfig;
+  const { brahma } = karmaConfig;
   const { stagingDirName, publishDirName } = brahma.build;
-  const srcRootPath = `${appRootPath}/${maya.sourceDirName}`;
+  const mayaSrcPath = `${appRootPath}/${brahma.build.mayaSrcDir}`;
   const buildRootPath = `${appRootPath}/${
     buildProd ? publishDirName : stagingDirName
   }`;
-  const subPath = srcDirPath.split(srcRootPath)[1];
+  const subPath = srcDirPath.split(mayaSrcPath)[1];
 
   const buildDirPath = `${buildRootPath}${subPath}`;
   return buildDirPath;

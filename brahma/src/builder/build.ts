@@ -6,7 +6,7 @@ import {
 } from "../utils/constants.ts";
 import {
   createDirIfNotExist,
-  getAppSrcPath,
+  getMayaAppSrcPath,
   getFileNameFromPath,
   nonCachedImport,
 } from "../utils/common.ts";
@@ -133,7 +133,7 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
 
   const manifestFileName =
     buildData.config.brahma.build.buildableManifestFileName;
-  const appSrcPath = getAppSrcPath(buildData.appRootPath, buildData.config);
+  const appSrcPath = getMayaAppSrcPath(buildData.appRootPath, buildData.config);
   let filePath: string;
   let fileData: string | BunFile;
   if (
@@ -196,7 +196,11 @@ export const buildDir = async (
     await rm(destDirPath, { recursive: true });
   }
 
-  if (isRootDir && buildData.isProd && buildData.config.maya?.mode === "ext") {
+  if (
+    isRootDir &&
+    buildData.isProd &&
+    buildData.config.brahma.build.mode === "ext"
+  ) {
     await zipAndDeleteDir(destDirPath, `${destDirPath}.zip`);
   }
 };
@@ -211,6 +215,6 @@ export const buildApp = async (
   buildData.config = config;
   buildData.isProd = isProd;
   await setupBuild();
-  const sourcePath = getAppSrcPath(appRootPath, config);
-  return await buildDir(sourcePath, true);
+  const mayaSrcPath = getMayaAppSrcPath(appRootPath, config);
+  return await buildDir(mayaSrcPath, true);
 };

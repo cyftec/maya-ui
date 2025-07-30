@@ -34,28 +34,21 @@ export const stageApp = async () => {
   const karma = await getKarma(cwd);
   if (!karma) return false;
   const { config } = karma;
-  const sourceDirPath = `${cwd}/${config.maya.sourceDirName}`;
-  const otherDirPaths = config.brahma.localServer.otherWatchDirs.map(
-    (dirPath) => `${cwd}/${dirPath}`
-  );
-  const stagingDirPath = `${cwd}/${config.brahma.localServer.serveDirectory}`;
+  const watchDirPath = `${cwd}/${config.brahma.localServer.watchDir}`;
+  const stagingDirPath = `${cwd}/${config.brahma.localServer.serveDir}`;
   const watchIgnorePaths = [DS_STORE_REGEX];
   const serverPort = config.brahma.localServer.port;
 
   await buildSrcDir(cwd, config);
-  watchFileChange(
-    [sourceDirPath, ...otherDirPaths],
-    watchIgnorePaths,
-    (path) => {
-      if (busyBuildingApp) return;
-      onFileModification(async () => {
-        busyBuildingApp = true;
-        console.log(`Change detected: ${path}`);
-        await buildSrcDir(cwd, config);
-        busyBuildingApp = false;
-      });
-    }
-  );
+  watchFileChange(watchDirPath, watchIgnorePaths, (path) => {
+    if (busyBuildingApp) return;
+    onFileModification(async () => {
+      busyBuildingApp = true;
+      console.log(`Change detected: ${path}`);
+      await buildSrcDir(cwd, config);
+      busyBuildingApp = false;
+    });
+  });
   runLocalServer(
     serverPort,
     stagingDirPath,

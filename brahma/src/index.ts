@@ -25,7 +25,7 @@ const execCli = async () => {
   if (commands.create) await createApp(commands.create.args);
   if (commands.reset) await resetApp(commands.reset.args);
 
-  const { karmaMissing, karmaCorrupted, srcDirMissing } =
+  const { karmaMissing, karmaCorrupted, srcDirMissing, mayaSrcDirMissing } =
     await validateMayaAppDir(cwd);
   if (karmaMissing || karmaCorrupted) {
     console.log(
@@ -55,7 +55,7 @@ const execCli = async () => {
   if (srcDirMissing) {
     const files = await readdir(cwd);
     console.log(
-      `ERROR: App source directory '${config?.maya.sourceDirName}' is either missing or have a different name.`
+      `ERROR: App source directory '${config?.brahma.build.sourceDirName}' is either missing or have a different name.`
     );
     console.log(`\nList of files in current directory:`);
     console.log(files);
@@ -74,6 +74,14 @@ const execCli = async () => {
     console.log(
       `ERROR: App not installed. 'package.json' file is missing.
   Run 'brahma install' command to install app first.`
+    );
+    process.exit(1);
+  }
+
+  if (mayaSrcDirMissing) {
+    console.log(
+      `ERROR: Buildable maya app source directory '${config?.brahma.build.mayaSrcDir}' is either missing or have a different path or name.
+Check 'config.brahma.build.mayaSrcDir' in 'karma.ts' file.`
     );
     process.exit(1);
   }

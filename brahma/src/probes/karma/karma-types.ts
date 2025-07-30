@@ -1,12 +1,30 @@
 export type AppMode = "web" | "ext" | "pwa";
 export type KarmaResetMode = "soft" | "hard";
 
-type FileNamesMap = { [f in string]: string };
+type FileNamesMap = Record<string, string>;
 export type ProjectFileNames = {
-  systemGenerated: FileNamesMap;
-  static: FileNamesMap;
-  generated: FileNamesMap;
-  built: FileNamesMap;
+  buildable: {
+    mayaSrcDir: string;
+    pageFile: `${string}.ts`;
+    manifestFile: `${string}.ts`;
+  } & FileNamesMap;
+  static: {
+    sourceDir: string;
+    karmaTypesFile: "karma-types.ts";
+  } & FileNamesMap;
+  systemGenerated: {
+    dsStoreDir: ".DS_Store";
+  } & FileNamesMap;
+  generated: {
+    stagingDir: string;
+    publishDir: string;
+    bunLockFile: "bun.lock";
+    bunLockBFile: "bun.lockb";
+    gitIgnoreFile: ".gitignore";
+    dotVscodeDir: ".vscode";
+    nodeModulesDir: "node_modules";
+    packageJsonFile: "package.json";
+  } & FileNamesMap;
 };
 
 export type Karma = {
@@ -17,40 +35,45 @@ export type Karma = {
 export type KarmaConfig = {
   brahma: {
     build: {
-      stagingDirName: string;
-      publishDirName: string;
-      // file or dir name prefixed with below delimiter gets ignored during build
+      mode: AppMode;
+      skipErrorAndBuildNext: boolean;
+      /**
+       * file or dir name prefixed with below delimiter gets ignored during build
+       */
       ignoreDelimiter: string;
+      sourceDirName: string;
+      mayaSrcDir: string;
       buildablePageFileName: string;
       buildableManifestFileName: string;
-      skipErrorAndBuildNext: boolean;
+      stagingDirName: string;
+      publishDirName: string;
     };
     localServer: {
       port: number;
       redirectOnStart: boolean;
       reloadPageOnFocus: boolean;
-      // Serving directory path excluding parent directory path
-      serveDirectory: string;
-      // Directories other than source directory, on which change should trigger rebuild
-      otherWatchDirs: string[];
+      /**
+       * Path of app source directory which should be watched for any changes
+       */
+      watchDir: string;
+      /**
+       * Path of built html app directory, which should be served by local server
+       */
+      serveDir: string;
     };
   };
-  maya: {
-    mode: AppMode;
-    sourceDirName: string;
-    packageJson: {
-      name?: string;
-      version?: string;
-      description?: string;
-      author?: string;
-      license?: string;
-      type?: "module";
-      devDependencies?: {
-        [dd in string]: string;
-      };
-      dependencies: {
-        [d in string]: string;
-      };
+  packageJson: {
+    name?: string;
+    version?: string;
+    description?: string;
+    author?: string;
+    license?: string;
+    type?: "module";
+    devDependencies?: {
+      [dd in string]: string;
+    };
+    dependencies: {
+      [d in string]: string;
     };
   };
   git: {

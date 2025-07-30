@@ -22,8 +22,7 @@ const showVersionOnly = async (cliRootPath: string) => {
   try {
     const karmaPath = `${process.cwd()}/karma.ts`;
     const karma = (await nonCachedImport(karmaPath)) as Karma;
-    currentMayaV =
-      karma?.config?.maya?.packageJson?.dependencies?.["@mufw/maya"];
+    currentMayaV = karma?.config?.packageJson?.dependencies?.["@mufw/maya"];
   } catch (error) {}
 
   if (!currentMayaV) {

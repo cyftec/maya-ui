@@ -29,8 +29,8 @@ export const getKarma = async (dirPath: string): Promise<Karma | undefined> => {
   return await import(`${dirPath}/karma.ts`);
 };
 
-export const getAppSrcPath = (appRootPath: string, config: KarmaConfig) => {
-  return `${appRootPath}/${config.maya.sourceDirName}`;
+export const getMayaAppSrcPath = (appRootPath: string, config: KarmaConfig) => {
+  return `${appRootPath}/${config.brahma.build.mayaSrcDir}`;
 };
 
 export const validateMayaAppDir = async (
@@ -39,11 +39,13 @@ export const validateMayaAppDir = async (
   karmaMissing: boolean;
   karmaCorrupted: boolean;
   srcDirMissing: boolean;
+  mayaSrcDirMissing: boolean;
 }> => {
   const validState = {
     karmaMissing: false,
     karmaCorrupted: false,
     srcDirMissing: false,
+    mayaSrcDirMissing: false,
   };
   const karma = await getKarma(dirPath);
   if (!karma) {
@@ -56,14 +58,18 @@ export const validateMayaAppDir = async (
   if (!config || !regeneratableFiles) {
     return { ...validState, karmaCorrupted: true };
   }
-  const files = await readdir(dirPath);
-  for (const file of files) {
-    const fileStats = await lstat(`${dirPath}/${file}`);
-    if (file === config.maya.sourceDirName && fileStats.isDirectory())
-      return validState;
-  }
 
-  return { ...validState, srcDirMissing: true };
+  const sourceDirExists = await exists(
+    `${dirPath}/${config.brahma.build.sourceDirName}`
+  );
+  if (!sourceDirExists) return { ...validState, srcDirMissing: true };
+
+  const mayaSrcDirExists = await exists(
+    `${dirPath}/${config.brahma.build.mayaSrcDir}`
+  );
+  if (!mayaSrcDirExists) return { ...validState, mayaSrcDirMissing: true };
+
+  return validState;
 };
 
 export const splitText = (

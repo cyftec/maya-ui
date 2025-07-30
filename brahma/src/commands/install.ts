@@ -36,7 +36,7 @@ const installPackages = async (
   const packageJsonPath = `${appRootPath}/package.json`;
   await Bun.write(
     packageJsonPath,
-    JSON.stringify(karmaConfig.maya.packageJson, null, "\t")
+    JSON.stringify(karmaConfig.packageJson, null, "\t")
   );
   await $`bun i`;
 };
