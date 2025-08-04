@@ -240,7 +240,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
         signalChild: maybeSignalChild as SignalChild,
       });
     }
-    const childValue = value(maybeSignalChild);
+    const childValue = value<Child>(maybeSignalChild);
     setChild(parentNode, childValue, index);
   });
 

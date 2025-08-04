@@ -8,6 +8,7 @@ import {
   type MaybeSignalValue,
   type Signal,
   type SourceSignal,
+  type ObjectSourceSignal,
 } from "@cyftech/signal";
 import type {
   Child,
@@ -17,7 +18,7 @@ import type {
 } from "../../../index.types.ts";
 
 type MapFn<T> = (item: T, index: number) => Child;
-type MutableMapFn<T> = (
+type MutableMapFn = <T extends object>(
   item: DerivedSignal<T>,
   index: DerivedSignal<number>
 ) => Child;
@@ -36,7 +37,7 @@ type ForProps<
       : never
   ) extends ItemKey
     ? MapFn<Sub extends MaybeSignalValue<(infer R)[]> ? R : never>
-    : MutableMapFn<Sub extends MaybeSignalValue<(infer R)[]> ? R : never>;
+    : MutableMapFn;
   n?: number;
   nthChild?: Child;
 };
@@ -52,19 +53,19 @@ export type ForElement = <
   props: ForProps<T, Sub, ItemKey>
 ) => Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
 
-type MappedChild<T> = {
+type MappedChild<T extends object> = {
   indexSignal: SourceSignal<number>;
-  itemSignal: SourceSignal<T>;
+  itemSignal: ObjectSourceSignal<T>;
   mappedChild: Child;
 };
 
 const getMappedChild = <T extends object>(
   item: T,
   i: number,
-  mutableMap: MutableMapFn<T>
+  mutableMap: MutableMapFn
 ): MappedChild<T> => {
   const indexSignal = signal(i);
-  const itemSignal = signal(item);
+  const itemSignal = signal(item) as ObjectSourceSignal<typeof item>;
   const child = mutableMap(
     derive(() => itemSignal.value),
     derive(() => indexSignal.value)
@@ -213,50 +214,53 @@ export const forElement: ForElement = <
   if (itemsValue.length && typeof itemsValue[0] !== "object")
     throw new Error("for mutable map, item in the list must be an object");
 
-  let previousItems: Object<T>[] | null = null;
+  type SubjectItem = Object<T>;
+  let previousItems: SubjectItem[] | null = null;
   const currentItems = derive((prevItems: Object<T>[] | undefined) => {
     previousItems = prevItems || previousItems;
     return (list as Signal<Object<T>[]>).value;
   });
 
-  const mappedChildren = derive<MappedChild<T>[]>((prevMappedChildren) => {
-    if (!prevMappedChildren || !previousItems) {
-      const initialItems = currentItems.value;
-      return initialItems.map((item, i) =>
-        getMappedChild(item as Object<T>, i, map as MutableMapFn<T>)
-      );
-    }
-
-    const muts = getArrayMutations(
-      previousItems,
-      currentItems.value,
-      itemKey as string
-    );
-
-    return muts.map((mut, i) => {
-      const oldMappedChild = (prevMappedChildren || [])[mut.oldIndex];
-      console.assert(
-        (mut.type === "add" && mut.oldIndex === -1 && !oldMappedChild) ||
-          (mut.oldIndex > -1 && !!oldMappedChild),
-        "In case of mutation type 'add' oldIndex should be '-1', or else oldIndex should always be a non-negative integer."
-      );
-
-      if (oldMappedChild) {
-        if (mut.type === "shuffle") {
-          oldMappedChild.indexSignal.value = i;
-        }
-
-        if (mut.type === "update") {
-          oldMappedChild.indexSignal.value = i;
-          oldMappedChild.itemSignal.value = { ...mut.value };
-        }
-
-        return oldMappedChild;
+  const mappedChildren = derive<MappedChild<SubjectItem>[]>(
+    (prevMappedChildren) => {
+      if (!prevMappedChildren || !previousItems) {
+        const initialItems = currentItems.value;
+        return initialItems.map((item, i) =>
+          getMappedChild(item as Object<T>, i, map as MutableMapFn)
+        );
       }
 
-      return getMappedChild(mut.value, i, map as MutableMapFn<T>);
-    });
-  });
+      const muts = getArrayMutations(
+        previousItems,
+        currentItems.value,
+        itemKey as string
+      );
+
+      return muts.map((mut, i) => {
+        const oldMappedChild = (prevMappedChildren || [])[mut.oldIndex];
+        console.assert(
+          (mut.type === "add" && mut.oldIndex === -1 && !oldMappedChild) ||
+            (mut.oldIndex > -1 && !!oldMappedChild),
+          "In case of mutation type 'add' oldIndex should be '-1', or else oldIndex should always be a non-negative integer."
+        );
+
+        if (oldMappedChild) {
+          if (mut.type === "shuffle") {
+            oldMappedChild.indexSignal.value = i;
+          }
+
+          if (mut.type === "update") {
+            oldMappedChild.indexSignal.value = i;
+            oldMappedChild.itemSignal.value = { ...mut.value };
+          }
+
+          return oldMappedChild;
+        }
+
+        return getMappedChild(mut.value, i, map as MutableMapFn);
+      });
+    }
+  );
 
   const mappedChildrenSignal = derive(() =>
     getChildrenAfterInjection(
