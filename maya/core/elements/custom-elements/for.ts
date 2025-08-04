@@ -9,6 +9,7 @@ import {
   type Signal,
   type SourceSignal,
   type ObjectSourceSignal,
+  type PlainValue,
 } from "@cyftech/signal";
 import type {
   Child,
@@ -18,40 +19,29 @@ import type {
 } from "../../../index.types.ts";
 
 type MapFn<T> = (item: T, index: number) => Child;
-type MutableMapFn = <T extends object>(
+type MutableMapFn<T extends object> = (
   item: DerivedSignal<T>,
   index: DerivedSignal<number>
 ) => Child;
-type ForProps<
-  T,
-  Sub extends MaybeSignalValue<T[]>,
-  ItemKey extends T extends object ? keyof T : never
-> = {
-  subject: Sub;
+
+type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
+  subject: MaybeSignalValue<T[]>;
   itemKey?: ItemKey;
-  map: (
-    Sub extends MaybeSignalValue<(infer R)[]>
-      ? R extends object
-        ? keyof R
-        : never
-      : never
-  ) extends ItemKey
-    ? MapFn<Sub extends MaybeSignalValue<(infer R)[]> ? R : never>
-    : MutableMapFn;
+  map: (T extends object ? keyof T : never) extends ItemKey
+    ? MapFn<PlainValue<T>>
+    : MutableMapFn<T extends object ? T : never>;
   n?: number;
   nthChild?: Child;
 };
+type ForReturnType<Sub> = Sub extends Signal<any[]>
+  ? DerivedSignal<Child[]>
+  : Child[];
 export type ForElement = <
   T,
-  Sub extends MaybeSignalValue<T[]>,
-  ItemKey extends Sub extends MaybeSignalValue<(infer R)[]>
-    ? R extends object
-      ? keyof R
-      : never
-    : never
+  ItemKey extends T extends object ? keyof T : never
 >(
-  props: ForProps<T, Sub, ItemKey>
-) => Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
+  props: ForProps<T, ItemKey>
+) => ForReturnType<(typeof props)["subject"]>;
 
 type MappedChild<T extends object> = {
   indexSignal: SourceSignal<number>;
@@ -62,7 +52,7 @@ type MappedChild<T extends object> = {
 const getMappedChild = <T extends object>(
   item: T,
   i: number,
-  mutableMap: MutableMapFn
+  mutableMap: MutableMapFn<T>
 ): MappedChild<T> => {
   const indexSignal = signal(i);
   const itemSignal = signal(item) as ObjectSourceSignal<typeof item>;
@@ -155,19 +145,14 @@ const getChildrenAfterInjection = (
  */
 export const forElement: ForElement = <
   T,
-  Sub extends MaybeSignalValue<T[]>,
-  ItemKey extends Sub extends MaybeSignalValue<(infer R)[]>
-    ? R extends object
-      ? keyof R
-      : never
-    : never
+  ItemKey extends T extends object ? keyof T : never
 >({
   subject,
   itemKey,
   map,
   n,
   nthChild,
-}: ForProps<T, Sub, ItemKey>) => {
+}: ForProps<T, ItemKey>) => {
   if (
     (nthChild && n === undefined) ||
     (n !== undefined && n > -1 && !nthChild)
@@ -189,7 +174,7 @@ export const forElement: ForElement = <
       value(subject).map(map as MapFn<T>),
       n,
       injectableChild
-    ) as Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
+    ) as ForReturnType<typeof subject>;
   }
 
   const list = derive(() => {
@@ -204,7 +189,7 @@ export const forElement: ForElement = <
         n,
         injectableChild
       )
-    ) as Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
+    ) as ForReturnType<typeof subject>;
   }
 
   /**
@@ -216,9 +201,9 @@ export const forElement: ForElement = <
 
   type SubjectItem = Object<T>;
   let previousItems: SubjectItem[] | null = null;
-  const currentItems = derive((prevItems: Object<T>[] | undefined) => {
+  const currentItems = derive((prevItems: SubjectItem[] | undefined) => {
     previousItems = prevItems || previousItems;
-    return (list as Signal<Object<T>[]>).value;
+    return (list as Signal<SubjectItem[]>).value;
   });
 
   const mappedChildren = derive<MappedChild<SubjectItem>[]>(
@@ -226,7 +211,11 @@ export const forElement: ForElement = <
       if (!prevMappedChildren || !previousItems) {
         const initialItems = currentItems.value;
         return initialItems.map((item, i) =>
-          getMappedChild(item as Object<T>, i, map as MutableMapFn)
+          getMappedChild(
+            item as SubjectItem,
+            i,
+            map as MutableMapFn<SubjectItem>
+          )
         );
       }
 
@@ -257,7 +246,7 @@ export const forElement: ForElement = <
           return oldMappedChild;
         }
 
-        return getMappedChild(mut.value, i, map as MutableMapFn);
+        return getMappedChild(mut.value, i, map as MutableMapFn<SubjectItem>);
       });
     }
   );
@@ -270,7 +259,5 @@ export const forElement: ForElement = <
     )
   );
 
-  return mappedChildrenSignal as Sub extends Signal<any[]>
-    ? DerivedSignal<Child[]>
-    : Child[];
+  return mappedChildrenSignal as ForReturnType<typeof subject>;
 };
