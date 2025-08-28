@@ -29,7 +29,7 @@ export const projectFileNames = {
 // DO NOT CHANGE exported variable name
 export const config: KarmaConfig = {
   brahma: {
-    version: "0.1.30",
+    version: "0.1.31",
     build: {
       mode: "web",
       skipErrorAndBuildNext: false,

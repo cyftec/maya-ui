@@ -1,8 +1,8 @@
 export const NPM_DEPS = {
   MAYA: {
-    "@mufw/maya": "0.1.31",
+    "@mufw/maya": "0.1.32",
     "@cyftech/immutjs": "0.1.0",
-    "@cyftech/signal": "0.1.14",
+    "@cyftech/signal": "0.1.15",
   },
   CHROME: { "@types/chrome": "0.0.297" },
   PWA: { "@types/web-app-manifest": "1.0.8" },
