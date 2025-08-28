@@ -1,4 +1,5 @@
-import { exists, lstat, mkdir, readdir } from "node:fs/promises";
+import { exists, mkdir, readdir } from "node:fs/promises";
+import path from "node:path";
 import type { Karma, KarmaConfig } from "../probes/karma/karma-types";
 
 export const nonCachedImport = async (modulePath: string) => {
@@ -29,19 +30,38 @@ export const getKarma = async (dirPath: string): Promise<Karma | undefined> => {
   return await import(`${dirPath}/karma.ts`);
 };
 
+export const getCurrentCliVersion = async () => {
+  const thisProjectPackageJsonPath = path.resolve(
+    __dirname,
+    "../../package.json"
+  );
+  const packageJsonExist = await exists(thisProjectPackageJsonPath);
+  if (!packageJsonExist) throw `'package.json' file is missing.`;
+  const packageJsonText = await Bun.file(thisProjectPackageJsonPath).text();
+  const currentCliVersion = packageJsonText
+    .split(`"version"`)[1]
+    .split(",")[0]
+    .trim()
+    .slice(1)
+    .trim()
+    .replaceAll(`"`, "");
+  return currentCliVersion;
+};
+
 export const getMayaAppSrcPath = (appRootPath: string, config: KarmaConfig) => {
   return `${appRootPath}/${config.brahma.build.mayaSrcDir}`;
 };
 
-export const validateMayaAppDir = async (
-  dirPath: string
-): Promise<{
+type MayaAppValidStates = {
   karmaMissing: boolean;
   karmaCorrupted: boolean;
   srcDirMissing: boolean;
   mayaSrcDirMissing: boolean;
-}> => {
-  const validState = {
+};
+export const validateMayaAppDir = async (
+  dirPath: string
+): Promise<MayaAppValidStates> => {
+  const validState: MayaAppValidStates = {
     karmaMissing: false,
     karmaCorrupted: false,
     srcDirMissing: false,

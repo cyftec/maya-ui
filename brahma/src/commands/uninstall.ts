@@ -9,6 +9,7 @@ export const removeInstalledFiles = async (
 ) => {
   const files = Object.values(regeneratableFiles);
   for (const file of files) {
+    if (file === regeneratableFiles.publishDir) continue;
     const filePath = `${appRootPath}/${file}`;
     const fileExists = await exists(filePath);
     if (fileExists) console.log(`deleting: ${filePath}`);

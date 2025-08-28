@@ -1,22 +1,10 @@
 import { $ } from "bun";
-import path from "node:path";
 import { NPM_DEPS } from "../utils/constants";
-import { nonCachedImport } from "../utils/common";
+import { getCurrentCliVersion, nonCachedImport } from "../utils/common";
 import type { Karma } from "../probes/karma/karma-types";
 
-const getPackageVersion = (packageJsonText: string) =>
-  packageJsonText
-    .split(`"version"`)[1]
-    .split(",")[0]
-    .trim()
-    .slice(1)
-    .trim()
-    .replaceAll(`"`, "");
-
-const showVersionOnly = async (cliRootPath: string) => {
-  const packageJsonPath = `${cliRootPath}/package.json`;
-  const brahmaPackageJsonText = await Bun.file(packageJsonPath).text();
-  const brahmaV = getPackageVersion(brahmaPackageJsonText);
+const showVersionOnly = async () => {
+  const brahmaV = await getCurrentCliVersion();
   const baseMayaV = NPM_DEPS.MAYA["@mufw/maya"];
   let currentMayaV: string = "";
   try {
@@ -43,9 +31,8 @@ const showVersionOnly = async (cliRootPath: string) => {
 };
 
 export const showVersion = async (cmdArgs: string[]) => {
-  const cliRootPath = path.resolve(__dirname, "../../");
   if (!cmdArgs.length) {
-    await showVersionOnly(cliRootPath);
+    await showVersionOnly();
     process.exit();
   }
 

@@ -34,6 +34,7 @@ export type Karma = {
 
 export type KarmaConfig = {
   brahma: {
+    version: string;
     build: {
       mode: AppMode;
       skipErrorAndBuildNext: boolean;
@@ -48,7 +49,7 @@ export type KarmaConfig = {
       stagingDirName: string;
       publishDirName: string;
     };
-    localServer: {
+    serve: {
       port: number;
       redirectOnStart: boolean;
       reloadPageOnFocus: boolean;

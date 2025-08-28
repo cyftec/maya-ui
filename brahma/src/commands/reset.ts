@@ -46,7 +46,7 @@ export const resetApp = async (cmdArgs: string[]) => {
 
     await updateObjectPropInFile(
       karmaPath,
-      ["config:", "maya:", "mode:"],
+      ["config:", "brahma:", "build:", "mode:"],
       "web",
       appMode
     );

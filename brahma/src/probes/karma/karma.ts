@@ -29,6 +29,7 @@ export const projectFileNames = {
 // DO NOT CHANGE exported variable name
 export const config: KarmaConfig = {
   brahma: {
+    version: "0.1.30",
     build: {
       mode: "web",
       skipErrorAndBuildNext: false,
@@ -40,7 +41,7 @@ export const config: KarmaConfig = {
       stagingDirName: projectFileNames.generated.stagingDir,
       publishDirName: projectFileNames.generated.publishDir,
     },
-    localServer: {
+    serve: {
       port: 3000,
       redirectOnStart: true,
       reloadPageOnFocus: false,

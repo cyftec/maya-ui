@@ -52,6 +52,13 @@ const execCli = async () => {
       regeneratableFiles
     );
 
+  if (commands.install)
+    await installPackageOrEverything(
+      commands.install.args,
+      config,
+      regeneratableFiles
+    );
+
   if (srcDirMissing) {
     const files = await readdir(cwd);
     console.log(
@@ -61,13 +68,6 @@ const execCli = async () => {
     console.log(files);
     process.exit(1);
   }
-
-  if (commands.install)
-    await installPackageOrEverything(
-      commands.install.args,
-      config,
-      regeneratableFiles
-    );
 
   const packageJsonFileExists = await exists(`${cwd}/package.json`);
   if (!packageJsonFileExists) {

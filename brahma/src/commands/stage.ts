@@ -34,10 +34,10 @@ export const stageApp = async () => {
   const karma = await getKarma(cwd);
   if (!karma) return false;
   const { config } = karma;
-  const watchDirPath = `${cwd}/${config.brahma.localServer.watchDir}`;
-  const stagingDirPath = `${cwd}/${config.brahma.localServer.serveDir}`;
+  const watchDirPath = `${cwd}/${config.brahma.serve.watchDir}`;
+  const stagingDirPath = `${cwd}/${config.brahma.serve.serveDir}`;
   const watchIgnorePaths = [DS_STORE_REGEX];
-  const serverPort = config.brahma.localServer.port;
+  const serverPort = config.brahma.serve.port;
 
   await buildSrcDir(cwd, config);
   watchFileChange(watchDirPath, watchIgnorePaths, (path) => {
@@ -52,7 +52,7 @@ export const stageApp = async () => {
   runLocalServer(
     serverPort,
     stagingDirPath,
-    config.brahma.localServer.redirectOnStart
+    config.brahma.serve.redirectOnStart
   );
 
   setTimeout(() => {
