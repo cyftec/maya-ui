@@ -25,6 +25,29 @@ This guide provides comprehensive instructions for any LLM to generate applicati
 
 Maya is a reactive web development framework built with TypeScript, Node.js, and Bun.js. It uses a signal-based reactivity system from `@cyftech/signal` and immutable array operations from `@cyftech/immutjs`.
 
+### Architectural Philosophy
+
+Maya is designed around the belief that the web platform is already powerful enough to build modern applications without the complexity of contemporary frontend ecosystems. For detailed architectural philosophy, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+**Core Principles:**
+
+- **MPA First:** Multi-Page Applications are first-class, not Single-Page Applications. Interactivity is layered onto pages rather than pages being layered onto a client-side application runtime.
+- **Static Deployment:** Applications should run from static hosting (CDNs, GitHub Pages, object storage) without requiring application servers whenever possible.
+- **Browser Native:** Leverage browser capabilities (HTML, CSS, JavaScript, DOM APIs) rather than replacing them with framework abstractions.
+- **Signals for Reactivity:** Use signals for targeted updates without Virtual DOM diffing.
+- **Simplicity Over Abstraction:** Prefer browser-native solutions over framework abstractions. Complexity should be optional.
+
+**What Maya Is Not:**
+
+Maya is not:
+
+- Another React clone
+- Another Vue clone
+- Another Angular clone
+- Another Virtual DOM framework
+
+Maya occupies the middle ground between plain HTML/CSS/JS and modern frontend frameworks. The primary comparison is not "React vs Maya" but "Plain HTML/CSS/JS vs Modern Frontend Frameworks."
+
 ### Key Dependencies
 
 - `@cyftech/signal` - Signal-based reactivity system
@@ -36,6 +59,36 @@ Maya is a reactive web development framework built with TypeScript, Node.js, and
 
 - **Maya** (`/maya` folder) - Core framework implementation
 - **Brahma** (`/brahma` folder) - CLI tool for app generation, development, and deployment
+
+### Implementation Status
+
+This guide describes the current implementation of Maya. Some architectural features mentioned in [ARCHITECTURE.md](./ARCHITECTURE.md) are not yet fully implemented:
+
+**Fully Implemented:**
+
+- ✅ Build → Mount → Run lifecycle
+- ✅ Signal-based reactivity
+- ✅ Element getters and DOM creation
+- ✅ MPA routing (file-system based)
+- ✅ Static deployment
+- ✅ Custom elements (For, If, Switch)
+- ✅ Basic security sanitization (href, style)
+
+**Partially Implemented:**
+
+- ⚠️ PWA support: Scaffolding exists, but service worker has no cache logic (currently only logs "service-worker")
+- ⚠️ Forms: Native forms work, but no dedicated form abstraction
+- ⚠️ Async operations: Query helper exists, but no comprehensive cache/retry system
+- ⚠️ Security: Only href and style are sanitized
+
+**Not Implemented (External/Future):**
+
+- ❌ KVDB persistence layer (mentioned in architecture, external to this repo)
+- ❌ Comprehensive offline caching strategies
+- ❌ Global state management system
+- ❌ Advanced form validation abstraction
+
+For implementation gaps, see the "Architecture Vs Implementation" table in [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
@@ -104,8 +157,6 @@ Examples of `trap`
 - `const { propertySignal } = op(objectSignal).props()`
 - `const propertySignal = op(objectSignal).prop("propertyKey")`
 - `const itemAtIndex0 = op(arraySignal).at(0)`
-- `const op(anySignal).ternary(trueValue, falseValue)`
-- `op(anySignal).ternary(trueValue, falseValue)`
 
 ### 2. Element Getters
 
@@ -327,10 +378,21 @@ m.Div({
 
 ### Component Props Handling
 
-- Props are automatically signalified by the `component()` wrapper
-- String and array props are converted to signalified objects
-- Function props and existing signals are passed through unchanged
-- Children props are handled specially to maintain reactivity
+The `component()` wrapper normalizes props for internal use:
+
+- **Signals and functions:** Passed through unchanged
+- **Plain datatypes like strings, number, boolean, array, objects, etc are converted to non-signal-bjects:** Converted to non-signal representations with `getNonSignalObject`
+
+Inside the component, access prop values with `.value`:
+
+```typescript
+const Button = component<ButtonProps>(({ label }) => {
+  // label is a signal - access with .value
+  return m.Button({ children: label.value });
+});
+```
+
+This keeps component internals signal-friendly while maintaining reactivity.
 
 ---
 
@@ -441,11 +503,12 @@ m.For({
   subject: tasks,
   itemKey: "id", // Required for mutable lists - must be unique
   map: (task) => {
-    // when 'itemKey is passed the single item in map function is a signal
-    const {};
+    // When itemKey is passed, the argument item in map function is a signal
+    // Access properties with .value: task.value.text, task.value.done
+    // If itemKey is not passed, then the argument item is plain JS datatype
     return m.Div({
-      children: task.text,
-      style: task.done ? "text-decoration: line-through;" : "",
+      children: task.value.text,
+      style: task.value.done ? "text-decoration: line-through;" : "",
     });
   },
 });
@@ -650,6 +713,31 @@ m.Div({
 ```
 
 **Security Note:** The `style` attribute is sanitized to prevent XSS attacks. Patterns like `url()`, `expression()`, and `javascript:` are blocked.
+
+### Security Considerations
+
+Maya includes targeted sanitization for security-sensitive attributes:
+
+**Current Sanitization Scope:**
+
+- **href attribute:** Blocks `javascript:`, `data:`, `vbscript:`, `file:` protocols
+- **style attribute:** Blocks `url()`, `expression()`, `javascript:` patterns
+
+**Limitations:**
+
+Maya does not currently provide:
+
+- Full HTML sanitization
+- Comprehensive attribute sanitization
+- Content Security Policy generation
+- XSS protection for all contexts
+
+**Best Practices:**
+
+- Always validate and sanitize user input on the server
+- Use Content Security Policy headers
+- Be cautious with dynamic content
+- Prefer text content over HTML-like operations
 
 ### Class Attribute
 
@@ -1229,7 +1317,7 @@ export default m.Html({
               isTruthy: () =>
                 m.Div({
                   style: "color: red;",
-                  children: `Error: ${error.value?.message}`,
+                  children: tmpl`Error: ${() => error.value?.message}`,
                 }),
             }),
             m.If({
@@ -1534,7 +1622,7 @@ m.Div({ class: "container p-4", children: "Content" });
 // ⚠️ Acceptable for dynamic values
 m.Div({
   class: "container",
-  style: tmpl`padding: ${padding.value}px`,
+  style: tmpl`padding: ${padding}px`,
   children: "Content",
 });
 
@@ -1560,19 +1648,59 @@ m.Div({
 });
 ```
 
-### 12. Avoid Anonymous Functions in Props
-
-Avoid creating new functions on every render:
+### 12. Passing signals to attributes and children IS A MUST for reactivity
 
 ```typescript
-// ✅ Good
-const handleClick = () => console.log("Clicked");
-m.Button({ onclick: handleClick, children: "Click" });
+const cssClasses = signal("red p-4");
+const content = signal("Content");
 
-// ❌ Bad - creates new function on every render
-m.Button({
-  onclick: () => console.log("Clicked"),
-  children: "Click",
+// ✅ Good
+m.Div({ class: cssClasses, children: content });
+
+// ⚠️ Acceptable for inline signal computation
+// tmpl already converts primitive values to string internally
+m.Div({
+  class: tmpl`m-3 ${cssClasses}`,
+  children: content,
+});
+
+// ❌ Bad: Never unwrap signals when passing to tmpl
+// signal returned from tmpl will never recompute if cssClasses changes
+m.Div({
+  class: tmpl`m-3 ${cssClasses.value}`,
+  children: content,
+});
+
+// ⚠️ Acceptable style of unwrapping inside tmpl
+// use a method which returns unwrapped signal intead of plain unwrapped signal
+m.Div({
+  class: tmpl`m-3 ${() => cssClasses.value}`,
+  children: content,
+});
+
+// ❌ Bad: Never unwrap signals when passing to attributes
+// class attribute will never react to any changes in cssClasses signal
+// children attribute will never react to any changes in content signal
+m.Div({ class: cssClasses.value, children: content.value });
+```
+
+### 13. Use 'tmpl' instead of 'derive' method for derived string signals
+
+```typescript
+const cssClasses = signal("br3 p-2");
+
+// ✅ Good, always prefer this
+// cssClasses already computed for deriving final derived signal
+m.Div({
+  class: tmpl`m-3 ${cssClasses}`,
+  children: "content",
+});
+
+// ⚠️ Acceptable but not preferred
+// cssClasses need to be unwrapped for deriving final derived signal
+m.Div({
+  class: derive(() => `m-3 ${cssClasses.value}`),
+  children: "content",
 });
 ```
 
@@ -1752,6 +1880,58 @@ import type {
   MayaAppPhase,
 } from "@mufw/maya";
 ```
+
+---
+
+## When to Use Maya
+
+Maya is particularly suited for:
+
+- Business applications and dashboards
+- Productivity tools and editors
+- PWAs and offline-capable applications
+- Content-heavy websites
+- Static-hosted applications
+- Applications that benefit from simple deployment
+
+Maya may not be the best choice for:
+
+- Applications requiring complex SPA routing
+- Applications requiring server-side rendering
+- Applications requiring advanced form abstractions
+- Applications requiring comprehensive offline caching (currently)
+
+### Architectural Tradeoffs
+
+Maya prioritizes:
+
+- Simplicity over framework abstraction depth
+- Deployability over SPA purity
+- Browser alignment over server-centric architectures
+- Infrastructure reduction over operational complexity
+
+---
+
+## Contributor Guidelines
+
+When contributing to Maya or applications built with Maya:
+
+### Preserve the Philosophy
+
+- Do not make Maya more SPA-first, server-first, or Virtual-DOM-centric
+- Prefer browser-native solutions over framework abstractions
+- Keep build output deployable as static assets
+- Maintain the MPA-first architecture
+
+### Before Adding Abstractions
+
+Ask whether HTML, CSS, JavaScript, DOM APIs, service workers, storage APIs, or static hosting conventions already solve the problem.
+
+### Document Discrepancies
+
+If code disagrees with [ARCHITECTURE.md](./ARCHITECTURE.md), document the discrepancy rather than silently changing the architecture.
+
+For detailed contributor guidance, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
