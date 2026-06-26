@@ -6,8 +6,6 @@ import {
 } from "../utils/constants.ts";
 import {
   createDirIfNotExist,
-  getAppViewPath,
-  getBuildDirPath,
   getFileNameFromPath,
   nonCachedImport,
 } from "../utils/common.ts";
@@ -22,6 +20,7 @@ import {
 import type { BunFile } from "bun";
 import type { Karma } from "../probes/karma/karma-types.ts";
 import { setupBuild } from "./build-setup.ts";
+import { getAppViewPath, getBuildDirPath } from "../utils/file-path-getters.ts";
 
 type BuildData = {
   appRootPath: string;

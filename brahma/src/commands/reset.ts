@@ -1,10 +1,11 @@
 import { cp, exists, rm } from "node:fs/promises";
 import path from "node:path";
 import type { AppMode, KarmaResetMode } from "../probes/karma/karma-types.ts";
-import { getKarma, getKarmaPaths } from "../utils/common.ts";
+import { getKarma } from "../utils/common.ts";
 import { NPM_DEPS } from "../utils/constants.ts";
 import { updateObjectPropInFile } from "../utils/file-section-updater.ts";
 import { addPackageDepToKarma } from "../utils/karma-file-updaters.ts";
+import { getKarmaPaths } from "../utils/file-path-getters.ts";
 
 export const resetApp = async (cmdArgs: string[]) => {
   const resetModeSpecifier = cmdArgs.length ? cmdArgs[0] : "--soft";

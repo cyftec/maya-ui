@@ -7,7 +7,7 @@ import {
   getPackageJsonPath,
 } from "./file-path-getters";
 
-export const ValidateAppFileAndExitIf = {
+export const ValidateAndExitIf = {
   karmaFileMissing: async (appRootDirPath: string) => {
     const [karmaFilePath] = getKarmaPaths(appRootDirPath);
     if (!(await exists(karmaFilePath))) {

@@ -10,9 +10,10 @@ export const removeInstalledFiles = async (
   const files = Object.values(karma.brahma.build.disposable);
   for (const file of files) {
     const filePath = `${appRootPath}/${file}`;
-    const fileExists = await exists(filePath);
-    if (fileExists) console.log(`deleting: ${filePath}`);
-    if (fileExists) await rm(filePath, { recursive: true });
+    if (await exists(filePath)) {
+      console.log(`deleting: ${filePath}`);
+      await rm(filePath, { recursive: true });
+    }
   }
 };
 

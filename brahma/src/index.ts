@@ -12,7 +12,7 @@ import {
 } from "./commands/index.ts";
 import { getParsedCommands } from "./utils/command-parser.ts";
 import { getKarma } from "./utils/common.ts";
-import { ValidateAppFileAndExitIf } from "./utils/file-validations.ts";
+import { ValidateAndExitIf } from "./utils/file-validations.ts";
 
 const execCli = async () => {
   const cwd = process.cwd();
@@ -34,9 +34,9 @@ const execCli = async () => {
   if (commands.install)
     await installPackageOrEverything(commands.install.args, karma);
 
-  ValidateAppFileAndExitIf.appSrcDirMissing(cwd, karma);
-  ValidateAppFileAndExitIf.appViewDirMissing(cwd, karma);
-  ValidateAppFileAndExitIf.packageJsonMissing(cwd);
+  ValidateAndExitIf.appSrcDirMissing(cwd, karma);
+  ValidateAndExitIf.appViewDirMissing(cwd, karma);
+  ValidateAndExitIf.packageJsonMissing(cwd);
 
   if (commands.stage) await stageApp();
   if (commands.publish) await publishApp();

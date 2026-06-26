@@ -1,22 +1,21 @@
-import { exists } from "node:fs/promises";
-import type { KarmaConfigObject } from "../probes/karma/karma-types";
-import { getKarma, getKarmaPaths, nonCachedImport } from "./common";
+import { getKarma } from "./common";
+import { getKarmaPaths, getPackageJsonPath } from "./file-path-getters";
 import { updateSectionInFile } from "./file-section-updater";
+import { ValidateAndExitIf } from "./file-validations";
 
 // karma.maya is equivalent to node's package.json
-const karmaPackageJsonSplitters = ["karma:", "maya:"];
+const karmaPackageJsonPathArray = ["karma:", "maya:"];
 
 export const syncPackageJsonToKarma = async (appRootPath: string) => {
-  const packageJsonPath = `${appRootPath}/package.json`;
-  if (!(await exists(packageJsonPath))) {
-    throw `'package.json' file missing.`;
-  }
+  ValidateAndExitIf.karmaFileMissing(appRootPath);
+  ValidateAndExitIf.packageJsonMissing(appRootPath);
 
   const [karmaPath] = getKarmaPaths(appRootPath);
+  const packageJsonPath = getPackageJsonPath(appRootPath);
   const packageJsonText = await Bun.file(packageJsonPath).text();
   await updateSectionInFile(
     karmaPath,
-    karmaPackageJsonSplitters,
+    karmaPackageJsonPathArray,
     packageJsonText,
   );
 };
@@ -34,7 +33,7 @@ export const addPackageDepToKarma = async (
   const karmaPackageJsonText = JSON.stringify(karmaPackageJson, null, "\t");
   await updateSectionInFile(
     karmaPath,
-    karmaPackageJsonSplitters,
+    karmaPackageJsonPathArray,
     karmaPackageJsonText,
   );
 };

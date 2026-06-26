@@ -2,7 +2,7 @@ import { exists, mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { Karma, KarmaConfigObject } from "../probes/karma/karma-types";
 import { getKarmaPaths } from "./file-path-getters";
-import { ValidateAppFileAndExitIf } from "./file-validations";
+import { ValidateAndExitIf } from "./file-validations";
 
 export const nonCachedImport = async (modulePath: string) => {
   const mpWithParam = `${modulePath}?imported=${Date.now()}`;
@@ -25,21 +25,19 @@ export const getFileNameFromPath = (path: string): string => {
 };
 
 export const getKarma = async (appRootPath: string): Promise<Karma> => {
-  ValidateAppFileAndExitIf.karmaFileMissing(appRootPath);
+  ValidateAndExitIf.karmaFileMissing(appRootPath);
   const [karmaPath] = getKarmaPaths(appRootPath);
   const { karma } = (await nonCachedImport(karmaPath)) as KarmaConfigObject;
-  ValidateAppFileAndExitIf.exportedKarmaMissing(karma);
+  ValidateAndExitIf.exportedKarmaMissing(karma);
   return karma;
 };
 
 export const getCurrentCliVersion = async () => {
-  const thisProjectPackageJsonPath = path.resolve(
-    __dirname,
-    "../../package.json",
-  );
-  const packageJsonExist = await exists(thisProjectPackageJsonPath);
-  if (!packageJsonExist) throw `'package.json' file is missing.`;
-  const packageJsonText = await Bun.file(thisProjectPackageJsonPath).text();
+  const brahmaPackageJsonPath = path.resolve(__dirname, "../../package.json");
+  const brahmaPackageJsonExist = await exists(brahmaPackageJsonPath);
+  if (!brahmaPackageJsonExist)
+    throw `'package.json' file is missing in brahma project.`;
+  const packageJsonText = await Bun.file(brahmaPackageJsonPath).text();
   const currentCliVersion = packageJsonText
     .split(`"version"`)[1]
     .split(",")[0]
