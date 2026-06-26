@@ -1,30 +1,40 @@
 import { exists } from "node:fs/promises";
+import type { KarmaConfigObject } from "../probes/karma/karma-types";
+import { getKarma, getKarmaPaths, nonCachedImport } from "./common";
 import { updateSectionInFile } from "./file-section-updater";
-import { nonCachedImport } from "./common";
-import type { Karma } from "../probes/karma/karma-types";
+
+// karma.maya is equivalent to node's package.json
+const karmaPackageJsonSplitters = ["karma:", "maya:"];
 
 export const syncPackageJsonToKarma = async (appRootPath: string) => {
-  const pjPath = `${appRootPath}/package.json`;
-  if (!(await exists(pjPath))) {
+  const packageJsonPath = `${appRootPath}/package.json`;
+  if (!(await exists(packageJsonPath))) {
     throw `'package.json' file missing.`;
   }
 
-  const karmaPath = `${appRootPath}/karma.ts`;
-  const pjText = await Bun.file(pjPath).text();
-  const karmaPjSplitters = ["config:", "packageJson:"];
-  await updateSectionInFile(karmaPath, karmaPjSplitters, pjText);
+  const [karmaPath] = getKarmaPaths(appRootPath);
+  const packageJsonText = await Bun.file(packageJsonPath).text();
+  await updateSectionInFile(
+    karmaPath,
+    karmaPackageJsonSplitters,
+    packageJsonText,
+  );
 };
 
 export const addPackageDepToKarma = async (
-  karmaPath: string,
-  dependency: object
+  appRootPath: string,
+  dependency: object,
 ) => {
-  const { config } = (await nonCachedImport(karmaPath)) as Karma;
+  const [karmaPath] = getKarmaPaths(appRootPath);
+  const karma = await getKarma(appRootPath);
   const karmaPackageJson = {
-    ...config.packageJson,
-    dependencies: { ...config.packageJson.dependencies, ...dependency },
+    ...karma.maya,
+    dependencies: { ...karma.maya.dependencies, ...dependency },
   };
-  const karmaPjSplitters = ["config:", "packageJson:"];
   const karmaPackageJsonText = JSON.stringify(karmaPackageJson, null, "\t");
-  await updateSectionInFile(karmaPath, karmaPjSplitters, karmaPackageJsonText);
+  await updateSectionInFile(
+    karmaPath,
+    karmaPackageJsonSplitters,
+    karmaPackageJsonText,
+  );
 };

@@ -11,80 +11,32 @@ import {
   uninstallPackageOrEverything,
 } from "./commands/index.ts";
 import { getParsedCommands } from "./utils/command-parser.ts";
-import { readdir, exists } from "node:fs/promises";
-import { getKarma, validateMayaAppDir } from "./utils/common.ts";
-import type { Karma } from "./probes/karma/karma-types.ts";
+import { getKarma } from "./utils/common.ts";
+import { ValidateAppFileAndExitIf } from "./utils/file-validations.ts";
 
 const execCli = async () => {
   const cwd = process.cwd();
   const commands = getParsedCommands(Bun.argv);
-  // console.log(commands);
 
   if (commands.help || commands.nocmd) showHelp();
-  if (commands.version) await showVersion(commands.version.args);
   if (commands.create) await createApp(commands.create.args);
+  if (commands.version) await showVersion(commands.version.args);
   if (commands.reset) await resetApp(commands.reset.args);
 
-  const { karmaMissing, karmaCorrupted, srcDirMissing, mayaSrcDirMissing } =
-    await validateMayaAppDir(cwd);
-  if (karmaMissing || karmaCorrupted) {
-    console.log(
-      karmaMissing
-        ? `ERROR: 'karma.ts' file is missing.`
-        : karmaCorrupted
-        ? `ERROR: 'karma.ts' file is corrupted.
-  - Use 'brahma reset' and then 'brahma install' to reset karma.ts and reinstall app.
-    WARNING: You might lose previous config changes. Make sure to use git to have access to previous state.`
-        : ""
-    );
-    process.exit(1);
-  }
-
-  const karma = (await getKarma(cwd)) as Karma;
-  const {
-    config,
-    projectFileNames: { generated: regeneratableFiles },
-  } = karma;
+  // 4 commands can run without (or corrupted) karma file - help, create, version and reset
+  // karma is required for below commands
+  // karma file validation is done within the 'getKarma' method itself
+  // process exits if karma file is missing or corrupted
+  const karma = await getKarma(cwd);
 
   if (commands.uninstall)
-    await uninstallPackageOrEverything(
-      commands.uninstall.args,
-      regeneratableFiles
-    );
-
+    await uninstallPackageOrEverything(commands.uninstall.args, karma);
   if (commands.install)
-    await installPackageOrEverything(
-      commands.install.args,
-      config,
-      regeneratableFiles
-    );
+    await installPackageOrEverything(commands.install.args, karma);
 
-  if (srcDirMissing) {
-    const files = await readdir(cwd);
-    console.log(
-      `ERROR: App source directory '${config?.brahma.build.sourceDirName}' is either missing or have a different name.`
-    );
-    console.log(`\nList of files in current directory:`);
-    console.log(files);
-    process.exit(1);
-  }
-
-  const packageJsonFileExists = await exists(`${cwd}/package.json`);
-  if (!packageJsonFileExists) {
-    console.log(
-      `ERROR: App not installed. 'package.json' file is missing.
-  Run 'brahma install' command to install app first.`
-    );
-    process.exit(1);
-  }
-
-  if (mayaSrcDirMissing) {
-    console.log(
-      `ERROR: Buildable maya app source directory '${config?.brahma.build.mayaSrcDir}' is either missing or have a different path or name.
-Check 'config.brahma.build.mayaSrcDir' in 'karma.ts' file.`
-    );
-    process.exit(1);
-  }
+  ValidateAppFileAndExitIf.appSrcDirMissing(cwd, karma);
+  ValidateAppFileAndExitIf.appViewDirMissing(cwd, karma);
+  ValidateAppFileAndExitIf.packageJsonMissing(cwd);
 
   if (commands.stage) await stageApp();
   if (commands.publish) await publishApp();

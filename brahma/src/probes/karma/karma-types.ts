@@ -4,50 +4,37 @@ export type KarmaResetMode = "soft" | "hard";
 type FileNamesMap = Record<string, string>;
 export type ProjectFileNames = {
   buildable: {
-    mayaSrcDir: string;
+    appSrcDir: string;
+    appViewDir: string;
     pageFile: `${string}.ts`;
     manifestFile: `${string}.ts`;
   } & FileNamesMap;
   static: {
-    sourceDir: string;
+    publishDir: string;
+    dsStoreDir: ".DS_Store";
     karmaTypesFile: "karma-types.ts";
   } & FileNamesMap;
-  systemGenerated: {
-    dsStoreDir: ".DS_Store";
-  } & FileNamesMap;
-  generated: {
+  disposable: {
     stagingDir: string;
-    publishDir: string;
-    bunLockFile: "bun.lock";
-    bunLockBFile: "bun.lockb";
-    gitIgnoreFile: ".gitignore";
-    dotVscodeDir: ".vscode";
-    nodeModulesDir: "node_modules";
-    packageJsonFile: "package.json";
   } & FileNamesMap;
 };
 
 export type Karma = {
-  config: KarmaConfig;
-  projectFileNames: ProjectFileNames;
-};
-
-export type KarmaConfig = {
   brahma: {
     version: string;
     build: {
-      mode: AppMode;
+      appSrcDir: string;
+      appViewDir: string;
       skipErrorAndBuildNext: boolean;
       /**
        * file or dir name prefixed with below delimiter gets ignored during build
        */
       ignoreDelimiter: string;
-      sourceDirName: string;
-      mayaSrcDir: string;
       buildablePageFileName: string;
       buildableManifestFileName: string;
       stagingDirName: string;
       publishDirName: string;
+      disposable: string[];
     };
     serve: {
       port: number;
@@ -63,8 +50,9 @@ export type KarmaConfig = {
       serveDir: string;
     };
   };
-  packageJson: {
-    name?: string;
+  maya: {
+    name: string;
+    appType: AppMode;
     version?: string;
     description?: string;
     author?: string;
@@ -89,3 +77,5 @@ export type KarmaConfig = {
     };
   };
 };
+
+export type KarmaConfigObject = { karma: Karma };

@@ -1,5 +1,6 @@
 export * from "./create.ts";
 export * from "./help.ts";
+export * from "./init.ts";
 export * from "./install.ts";
 export * from "./publish.ts";
 export * from "./reset.ts";

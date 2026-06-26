@@ -1,5 +1,5 @@
 import { rm } from "node:fs/promises";
-import type { KarmaConfig } from "../probes/karma/karma-types";
+import type { Karma } from "../probes/karma/karma-types";
 import {
   DEST_HTML_DEFAULT_FILE_NAME,
   DEST_HTML_FILE_EXT,
@@ -8,50 +8,26 @@ import {
 } from "../utils/constants";
 import { zipTheFolder } from "../utils/zip-the-folder";
 
-export const isSrcPageFile = (srcPagePath: string, karmaConfig: KarmaConfig) =>
-  srcPagePath.endsWith(karmaConfig.brahma.build.buildablePageFileName);
+export const isSrcPageFile = (srcPagePath: string, karma: Karma) =>
+  srcPagePath.endsWith(karma.brahma.build.buildablePageFileName);
 
-export const getBuiltJsMethodName = (
-  filename: string,
-  karmaConfig: KarmaConfig
-) => {
+export const getBuiltJsMethodName = (filename: string, karma: Karma) => {
   const words = filename.replace("-", ".").split(".");
   words.pop();
   return (
     words
       .map((w, i) =>
         i === words.length - 1 && w === DEST_JS_DEFAULT_FILE_NAME
-          ? karmaConfig.brahma.build.buildablePageFileName.slice(0, -3)
-          : w
+          ? karma.brahma.build.buildablePageFileName.slice(0, -3)
+          : w,
       )
       .join("_") + "_default"
   );
 };
 
-export const getBuildDirPath = (
-  appRootPath: string,
-  srcDirPath: string,
-  karmaConfig: KarmaConfig,
-  buildProd: boolean
-) => {
-  const { brahma } = karmaConfig;
-  const { stagingDirName, publishDirName } = brahma.build;
-  const mayaSrcPath = `${appRootPath}/${brahma.build.mayaSrcDir}`;
-  const buildRootPath = `${appRootPath}/${
-    buildProd ? publishDirName : stagingDirName
-  }`;
-  const subPath = srcDirPath.split(mayaSrcPath)[1];
-
-  const buildDirPath = `${buildRootPath}${subPath}`;
-  return buildDirPath;
-};
-
-export const getBuildFileNames = (
-  srcPagePath: string,
-  karmaConfig: KarmaConfig
-) => {
+export const getBuildFileNames = (srcPagePath: string, karma: Karma) => {
   const pathWithoutFileName = srcPagePath.split(
-    karmaConfig.brahma.build.buildablePageFileName
+    karma.brahma.build.buildablePageFileName,
   )[0];
   const isPrefixed = pathWithoutFileName.endsWith(".");
   const prefixName = isPrefixed
@@ -66,11 +42,11 @@ export const getBuildFileNames = (
 
 export const zipAndDeleteDir = async (
   srcDirPath: string,
-  destZipFilePath: `${string}.zip`
+  buildZipFilePath: `${string}.zip`,
 ) => {
   console.log(`Archiving dir: ${srcDirPath}`);
-  await zipTheFolder(srcDirPath, destZipFilePath);
-  console.log(`Archive zip file generated: ${destZipFilePath}`);
+  await zipTheFolder(srcDirPath, buildZipFilePath);
+  console.log(`Archive zip file generated: ${buildZipFilePath}`);
   console.log(`Deleting archived dir: ${srcDirPath}`);
   await rm(srcDirPath, { recursive: true });
 };

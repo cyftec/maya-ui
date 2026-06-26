@@ -3,10 +3,10 @@ import fs from "fs";
 
 export const zipTheFolder = (
   srcDirPath: string,
-  destZipFilePath: `${string}.zip`
+  buildZipFilePath: `${string}.zip`,
 ) => {
   const archive = archiver("zip", { zlib: { level: 9 } });
-  const stream = fs.createWriteStream(destZipFilePath);
+  const stream = fs.createWriteStream(buildZipFilePath);
 
   return new Promise((resolve, reject) => {
     archive

@@ -1,17 +1,18 @@
 import { $ } from "bun";
+import { getCurrentCliVersion, getKarma } from "../utils/common";
 import { NPM_DEPS } from "../utils/constants";
-import { getCurrentCliVersion, nonCachedImport } from "../utils/common";
-import type { Karma } from "../probes/karma/karma-types";
 
 const showVersionOnly = async () => {
   const brahmaV = await getCurrentCliVersion();
   const baseMayaV = NPM_DEPS.MAYA["@mufw/maya"];
+  const cwd = process.cwd();
   let currentMayaV: string = "";
   try {
-    const karmaPath = `${process.cwd()}/karma.ts`;
-    const karma = (await nonCachedImport(karmaPath)) as Karma;
-    currentMayaV = karma?.config?.packageJson?.dependencies?.["@mufw/maya"];
-  } catch (error) {}
+    const karma = await getKarma(cwd);
+    currentMayaV = karma.maya.dependencies["@mufw/maya"];
+  } catch (error) {
+    console.log(`No 'karma.ts' file found in '${cwd}' directory.`);
+  }
 
   if (!currentMayaV) {
     console.log(`brahma - v${brahmaV}`);
@@ -25,7 +26,7 @@ const showVersionOnly = async () => {
     console.log(`maya (current) - v${currentMayaV}`);
     console.log(`maya (base)    - v${baseMayaV}`);
     console.log(
-      `\nResetting karma with 'brahma reset' resets current maya version to base version ${baseMayaV}. \nCheck 'karma.ts' after resetting.`
+      `\nResetting karma with 'brahma reset' resets current maya version to base version ${baseMayaV}. \nCheck 'karma.ts' after resetting.`,
     );
   }
 };

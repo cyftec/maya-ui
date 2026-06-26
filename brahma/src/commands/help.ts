@@ -35,10 +35,11 @@ export const showHelp = () => {
                |                      |
   r, reset     | <?--resetMode>       | Resets the karma file to base karma.ts
                |                      | state. Any change made to karma.ts file
-               |                      | gets lost with this command.
-               |                      | Acepptable rest modes are - 'hard' and
+               |                      | gets lost with this command. Make sure
+               |                      | .gitignore file is there for the rescue.
+               |                      | Acepptable reset modes are - 'hard' and
                |                      | 'soft' (default).
-               |                      | If no or 'soft' reset mode is provided
+               |                      | If nothing or 'soft' mode is provided
                |                      | a soft reset is done preserving the
                |                      | app mode, i.e. 'web', 'ext' or 'pwa'.
                |                      | If 'hard' reset mode is provided, it

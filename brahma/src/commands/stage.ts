@@ -4,7 +4,7 @@ import { watchFileChange } from "../utils/file-change-watcher.ts";
 import { runLocalServer } from "../utils/local-server.ts";
 import { startStdinListener } from "../utils/stdin-listener.ts";
 import { getKarma } from "../utils/common.ts";
-import type { KarmaConfig } from "../probes/karma/karma-types.ts";
+import type { Karma } from "../probes/karma/karma-types.ts";
 
 const DEBOUNCE_TIME_IN_MS = 500;
 let lastTimestamp: number = 0;
@@ -21,9 +21,9 @@ const onFileModification = (callback: () => Promise<void>) => {
   }, DEBOUNCE_TIME_IN_MS);
 };
 
-const buildSrcDir = async (srcDir: string, config: KarmaConfig) => {
+const buildAppWithPerf = async (appRootDir: string, karma: Karma) => {
   const start = performance.now();
-  await buildApp(srcDir, config, false);
+  await buildApp(appRootDir, karma, false);
   const finish = performance.now();
   console.log(`Build done in ${(finish - start).toFixed(0)} ms.\n`);
 };
@@ -33,27 +33,22 @@ export const stageApp = async () => {
   console.log(`Staging app files and starting dev server...\n`);
   const karma = await getKarma(cwd);
   if (!karma) return false;
-  const { config } = karma;
-  const watchDirPath = `${cwd}/${config.brahma.serve.watchDir}`;
-  const stagingDirPath = `${cwd}/${config.brahma.serve.serveDir}`;
+  const watchDirPath = `${cwd}/${karma.brahma.serve.watchDir}`;
+  const serveDirPath = `${cwd}/${karma.brahma.serve.serveDir}`;
   const watchIgnorePaths = [DS_STORE_REGEX];
-  const serverPort = config.brahma.serve.port;
+  const serverPort = karma.brahma.serve.port;
 
-  await buildSrcDir(cwd, config);
+  await buildAppWithPerf(cwd, karma);
   watchFileChange(watchDirPath, watchIgnorePaths, (path) => {
     if (busyBuildingApp) return;
     onFileModification(async () => {
       busyBuildingApp = true;
       console.log(`Change detected: ${path}`);
-      await buildSrcDir(cwd, config);
+      await buildAppWithPerf(cwd, karma);
       busyBuildingApp = false;
     });
   });
-  runLocalServer(
-    serverPort,
-    stagingDirPath,
-    config.brahma.serve.redirectOnStart
-  );
+  runLocalServer(serverPort, serveDirPath, karma.brahma.serve.redirectOnStart);
 
   setTimeout(() => {
     console.log(`Press 'q' and then Enter to quit.`);

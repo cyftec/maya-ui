@@ -959,7 +959,7 @@ Defines file name mappings used throughout the app:
 ```typescript
 export const projectFileNames = {
   buildable: {
-    mayaSrcDir: "dev", // Source directory
+    appViewDir: "dev", // Source directory
     pageFile: "page.ts", // Page file extension
     manifestFile: "manifest.ts", // PWA manifest file
   },
@@ -986,65 +986,7 @@ export const projectFileNames = {
 ### config
 
 Main configuration object:
-
-```typescript
-export const config: KarmaConfig = {
-  brahma: {
-    version: "0.1.31", // CLI version (must match installed)
-    build: {
-      mode: "web", // "web" | "ext" | "pwa"
-      skipErrorAndBuildNext: false, // Continue building on errors?
-      ignoreDelimiter: "@", // Prefix for files to ignore during build
-      sourceDirName: "dev", // Source directory name
-      mayaSrcDir: "dev", // Maya source directory
-      buildablePageFileName: "page.ts",
-      buildableManifestFileName: "manifest.ts",
-      stagingDirName: "stage", // Staging directory
-      publishDirName: "prod", // Production directory
-    },
-    serve: {
-      port: 3000, // Dev server port
-      redirectOnStart: true, // Redirect to index on start?
-      reloadPageOnFocus: false, // Reload when window regains focus?
-      watchDir: "dev", // Directory to watch for changes
-      serveDir: "stage", // Directory to serve
-    },
-  },
-  packageJson: {
-    dependencies: {
-      "@mufw/maya": "latest",
-    },
-  },
-  vscode: {
-    settings: {
-      "deno.enable": false,
-      "files.exclude": {
-        "karma-types.ts": true,
-        stage: false,
-        prod: false,
-        "bun.lock": true,
-        "bun.lockb": true,
-        ".gitignore": true,
-        ".vscode": true,
-        node_modules: true,
-        "package.json": true,
-      },
-    },
-  },
-  git: {
-    ignore: [
-      ".DS_Store",
-      "karma-types.ts",
-      "bun.lock",
-      "bun.lockb",
-      ".vscode",
-      "node_modules",
-      "package.json",
-      "/stage",
-    ],
-  },
-};
-```
+// AGENT TO FILL THIS SECTION
 
 ### Important Notes
 

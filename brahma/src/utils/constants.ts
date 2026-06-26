@@ -18,13 +18,14 @@ export const NO_JS_ERROR = "no js";
 
 export const DS_STORE_REGEX = /.DS_Store/;
 
+// canHaveArgs usage not implemnted, args should be present only when canHaveArgs is true
 export const ACCEPTED_COMMANDS = [
-  { long: "create", short: "c", withArg: true },
-  { long: "help", short: "h", withArg: false },
-  { long: "install", short: "i", withArg: true },
-  { long: "publish", short: "p", withArg: false },
-  { long: "reset", short: "r", withArg: false },
-  { long: "stage", short: "s", withArg: false },
-  { long: "uninstall", short: "u", withArg: true },
-  { long: "version", short: "v", withArg: false },
+  { long: "create", short: "c", canHaveArgs: true },
+  { long: "help", short: "h", canHaveArgs: false },
+  { long: "install", short: "i", canHaveArgs: true },
+  { long: "publish", short: "p", canHaveArgs: false },
+  { long: "reset", short: "r", canHaveArgs: true },
+  { long: "stage", short: "s", canHaveArgs: false },
+  { long: "uninstall", short: "u", canHaveArgs: true },
+  { long: "version", short: "v", canHaveArgs: true },
 ] as const;

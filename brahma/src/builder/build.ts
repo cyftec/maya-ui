@@ -6,13 +6,13 @@ import {
 } from "../utils/constants.ts";
 import {
   createDirIfNotExist,
-  getMayaAppSrcPath,
+  getAppViewPath,
+  getBuildDirPath,
   getFileNameFromPath,
   nonCachedImport,
 } from "../utils/common.ts";
 import {
   buildHtmlFnDef,
-  getBuildDirPath,
   getBuildFileNames,
   getBuiltJsMethodName,
   isSrcPageFile,
@@ -20,12 +20,12 @@ import {
   zipAndDeleteDir,
 } from "./build-helpers.ts";
 import type { BunFile } from "bun";
-import type { KarmaConfig } from "../probes/karma/karma-types.ts";
+import type { Karma } from "../probes/karma/karma-types.ts";
 import { setupBuild } from "./build-setup.ts";
 
 type BuildData = {
   appRootPath: string;
-  config: KarmaConfig;
+  karma: Karma;
   isProd: boolean;
 };
 
@@ -42,16 +42,16 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
     console.log(
       `\x1b[31m%s\x1b[0m`,
       `ERROR:`,
-      `building html '${destHtmlPath}'\n`
+      `building html '${destHtmlPath}'\n`,
     );
     console.log(error);
     console.log(
       "\x1b[33m%s\x1b[0m",
       `If the above error is similar to "Can't find variable: <variable-name>" and the variable is one of the properties of window (or globalThis) object in a Browser environment, then it is occuring because 'build' phase of the app runs in a NODE environment. And in NODE environment, such variable might not be present in Node's 'globalThis' object.
       \nTry using element's 'onmount' event for such logic. The 'onmount' event only runs during 'mount' and 'run' phases of the app, which means, only in a Browser environment.
-      \nExample, \n// ERROR: 'Can't find variable: location' \nm.Div({\n  children: location.href,\n}) \n\n// NO ERROR \nmDiv({\n  onmount: (thisEl) => (thisEl.innerText = location.href),\n  children: "",\n})`
+      \nExample, \n// ERROR: 'Can't find variable: location' \nm.Div({\n  children: location.href,\n}) \n\n// NO ERROR \nmDiv({\n  onmount: (thisEl) => (thisEl.innerText = location.href),\n  children: "",\n})`,
     );
-    const skipToNextBuild = buildData.config.brahma.build.skipErrorAndBuildNext;
+    const skipToNextBuild = buildData.karma.brahma.build.skipErrorAndBuildNext;
     if (!skipToNextBuild) process.exit(1);
   }
 };
@@ -83,11 +83,11 @@ const sanitizeJsFile = async (destJsPath: string) => {
     ${mountAndRunFnDef(
       getBuiltJsMethodName(
         getFileNameFromPath(destJsPath) as string,
-        buildData.config
-      )
+        buildData.karma,
+      ),
     )}
     \n${
-      !buildData.isProd && buildData.config.brahma.serve.reloadPageOnFocus
+      !buildData.isProd && buildData.karma.brahma.serve.reloadPageOnFocus
         ? "window.onfocus = () => location.reload();"
         : ""
     }
@@ -102,7 +102,7 @@ const minifyJsFile = async (destJsPath: string) => {
     minify: true,
   });
   const minifiedJsCode = await jsBuild.outputs.map(
-    async (o) => await o.text()
+    async (o) => await o.text(),
   )[0];
   if (!minifiedJsCode) {
     throw new Error(NO_JS_ERROR);
@@ -110,20 +110,20 @@ const minifyJsFile = async (destJsPath: string) => {
   await Bun.write(destJsPath, minifiedJsCode);
 };
 
-const buildFile = async (srcFilePath: string, destDirPath: string) => {
+const buildFile = async (srcFilePath: string, buildDirPath: string) => {
   if (DS_STORE_REGEX.test(srcFilePath)) {
     console.log(`Ignoring file: ${srcFilePath}`);
     return;
   }
   console.log(`Building file: ${srcFilePath}`);
-  if (isSrcPageFile(srcFilePath, buildData.config)) {
+  if (isSrcPageFile(srcFilePath, buildData.karma)) {
     const srcPagePath = srcFilePath;
     const { htmlFileName, jsFileName } = getBuildFileNames(
       srcFilePath,
-      buildData.config
+      buildData.karma,
     );
-    const destJsPath = `${destDirPath}/${jsFileName}`;
-    const destHtmlPath = `${destDirPath}/${htmlFileName}`;
+    const destJsPath = `${buildDirPath}/${jsFileName}`;
+    const destHtmlPath = `${buildDirPath}/${htmlFileName}`;
     await buildJsFile(destJsPath, srcPagePath);
     await buildHtmlFile(destHtmlPath, destJsPath);
     await sanitizeJsFile(destJsPath);
@@ -132,8 +132,8 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
   }
 
   const manifestFileName =
-    buildData.config.brahma.build.buildableManifestFileName;
-  const appSrcPath = getMayaAppSrcPath(buildData.appRootPath, buildData.config);
+    buildData.karma.brahma.build.buildableManifestFileName;
+  const appSrcPath = getAppViewPath(buildData.appRootPath, buildData.karma);
   let filePath: string;
   let fileData: string | BunFile;
   if (
@@ -141,16 +141,16 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
     srcFilePath.slice(0, -(manifestFileName.length + 1)) === appSrcPath
   ) {
     const { default: manifest } = await nonCachedImport(srcFilePath);
-    filePath = `${destDirPath}/manifest.json`;
+    filePath = `${buildDirPath}/manifest.json`;
     fileData = JSON.stringify(manifest, null, "\t");
   } else if (srcFilePath.endsWith(".ts")) {
     const fileName = getFileNameFromPath(srcFilePath);
-    filePath = `${destDirPath}/${fileName.slice(0, -3)}.js`;
+    filePath = `${buildDirPath}/${fileName.slice(0, -3)}.js`;
     const jsBuild = await Bun.build({ entrypoints: [srcFilePath] });
     fileData = await jsBuild.outputs.map(async (o) => await o.text())[0];
   } else {
     const fileName = getFileNameFromPath(srcFilePath);
-    filePath = `${destDirPath}/${fileName}`;
+    filePath = `${buildDirPath}/${fileName}`;
     fileData = Bun.file(srcFilePath);
   }
 
@@ -164,57 +164,55 @@ const buildFile = async (srcFilePath: string, destDirPath: string) => {
 };
 
 export const buildDir = async (
-  srcDirPath: string,
-  isRootDir: boolean = false
+  dirPath: string,
+  isAppViewDir: boolean = false,
 ): Promise<void> => {
-  const destDirPath = getBuildDirPath(
+  const buildDirPath = getBuildDirPath(
     buildData.appRootPath,
-    srcDirPath,
-    buildData.config,
-    buildData.isProd
+    dirPath,
+    buildData.karma,
+    buildData.isProd,
   );
 
-  if (await exists(destDirPath)) {
-    console.log(`Deleting existing dir: ${destDirPath}`);
-    await rm(destDirPath, { recursive: true });
+  if (await exists(buildDirPath)) {
+    console.log(`Deleting existing dir: ${buildDirPath}`);
+    await rm(buildDirPath, { recursive: true });
   }
-  console.log(`Building dir: ${destDirPath}`);
-  await createDirIfNotExist(destDirPath);
+  console.log(`Building dir: ${buildDirPath}`);
+  await createDirIfNotExist(buildDirPath);
 
-  for (const file of await readdir(srcDirPath)) {
-    if (file.startsWith(buildData.config.brahma.build.ignoreDelimiter))
-      continue;
+  for (const file of await readdir(dirPath)) {
+    if (file.startsWith(buildData.karma.brahma.build.ignoreDelimiter)) continue;
 
-    const filePath = `${srcDirPath}/${file}`;
+    const filePath = `${dirPath}/${file}`;
     const fileStats = await lstat(filePath);
     if (fileStats.isDirectory()) await buildDir(filePath);
-    if (fileStats.isFile()) await buildFile(filePath, destDirPath);
+    if (fileStats.isFile()) await buildFile(filePath, buildDirPath);
   }
 
-  if (!(await readdir(destDirPath)).length) {
-    console.log(`Deleting empty built dir: ${destDirPath}`);
-    await rm(destDirPath, { recursive: true });
+  if (!(await readdir(buildDirPath)).length) {
+    console.log(`Deleting empty built dir: ${buildDirPath}`);
+    await rm(buildDirPath, { recursive: true });
   }
 
   if (
-    isRootDir &&
+    isAppViewDir &&
     buildData.isProd &&
-    buildData.config.brahma.build.mode === "ext"
+    buildData.karma.maya.appType === "ext"
   ) {
-    await zipAndDeleteDir(destDirPath, `${destDirPath}.zip`);
+    await zipAndDeleteDir(buildDirPath, `${buildDirPath}.zip`);
   }
 };
 
 export const buildApp = async (
   appRootPath: string,
-  config: KarmaConfig,
-  isProd: boolean
+  karma: Karma,
+  isProd: boolean,
 ): Promise<void> => {
-  if (!appRootPath || !config) throw `App root path or config is missing.`;
   buildData.appRootPath = appRootPath;
-  buildData.config = config;
+  buildData.karma = karma;
   buildData.isProd = isProd;
   await setupBuild();
-  const mayaSrcPath = getMayaAppSrcPath(appRootPath, config);
-  return await buildDir(mayaSrcPath, true);
+  const appViewPath = getAppViewPath(appRootPath, karma);
+  return await buildDir(appViewPath, true);
 };

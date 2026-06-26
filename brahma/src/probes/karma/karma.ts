@@ -1,83 +1,82 @@
-import type { KarmaConfig, ProjectFileNames } from "./karma-types.ts";
+import type { Karma, ProjectFileNames } from "./karma-types.ts";
 
-// DO NOT CHANGE exported variable name
-export const projectFileNames = {
+const files = {
   buildable: {
-    mayaSrcDir: "dev",
+    appSrcDir: "dev",
+    appViewDir: "dev/view",
     pageFile: "page.ts",
     manifestFile: "manifest.ts",
   },
   static: {
-    sourceDir: "dev",
-    karmaTypesFile: "karma-types.ts",
-  },
-  systemGenerated: {
-    dsStoreDir: ".DS_Store",
-  },
-  generated: {
-    stagingDir: "stage",
     publishDir: "prod",
-    bunLockFile: "bun.lock",
-    bunLockBFile: "bun.lockb",
+    dsStoreDir: ".DS_Store",
+    karmaTypesFile: "karma-types.ts",
     gitIgnoreFile: ".gitignore",
+  },
+  disposable: {
+    stagingDir: "stage",
     dotVscodeDir: ".vscode",
     nodeModulesDir: "node_modules",
+    bunLockFile: "bun.lock",
+    bunLockBFile: "bun.lockb",
     packageJsonFile: "package.json",
   },
 } as const satisfies ProjectFileNames;
 
 // DO NOT CHANGE exported variable name
-export const config: KarmaConfig = {
+export const karma: Karma = {
   brahma: {
-    version: "0.1.31",
+    version: "0.1.32",
     build: {
-      mode: "web",
+      appSrcDir: files.buildable.appSrcDir,
+      appViewDir: files.buildable.appViewDir,
       skipErrorAndBuildNext: false,
       ignoreDelimiter: "@",
-      sourceDirName: projectFileNames.static.sourceDir,
-      mayaSrcDir: projectFileNames.buildable.mayaSrcDir,
-      buildablePageFileName: projectFileNames.buildable.pageFile,
-      buildableManifestFileName: projectFileNames.buildable.manifestFile,
-      stagingDirName: projectFileNames.generated.stagingDir,
-      publishDirName: projectFileNames.generated.publishDir,
+      buildablePageFileName: files.buildable.pageFile,
+      buildableManifestFileName: files.buildable.manifestFile,
+      stagingDirName: files.disposable.stagingDir,
+      publishDirName: files.static.publishDir,
+      disposable: Object.values(files.disposable),
     },
     serve: {
       port: 3000,
       redirectOnStart: true,
       reloadPageOnFocus: false,
-      watchDir: projectFileNames.static.sourceDir,
-      serveDir: projectFileNames.generated.stagingDir,
+      watchDir: files.buildable.appSrcDir,
+      serveDir: files.disposable.stagingDir,
     },
   },
-  packageJson: {
+  maya: {
+    name: "sample-app",
+    appType: "web",
     dependencies: {},
   },
   vscode: {
     settings: {
       "deno.enable": false,
       "files.exclude": {
-        [projectFileNames.static.karmaTypesFile]: true,
-        [projectFileNames.generated.stagingDir]: false,
-        [projectFileNames.generated.publishDir]: false,
-        [projectFileNames.generated.bunLockFile]: true,
-        [projectFileNames.generated.bunLockBFile]: true,
-        [projectFileNames.generated.gitIgnoreFile]: true,
-        [projectFileNames.generated.dotVscodeDir]: true,
-        [projectFileNames.generated.nodeModulesDir]: true,
-        [projectFileNames.generated.packageJsonFile]: true,
+        [files.static.karmaTypesFile]: true,
+        [files.static.gitIgnoreFile]: true,
+        [files.static.publishDir]: false,
+        [files.disposable.stagingDir]: false,
+        [files.disposable.bunLockFile]: true,
+        [files.disposable.bunLockBFile]: true,
+        [files.disposable.dotVscodeDir]: true,
+        [files.disposable.nodeModulesDir]: true,
+        [files.disposable.packageJsonFile]: true,
       },
     },
   },
   git: {
     ignore: [
-      projectFileNames.systemGenerated.dsStoreDir,
-      projectFileNames.static.karmaTypesFile,
-      projectFileNames.generated.bunLockFile,
-      projectFileNames.generated.bunLockBFile,
-      projectFileNames.generated.dotVscodeDir,
-      projectFileNames.generated.nodeModulesDir,
-      projectFileNames.generated.packageJsonFile,
-      `/${projectFileNames.generated.stagingDir}`,
+      files.static.dsStoreDir,
+      files.static.karmaTypesFile,
+      files.disposable.bunLockFile,
+      files.disposable.bunLockBFile,
+      files.disposable.dotVscodeDir,
+      files.disposable.nodeModulesDir,
+      files.disposable.packageJsonFile,
+      files.disposable.stagingDir,
     ],
   },
 };

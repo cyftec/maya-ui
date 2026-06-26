@@ -1,39 +1,41 @@
-import { exists, mkdir, readdir } from "node:fs/promises";
+import { exists, mkdir } from "node:fs/promises";
 import path from "node:path";
-import type { Karma, KarmaConfig } from "../probes/karma/karma-types";
+import type { Karma, KarmaConfigObject } from "../probes/karma/karma-types";
+import { getKarmaPaths } from "./file-path-getters";
+import { ValidateAppFileAndExitIf } from "./file-validations";
 
 export const nonCachedImport = async (modulePath: string) => {
   const mpWithParam = `${modulePath}?imported=${Date.now()}`;
   return await import(mpWithParam);
 };
 
-export const createDirIfNotExist = async (dirPath: string) => {
-  if (await exists(dirPath)) return;
+export const createDirIfNotExist = async (appRootDirPath: string) => {
+  if (await exists(appRootDirPath)) return;
   try {
-    await mkdir(dirPath);
+    await mkdir(appRootDirPath);
   } catch (error) {
-    console.log(dirPath);
+    console.log(appRootDirPath);
     throw error;
   }
 };
 
-export const getFileNameFromPath = (path: string) => {
+export const getFileNameFromPath = (path: string): string => {
   if (!path.includes("/")) throw "Not a valid file or directory path";
   return path.split("/").pop() as string;
 };
 
-export const hasKarmaConfigFile = async (dirPath: string): Promise<boolean> =>
-  (await readdir(dirPath)).includes("karma.ts");
-
-export const getKarma = async (dirPath: string): Promise<Karma | undefined> => {
-  if (!(await hasKarmaConfigFile(dirPath))) return;
-  return await import(`${dirPath}/karma.ts`);
+export const getKarma = async (appRootPath: string): Promise<Karma> => {
+  ValidateAppFileAndExitIf.karmaFileMissing(appRootPath);
+  const [karmaPath] = getKarmaPaths(appRootPath);
+  const { karma } = (await nonCachedImport(karmaPath)) as KarmaConfigObject;
+  ValidateAppFileAndExitIf.exportedKarmaMissing(karma);
+  return karma;
 };
 
 export const getCurrentCliVersion = async () => {
   const thisProjectPackageJsonPath = path.resolve(
     __dirname,
-    "../../package.json"
+    "../../package.json",
   );
   const packageJsonExist = await exists(thisProjectPackageJsonPath);
   if (!packageJsonExist) throw `'package.json' file is missing.`;
@@ -48,58 +50,14 @@ export const getCurrentCliVersion = async () => {
   return currentCliVersion;
 };
 
-export const getMayaAppSrcPath = (appRootPath: string, config: KarmaConfig) => {
-  return `${appRootPath}/${config.brahma.build.mayaSrcDir}`;
-};
-
-type MayaAppValidStates = {
-  karmaMissing: boolean;
-  karmaCorrupted: boolean;
-  srcDirMissing: boolean;
-  mayaSrcDirMissing: boolean;
-};
-export const validateMayaAppDir = async (
-  dirPath: string
-): Promise<MayaAppValidStates> => {
-  const validState: MayaAppValidStates = {
-    karmaMissing: false,
-    karmaCorrupted: false,
-    srcDirMissing: false,
-    mayaSrcDirMissing: false,
-  };
-  const karma = await getKarma(dirPath);
-  if (!karma) {
-    return { ...validState, karmaMissing: true };
-  }
-  const {
-    config,
-    projectFileNames: { generated: regeneratableFiles },
-  } = karma;
-  if (!config || !regeneratableFiles) {
-    return { ...validState, karmaCorrupted: true };
-  }
-
-  const sourceDirExists = await exists(
-    `${dirPath}/${config.brahma.build.sourceDirName}`
-  );
-  if (!sourceDirExists) return { ...validState, srcDirMissing: true };
-
-  const mayaSrcDirExists = await exists(
-    `${dirPath}/${config.brahma.build.mayaSrcDir}`
-  );
-  if (!mayaSrcDirExists) return { ...validState, mayaSrcDirMissing: true };
-
-  return validState;
-};
-
 export const splitText = (
   text: string,
-  splittersPath: string[]
+  splittersPath: string[],
 ): [preTextIncludingSplitter: string, postSplitterText: string] =>
   splittersPath.reduce(
     ([presPlitter, postSplitter], splitter) => {
       const [preText, postText] = postSplitter.split(splitter);
       return [presPlitter + preText + splitter, postText];
     },
-    ["", text]
+    ["", text],
   );
