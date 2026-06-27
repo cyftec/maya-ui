@@ -1,10 +1,10 @@
 import { tmpl, signal, op } from "@cyftech/signal";
 import { component, DomEventValue, m } from "@mufw/maya";
-import { Header } from "./@elements/index.ts";
+import { Header } from "./@elements/index.js";
 
 const topBulbIsOn = signal(false);
 const bulbStates = signal(
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, i) => ({ value, i }))
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, i) => ({ value, i })),
 );
 const filaColor = signal("green");
 const changeFilaColor = (e: Event) => {
@@ -85,7 +85,7 @@ export default m.Html({
               onclick: () =>
                 (bulbStates.value = bulbStates.value.slice(
                   0,
-                  bulbStates.value.length - 1
+                  bulbStates.value.length - 1,
                 )),
               children: "Delete Bulb",
             }),
@@ -108,7 +108,7 @@ export default m.Html({
                     fontColor: filaColor,
                     changeFontColor: (e) => changeFilaColor(e),
                   }),
-              })
+              }),
             ),
           ],
         }),

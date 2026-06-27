@@ -1,8 +1,5 @@
 import { m } from "@mufw/maya";
-import { tmpl, signal } from "@cyftech/signal";
-import { Header } from "./@elements/index.ts";
-
-const toggled = signal(false);
+import { Header } from "../view/@elements";
 
 export default m.Html({
   lang: "en",
@@ -23,17 +20,9 @@ export default m.Html({
     }),
     m.Body({
       children: [
-        m.Script({ src: "contacts.main.js", defer: true }),
+        m.Script({ src: "main.js", defer: true }),
         m.Div({
-          children: [
-            Header(),
-            m.H1({
-              style: tmpl`color: ${() =>
-                toggled.value ? "red" : "green"}; user-select: none;`,
-              onclick: () => (toggled.value = !toggled.value),
-              children: "Contact Page",
-            }),
-          ],
+          children: [Header(), m.H1("About Page")],
         }),
       ],
     }),

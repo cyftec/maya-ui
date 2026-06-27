@@ -1,4 +1,4 @@
-import type { Karma, ProjectFileNames } from "./karma-types.ts";
+import type { Karma, ProjectFileNames } from "./karma-types.js";
 
 const files = {
   buildable: {
@@ -8,7 +8,7 @@ const files = {
     manifestFile: "manifest.ts",
   },
   static: {
-    publishDir: "prod",
+    publishDir: "docs",
     dsStoreDir: ".DS_Store",
     karmaTypesFile: "karma-types.ts",
     gitIgnoreFile: ".gitignore",
@@ -49,7 +49,9 @@ export const karma: Karma = {
   maya: {
     name: "sample-app",
     appType: "web",
-    dependencies: {},
+    dependencies: {
+      "@cyftec/maya": "0.0.1",
+    },
   },
   vscode: {
     settings: {

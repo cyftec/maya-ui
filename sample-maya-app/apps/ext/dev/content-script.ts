@@ -82,13 +82,13 @@ const attentionScoreUI = m.Div({
 const updateUI = () => {
   videoUpdatedCount.value++;
   const container = document.querySelector<HTMLElement>(
-    SELECTOR.CONTAINER_ELEM
+    SELECTOR.CONTAINER_ELEM,
   );
   if (!container) return;
 
   container.setAttribute(
     "style",
-    "display: flex; align-items: center; padding-bottom: 10px;"
+    "display: flex; align-items: center; padding-bottom: 10px;",
   );
 
   if (container.firstElementChild?.id === UI_ELEM_ID) {

@@ -1,6 +1,6 @@
 import { signal } from "@cyftech/signal";
 import { m } from "@mufw/maya";
-import { Header } from "./@elements/index.ts";
+import { Header } from "./@elements/index.js";
 
 const sub = signal("a");
 
