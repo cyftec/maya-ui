@@ -1,13 +1,11 @@
 {
   "name": "maya-ui-monorepo",
   "private": true,
-
   "workspaces": [
     "maya",
     "brahma",
     "sample-maya-app"
   ],
-
   "scripts": {
     "clean:modules": "rm -rf node_modules maya/node_modules brahma/node_modules sample-maya-app/node_modules",
     "clean:packagejsonlocks": "rm -f package-lock.json maya/package-lock.json brahma/package-lock.json sample-maya-app/package-lock.json",
@@ -15,6 +13,12 @@
     "clean:bunlockbs": "rm -f bun.lockb maya/bun.lockb brahma/bun.lockb sample-maya-app/bun.lockb",
     "clean:locks": "bun run clean:packagejsonlocks && bun run clean:bunlocks && bun run clean:bunlockbs",
     "clean:cache": "rm -rf ~/.bun/install/cache",
-    "clean": "bun run clean:modules && bun run clean:locks"
+    "clean": "bun run clean:modules && bun run clean:locks",
+    "version:set": "bun run ./src/version/set.ts",
+    "version:publish": "bun run ./src/version/publish.ts",
+    "version:verify": "bun run ./src/version/verify.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
   }
 }
