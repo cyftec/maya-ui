@@ -5,11 +5,15 @@
   "description": "Official sample application for the Maya framework.",
   "license": "MIT",
   "type": "module",
-  "scripts": {
-    "dev": "",
-    "build": "",
-    "preview": ""
+  "bin": {
+    "sample-maya": "./index.ts"
   },
-  "dependencies": {},
+  "scripts": {
+    "dev": ""
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0"
+  },
   "devDependencies": {}
 }
