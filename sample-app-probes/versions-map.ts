@@ -1,6 +1,6 @@
 export const versionsMap = [
   {
-    brahmaVersion: "0.1.32",
+    brahmaVersion: "0.1.31",
     isLatest: true,
     supportingVersions: [
       {
