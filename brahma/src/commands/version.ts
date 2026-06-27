@@ -1,9 +1,10 @@
 import { $ } from "bun";
-import { getCurrentCliVersion, getKarma } from "../utils/common";
+import { getKarma } from "../utils/common";
 import { NPM_DEPS } from "../utils/constants";
+import { getCurrentBrahmaVersion } from "../brahma-version-getter";
 
 const showVersionOnly = async () => {
-  const brahmaV = await getCurrentCliVersion();
+  const brahmaV = await getCurrentBrahmaVersion();
   const baseMayaV = NPM_DEPS.MAYA["@mufw/maya"];
   const cwd = process.cwd();
   let currentMayaV: string = "";

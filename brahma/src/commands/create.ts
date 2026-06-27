@@ -1,6 +1,6 @@
 import { cp, exists, mkdir } from "node:fs/promises";
 import path from "node:path";
-import type { AppMode } from "../probes/karma/karma-types";
+import type { AppMode } from "../karma-probe/karma-types";
 import { NPM_DEPS } from "../utils/constants";
 import { addPackageDepToKarma } from "../utils/karma-file-updaters";
 

@@ -1,6 +1,6 @@
 import { cp, exists, rm } from "node:fs/promises";
 import path from "node:path";
-import type { AppMode, KarmaResetMode } from "../probes/karma/karma-types.ts";
+import type { AppMode, KarmaResetMode } from "../karma-probe/karma-types.ts";
 import { getKarma } from "../utils/common.ts";
 import { NPM_DEPS } from "../utils/constants.ts";
 import { updateObjectPropInFile } from "../utils/file-section-updater.ts";

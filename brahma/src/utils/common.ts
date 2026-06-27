@@ -1,6 +1,5 @@
 import { exists, mkdir } from "node:fs/promises";
-import path from "node:path";
-import type { Karma, KarmaConfigObject } from "../probes/karma/karma-types";
+import type { Karma, KarmaConfigObject } from "../karma-probe/karma-types";
 import { getKarmaPaths } from "./file-path-getters";
 import { ValidateAndExitIf } from "./file-validations";
 
@@ -30,22 +29,6 @@ export const getKarma = async (appRootPath: string): Promise<Karma> => {
   const { karma } = (await nonCachedImport(karmaPath)) as KarmaConfigObject;
   ValidateAndExitIf.exportedKarmaMissing(karma);
   return karma;
-};
-
-export const getCurrentCliVersion = async () => {
-  const brahmaPackageJsonPath = path.resolve(__dirname, "../../package.json");
-  const brahmaPackageJsonExist = await exists(brahmaPackageJsonPath);
-  if (!brahmaPackageJsonExist)
-    throw `'package.json' file is missing in brahma project.`;
-  const packageJsonText = await Bun.file(brahmaPackageJsonPath).text();
-  const currentCliVersion = packageJsonText
-    .split(`"version"`)[1]
-    .split(",")[0]
-    .trim()
-    .slice(1)
-    .trim()
-    .replaceAll(`"`, "");
-  return currentCliVersion;
 };
 
 export const splitText = (

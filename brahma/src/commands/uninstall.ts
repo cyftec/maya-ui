@@ -1,7 +1,7 @@
 import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters";
-import type { Karma } from "../probes/karma/karma-types";
+import type { Karma } from "../karma-probe/karma-types";
 
 export const removeInstalledFiles = async (
   appRootPath: string,

@@ -1,9 +1,9 @@
 import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
-import type { Karma } from "../probes/karma/karma-types.ts";
-import { getCurrentCliVersion } from "../utils/common.ts";
+import type { Karma } from "../karma-probe/karma-types.ts";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
+import { getCurrentBrahmaVersion } from "../brahma-version-getter.ts";
 
 const installDotVsCodeDir = async (appRootPath: string, karma: Karma) => {
   const dotVsCodePath = `${appRootPath}/.vscode`;
@@ -32,19 +32,9 @@ const installPackages = async (appRootPath: string, karma: Karma) => {
     process.exit(1);
   }
   await Bun.write(packageJsonPath, JSON.stringify(packageJsonBlob, null, "\t"));
-  const currentCliVersion = await getCurrentCliVersion();
-  const karmaCliVersion = karma.brahma.version;
-  if (!currentCliVersion) {
-    console.log(`No version found in package.json`);
-    process.exit(1);
-  }
-  if (!karmaCliVersion) {
-    console.log(
-      `'karma.ts' file is missing or it does not have brahma version. Reset the karma file with the command 'brahma reset'.`,
-    );
-    process.exit(1);
-  }
-  if (currentCliVersion !== karmaCliVersion) {
+  const currentBrahmaVersion = await getCurrentBrahmaVersion();
+  const karmaBrahmaVersion = karma.brahma.version;
+  if (currentBrahmaVersion !== karmaBrahmaVersion) {
     console.log(
       `CLI VERSION MISMATCH
           \nThe current brahma cli version does not match with brahma version declared in karma.ts file.

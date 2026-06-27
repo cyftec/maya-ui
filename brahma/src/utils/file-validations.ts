@@ -1,5 +1,5 @@
 import { exists, readdir } from "node:fs/promises";
-import type { Karma } from "../probes/karma/karma-types";
+import type { Karma } from "../karma-probe/karma-types";
 import {
   getAppSrcPath,
   getAppViewPath,
