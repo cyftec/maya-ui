@@ -1,0 +1,21 @@
+{
+  "name": "@cyfer/sample-maya-app",
+  "version": "0.0.1",
+  "private": false,
+
+  "description": "Official sample application for the Maya framework.",
+
+  "license": "MIT",
+
+  "type": "module",
+
+  "scripts": {
+    "dev": "",
+    "build": "",
+    "preview": ""
+  },
+
+  "dependencies": {},
+
+  "devDependencies": {}
+}
