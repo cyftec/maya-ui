@@ -15,7 +15,8 @@
     "archiver": "^7.0.1",
     "chokidar": "^4.0.3",
     "jsdom": "^24.1.0",
-    "live-server": "^1.2.2"
+    "live-server": "^1.2.2",
+    "@cyftec/brahma": "0.0.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
