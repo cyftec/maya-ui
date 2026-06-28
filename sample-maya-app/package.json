@@ -16,5 +16,8 @@
     "fs-extra": "^11.2.0",
     "@cyftec/maya": "workspace:*"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "publishConfig": {
+    "access": "public"
+  }
 }
