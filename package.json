@@ -3,8 +3,8 @@
   "private": true,
   "workspaces": [
     "maya",
-    "brahma",
-    "sample-maya-app"
+    "sample-maya-app",
+    "brahma"
   ],
   "scripts": {
     "brahma": "MAYA_DEV_MODE=1 bun ./brahma/src/index.ts",
