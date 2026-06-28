@@ -1,9 +1,5 @@
-import { $ } from "bun";
-import { REPO_PACKAGES } from "../constants";
-
-interface RegistryMetadata {
-  version: string;
-}
+import { sleep } from "bun";
+import { getPackageLatestVersion, getWorkspacePackageNames } from "../common";
 
 const expectedVersion = process.argv[2];
 
@@ -12,48 +8,24 @@ if (!expectedVersion) {
   process.exit(1);
 }
 
-async function getLatestVersion(packageName: string): Promise<string> {
-  const npmURL = `https://registry.npmjs.org/${encodeURIComponent(packageName)}/latest`;
-  const response = await fetch(npmURL);
-  if (!response.ok) {
-    console.error(`HTTP ${response.status}`);
-    process.exit(1);
-  }
-
-  const metadata = (await response.json()) as RegistryMetadata;
-  return metadata.version;
-}
-
-const packages = [];
-for (const pkg of REPO_PACKAGES) {
-  const packageNameResponse = await $`cd ${pkg} && bun pm pkg get name`.quiet();
-  const npmPackageName = packageNameResponse
-    .text()
-    .replaceAll("\n", "")
-    .replaceAll(`"`, ``);
-  packages.push(npmPackageName);
-}
-
 const POLL_INTERVAL_MS = 2000;
 const POLL_INTERVAL_SEC = Math.round(POLL_INTERVAL_MS / 1000);
 const TIMEOUT_MS = 10000;
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const start = Date.now();
-
+const workspacePackageNames = await getWorkspacePackageNames();
 while (Date.now() - start < TIMEOUT_MS) {
   let success = true;
 
-  console.log(packages.join(", "));
-  // console.log(`EXPECTED:\n${expectedVersion}\n\nFOUND:`);
-  // for (const pkg of packages) {
-  //   const publishedVersion = await getLatestVersion(pkg);
-  //   console.log(`${pkg}: ${publishedVersion || "--"}`);
-  //   if (publishedVersion !== expectedVersion) {
-  //     success = false;
-  //   }
-  // }
+  console.log(workspacePackageNames.join(", "));
+  console.log(`EXPECTED:\n${expectedVersion}\n\nFOUND:`);
+  for (const pkgDirName of workspacePackageNames) {
+    const publishedVersion = await getPackageLatestVersion(pkgDirName);
+    console.log(`${pkgDirName}: ${publishedVersion || "--"}`);
+    if (publishedVersion !== expectedVersion) {
+      success = false;
+    }
+  }
 
   if (success) {
     console.log(`✅ All packages are published at version ${expectedVersion}.`);
