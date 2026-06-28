@@ -1,4 +1,3 @@
-import { getKarma } from "./common";
 import { getKarmaPaths, getPackageJsonPath } from "./file-path-getters";
 import { updateSectionInFile } from "./file-section-updater";
 import { ValidateAndExitIf } from "./file-validations";
@@ -17,23 +16,5 @@ export const syncPackageJsonToKarma = async (appRootPath: string) => {
     karmaPath,
     karmaPackageJsonPathArray,
     packageJsonText,
-  );
-};
-
-export const addPackageDepToKarma = async (
-  appRootPath: string,
-  dependency: object,
-) => {
-  const [karmaPath] = getKarmaPaths(appRootPath);
-  const karma = await getKarma(appRootPath);
-  const karmaPackageJson = {
-    ...karma.maya,
-    dependencies: { ...karma.maya.dependencies, ...dependency },
-  };
-  const karmaPackageJsonText = JSON.stringify(karmaPackageJson, null, "\t");
-  await updateSectionInFile(
-    karmaPath,
-    karmaPackageJsonPathArray,
-    karmaPackageJsonText,
   );
 };

@@ -1,11 +1,9 @@
 import { $ } from "bun";
 import { getKarma } from "../utils/common";
-import { NPM_DEPS } from "../utils/constants";
 import { getCurrentBrahmaVersion } from "../brahma-version-getter";
 
 const showVersionOnly = async () => {
   const brahmaV = await getCurrentBrahmaVersion();
-  const baseMayaV = NPM_DEPS.MAYA["@mufw/maya"];
   const cwd = process.cwd();
   let currentMayaV: string = "";
   try {
@@ -17,18 +15,6 @@ const showVersionOnly = async () => {
 
   if (!currentMayaV) {
     console.log(`brahma - v${brahmaV}`);
-  }
-  if (currentMayaV && currentMayaV === baseMayaV) {
-    console.log(`brahma - v${brahmaV}`);
-    console.log(`maya   - v${currentMayaV}`);
-  }
-  if (currentMayaV && currentMayaV !== baseMayaV) {
-    console.log(`brahma         - v${brahmaV}`);
-    console.log(`maya (current) - v${currentMayaV}`);
-    console.log(`maya (base)    - v${baseMayaV}`);
-    console.log(
-      `\nResetting karma with 'brahma reset' resets current maya version to base version ${baseMayaV}. \nCheck 'karma.ts' after resetting.`,
-    );
   }
 };
 

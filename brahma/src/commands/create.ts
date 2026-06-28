@@ -1,26 +1,17 @@
-import { cp, exists, mkdir } from "node:fs/promises";
-import path from "node:path";
+import { $ } from "bun";
+import { exists, mkdir } from "node:fs/promises";
 import type { AppMode } from "../karma-probe/karma-types";
-import { NPM_DEPS } from "../utils/constants";
-import { addPackageDepToKarma } from "../utils/karma-file-updaters";
 
-const relativeProbesPath = "../probes";
-
-const handleAppDirPath = async (appRootPath: string) => {
+const createAppRootDir = async (appRootPath: string) => {
+  console.log(`Creating app in '${appRootPath}' directory.`);
   if (await exists(appRootPath)) {
     console.log(`Directory '${appRootPath}' already exists.`);
     process.exit(1);
-  } else {
-    console.log(`Creating app in '${appRootPath}' directory.`);
   }
+
   const appRootDirName = appRootPath.split("/").pop();
   if (!appRootDirName) throw `Incorrect path for creating app.`;
   await mkdir(appRootDirName);
-};
-
-const copyProbe = async (relativeSrcPath: string, appRootPath: string) => {
-  const srcPath = path.resolve(__dirname, relativeSrcPath);
-  await cp(srcPath, appRootPath, { recursive: true });
 };
 
 const getCreateAppCommandArgs = (
@@ -62,21 +53,9 @@ export const createApp = async (cmdArgs: string[]) => {
 
   const cwd = process.cwd();
   const appRootPath = `${cwd}/${appRootDirName}`;
-  const appSrcPath = `${appRootPath}/dev`;
 
-  await handleAppDirPath(appRootPath);
-  await copyProbe(`${relativeProbesPath}/karma`, appRootPath);
-  await addPackageDepToKarma(appRootPath, NPM_DEPS.MAYA);
-
-  if (appMode === "ext") {
-    await copyProbe(`${relativeProbesPath}/apps/ext`, appSrcPath);
-    await addPackageDepToKarma(appRootPath, NPM_DEPS.CHROME);
-  } else if (appMode === "pwa") {
-    await copyProbe(`${relativeProbesPath}/apps/pwa`, appSrcPath);
-    await addPackageDepToKarma(appRootPath, NPM_DEPS.PWA);
-  } else {
-    await copyProbe(`${relativeProbesPath}/apps/web`, appSrcPath);
-  }
+  await createAppRootDir(appRootPath);
+  await $`sample-maya app ${appMode || "web"} ${appRootPath}`;
 
   console.log(`'${appRootDirName}' directory created.`);
   console.log(`

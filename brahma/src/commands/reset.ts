@@ -1,13 +1,10 @@
-import { cp, exists, rm } from "node:fs/promises";
-import path from "node:path";
+import { $ } from "bun";
+import { exists, rm } from "node:fs/promises";
 import type { AppMode, KarmaResetMode } from "../karma-probe/karma-types.ts";
 import { getKarma } from "../utils/common.ts";
-import { NPM_DEPS } from "../utils/constants.ts";
-import { updateObjectPropInFile } from "../utils/file-section-updater.ts";
-import { addPackageDepToKarma } from "../utils/karma-file-updaters.ts";
 import { getKarmaPaths } from "../utils/file-path-getters.ts";
 
-export const resetApp = async (cmdArgs: string[]) => {
+const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
   const resetModeSpecifier = cmdArgs.length ? cmdArgs[0] : "--soft";
   const resetMode = resetModeSpecifier.slice(2) as KarmaResetMode;
   if (
@@ -19,51 +16,27 @@ export const resetApp = async (cmdArgs: string[]) => {
     - accepted specifier should be either --hard or --soft`);
     process.exit(1);
   }
+  return resetMode;
+};
 
+export const resetApp = async (cmdArgs: string[]) => {
+  const resetMode = getResetMode(cmdArgs);
   const appRootPath = process.cwd();
+  let appMode: AppMode = "web";
+
   console.log(`Resetting 'karma.ts' file...`);
 
-  let appMode: AppMode | undefined = undefined;
-  try {
+  const [karmaPath, karmaTypesPath] = getKarmaPaths(appRootPath);
+  // fix karma if it exist or add new karma if it doesn't
+  if (await exists(karmaPath)) {
     const karma = await getKarma(appRootPath);
-    appMode = karma.maya.appType;
-  } catch (error) {
-    // While resetting karma file showing same error about missing or corrupted
-    // karma file is redundant and pointless
+    appMode = resetMode === "hard" ? "web" : karma.maya.appType;
+    await rm(karmaPath);
   }
-
-  try {
-    const relativeProbeKarmaPath = "../probes/karma";
-    const [karmaPath, karmaTypesPath] = getKarmaPaths(appRootPath);
-    if (await exists(karmaPath)) {
-      await rm(karmaPath);
-    }
-    if (await exists(karmaTypesPath)) {
-      await rm(karmaTypesPath);
-    }
-    const probeKarmaPath = path.resolve(__dirname, relativeProbeKarmaPath);
-    await cp(probeKarmaPath, appRootPath, { recursive: true });
-    await addPackageDepToKarma(appRootPath, NPM_DEPS.MAYA);
-    if (resetMode === "hard" || !appMode) process.exit();
-
-    if (appMode)
-      await updateObjectPropInFile(
-        karmaPath,
-        ["karma:", "maya:", "appType:"],
-        "web",
-        appMode,
-      );
-
-    if (appMode === "ext") {
-      await addPackageDepToKarma(appRootPath, NPM_DEPS.CHROME);
-    }
-    if (appMode === "pwa") {
-      await addPackageDepToKarma(appRootPath, NPM_DEPS.PWA);
-    }
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
+  if (await exists(karmaTypesPath)) {
+    await rm(karmaTypesPath);
   }
+  await $`sample-maya karma ${appMode || "web"} ${appRootPath}`;
 
   process.exit();
 };

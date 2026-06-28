@@ -8,12 +8,16 @@ export const nonCachedImport = async (modulePath: string) => {
   return await import(mpWithParam);
 };
 
-export const createDirIfNotExist = async (appRootDirPath: string) => {
-  if (await exists(appRootDirPath)) return;
+export const createDirIfNotExist = async (dirPath: string) => {
+  if (await exists(dirPath)) return;
+
+  const dirName = dirPath.split("/").pop();
+  if (!dirName) throw `Incorrect path for creating app.`;
+
   try {
-    await mkdir(appRootDirPath);
+    await mkdir(dirPath);
   } catch (error) {
-    console.log(appRootDirPath);
+    console.log(dirPath);
     throw error;
   }
 };

@@ -16,7 +16,7 @@
     "chokidar": "^4.0.3",
     "jsdom": "^24.1.0",
     "live-server": "^1.2.2",
-    "@cyftec/brahma": "0.0.1"
+    "@cyftec/sample-maya-app": "workspace:*"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
