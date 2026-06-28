@@ -1,10 +1,10 @@
 import { $ } from "bun";
-import { getKarma } from "../utils/common";
+import { getCWD, getKarma } from "../utils/common";
 import { getCurrentBrahmaVersion } from "../brahma-version-getter";
 
 const showVersionOnly = async () => {
   const brahmaV = await getCurrentBrahmaVersion();
-  const cwd = process.cwd();
+  const cwd = getCWD();
   let currentMayaV: string = "";
   try {
     const karma = await getKarma(cwd);

@@ -1,8 +1,8 @@
 import { buildApp } from "../builder";
-import { getKarma } from "../utils/common.ts";
+import { getCWD, getKarma } from "../utils/common.ts";
 
 export const publishApp = async () => {
-  const cwd = process.cwd();
+  const cwd = getCWD();
   console.log(`Building app for production deployment...\n`);
   const karma = await getKarma(cwd);
   const start = performance.now();

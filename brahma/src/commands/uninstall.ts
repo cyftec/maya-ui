@@ -2,6 +2,7 @@ import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters";
 import type { Karma } from "../karma-probe/karma-types";
+import { getCWD } from "../utils/common";
 
 export const removeInstalledFiles = async (
   appRootPath: string,
@@ -38,7 +39,7 @@ export const uninstallPackageOrEverything = async (
   packageArgs: string[],
   karma: Karma,
 ) => {
-  const cwd = process.cwd();
+  const cwd = getCWD();
 
   if (!packageArgs.length) await uninstallAllConfigsAndPackages(cwd, karma);
   else {

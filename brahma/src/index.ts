@@ -11,11 +11,11 @@ import {
   uninstallPackageOrEverything,
 } from "./commands/index.ts";
 import { getParsedCommands } from "./utils/command-parser.ts";
-import { getKarma } from "./utils/common.ts";
+import { getCWD, getKarma } from "./utils/common.ts";
 import { ValidateAndExitIf } from "./utils/file-validations.ts";
 
 const execCli = async () => {
-  const cwd = process.cwd();
+  const cwd = getCWD();
   const commands = getParsedCommands(Bun.argv);
 
   if (commands.help || commands.nocmd) showHelp();

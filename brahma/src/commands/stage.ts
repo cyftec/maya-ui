@@ -3,7 +3,7 @@ import { DS_STORE_REGEX } from "../utils/constants.ts";
 import { watchFileChange } from "../utils/file-change-watcher.ts";
 import { runLocalServer } from "../utils/local-server.ts";
 import { startStdinListener } from "../utils/stdin-listener.ts";
-import { getKarma } from "../utils/common.ts";
+import { getCWD, getKarma } from "../utils/common.ts";
 import type { Karma } from "../karma-probe/karma-types.ts";
 
 const DEBOUNCE_TIME_IN_MS = 500;
@@ -29,7 +29,7 @@ const buildAppWithPerf = async (appRootDir: string, karma: Karma) => {
 };
 
 export const stageApp = async () => {
-  const cwd = process.cwd();
+  const cwd = getCWD();
   console.log(`Staging app files and starting dev server...\n`);
   const karma = await getKarma(cwd);
   if (!karma) return false;

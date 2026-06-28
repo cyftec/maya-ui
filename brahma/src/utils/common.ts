@@ -46,3 +46,11 @@ export const splitText = (
     },
     ["", text],
   );
+
+export const getCWD = () => {
+  const cwd =
+    process.env.MAYA_DEV_MODE === "1"
+      ? process.env.INIT_CWD || process.cwd()
+      : process.cwd();
+  return cwd;
+};

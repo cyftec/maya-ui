@@ -1,6 +1,7 @@
 import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
 import type { AppMode } from "../karma-probe/karma-types";
+import { getCWD } from "../utils/common";
 
 const createAppRootDir = async (appRootPath: string) => {
   console.log(`Creating app in '${appRootPath}' directory.`);
@@ -51,7 +52,7 @@ const getCreateAppCommandArgs = (
 export const createApp = async (cmdArgs: string[]) => {
   const [appRootDirName, appMode] = getCreateAppCommandArgs(cmdArgs);
 
-  const cwd = process.cwd();
+  const cwd = getCWD();
   const appRootPath = `${cwd}/${appRootDirName}`;
 
   await createAppRootDir(appRootPath);

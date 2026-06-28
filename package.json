@@ -7,7 +7,7 @@
     "sample-maya-app"
   ],
   "scripts": {
-    "brahma": "bun ./brahma/src/index.ts",
+    "brahma": "MAYA_DEV_MODE=1 bun ./brahma/src/index.ts",
     "clean:modules": "rm -rf node_modules maya/node_modules brahma/node_modules sample-maya-app/node_modules",
     "clean:packagejsonlocks": "rm -f package-lock.json maya/package-lock.json brahma/package-lock.json sample-maya-app/package-lock.json",
     "clean:bunlocks": "rm -f bun.lock maya/bun.lock brahma/bun.lock sample-maya-app/bun.lock",

@@ -1,7 +1,7 @@
 import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import type { AppMode, KarmaResetMode } from "../karma-probe/karma-types.ts";
-import { getKarma } from "../utils/common.ts";
+import { getCWD, getKarma } from "../utils/common.ts";
 import { getKarmaPaths } from "../utils/file-path-getters.ts";
 
 const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
@@ -21,7 +21,7 @@ const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
 
 export const resetApp = async (cmdArgs: string[]) => {
   const resetMode = getResetMode(cmdArgs);
-  const appRootPath = process.cwd();
+  const appRootPath = getCWD();
   let appMode: AppMode = "web";
 
   console.log(`Resetting 'karma.ts' file...`);

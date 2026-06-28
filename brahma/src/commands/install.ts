@@ -4,6 +4,7 @@ import type { Karma } from "../karma-probe/karma-types.ts";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
 import { getCurrentBrahmaVersion } from "../brahma-version-getter.ts";
+import { getCWD } from "../utils/common.ts";
 
 const installDotVsCodeDir = async (appRootPath: string, karma: Karma) => {
   const dotVsCodePath = `${appRootPath}/.vscode`;
@@ -68,7 +69,7 @@ export const installPackageOrEverything = async (
   packageArgs: string[],
   karma: Karma,
 ) => {
-  const cwd = process.cwd();
+  const cwd = getCWD();
   const packageJsonExist = await exists(`${cwd}/package.json`);
 
   if (!packageArgs.length || !packageJsonExist) {
