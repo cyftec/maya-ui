@@ -1,4 +1,4 @@
-import { effect, promstates, signal, trap } from "@cyftech/signal";
+import { effect, promstates, signal } from "@cyftec/signal";
 
 type QueryState<D> = {
   isLoading: boolean;
@@ -9,7 +9,7 @@ type QueryState<D> = {
 export const query = <T>(
   url: string,
   options: RequestInit | undefined,
-  onComplete?: () => void
+  onComplete?: () => void,
 ) => {
   const abortController = new AbortController();
   const state = signal<QueryState<T>>({
@@ -33,7 +33,7 @@ export const query = <T>(
       });
     },
     undefined,
-    onComplete
+    onComplete,
   );
 
   effect(() => {
@@ -87,7 +87,7 @@ export const query = <T>(
   };
 
   return {
-    ...trap(state).props,
+    ...state.props(),
     runQuery,
     abortQuery,
     clearCache,

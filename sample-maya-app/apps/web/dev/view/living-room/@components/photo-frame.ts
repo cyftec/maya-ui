@@ -1,5 +1,5 @@
-import { component, m } from "@mufw/maya";
-import { tmpl } from "@cyftech/signal";
+import { component, m } from "@cyftec/maya";
+import { tmpl } from "@cyftec/maya/signal";
 
 type PhotoFrameProps = {
   frameSrc: string;
@@ -40,5 +40,5 @@ export const PhotoFrame = component<PhotoFrameProps>(
           ],
         }),
       ],
-    })
+    }),
 );

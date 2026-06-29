@@ -1,5 +1,5 @@
-import { m, Child, component } from "@mufw/maya";
-import { tmpl } from "@cyftech/signal";
+import { Child, component, m } from "@cyftec/maya";
+import { tmpl } from "@cyftec/maya/signal";
 
 type ButtonProps = {
   classNames?: string;
@@ -15,5 +15,5 @@ export const Button = component<ButtonProps>(
         color?.value || "bg-green  white"} ${classNames}`,
       onclick: onTap,
       children: label,
-    })
+    }),
 );

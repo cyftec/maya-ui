@@ -1,4 +1,4 @@
-import { m } from "@mufw/maya";
+import { m } from "@cyftec/maya";
 
 export default m.Html({
   lang: "en",

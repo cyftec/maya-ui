@@ -1,11 +1,11 @@
-import { m } from "@mufw/maya";
-import { derive, tmpl, signal } from "@cyftech/signal";
+import { m } from "@cyftec/maya";
+import { derive, signal, tmpl } from "@cyftec/maya/signal";
 import { Button } from "../@elements";
 import { Bulb, PhotoFrame } from "./@components";
 
 const isBulbOn = signal(false);
 const buttonColor = derive(() =>
-  isBulbOn.value ? "bg-light-gray black" : "bg-mid-gray light-gray"
+  isBulbOn.value ? "bg-light-gray black" : "bg-mid-gray light-gray",
 );
 
 export default m.Html({

@@ -1,5 +1,5 @@
-import { tmpl, signal, op } from "@cyftech/signal";
-import { component, DomEventValue, m } from "@mufw/maya";
+import { component, DomEventValue, m } from "@cyftec/maya";
+import { op, signal, tmpl } from "@cyftec/maya/signal";
 import { Header } from "./@elements/index.js";
 
 const topBulbIsOn = signal(false);
@@ -106,7 +106,7 @@ export default m.Html({
                 map: () =>
                   Bulb({
                     fontColor: filaColor,
-                    changeFontColor: (e) => changeFilaColor(e),
+                    changeFontColor: changeFilaColor,
                   }),
               }),
             ),

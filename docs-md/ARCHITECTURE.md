@@ -535,7 +535,7 @@ The repository currently contains two packages:
 ## Simple Example
 
 ```ts
-import { m } from "@mufw/maya";
+import { m } from "@cyftec/maya";
 
 export default m.Html({
   children: [
@@ -548,8 +548,8 @@ export default m.Html({
 ## Realistic Example
 
 ```ts
-import { signal } from "@cyftech/signal";
-import { m } from "@mufw/maya";
+import { signal } from "@cyftec/signal";
+import { m } from "@cyftec/maya";
 
 const selected = signal("dashboard");
 
@@ -612,13 +612,13 @@ flowchart TD
 
 # Package Responsibilities
 
-| Package            | Architectural Role           | Current Responsibility                                                           | Primary Files       |
-| ------------------ | ---------------------------- | -------------------------------------------------------------------------------- | ------------------- |
-| `@mufw/maya`       | Browser runtime              | Elements, components, phase tracking, DOM updates, custom elements, query helper | `maya/**`           |
-| `@mufw/brahma`     | Toolchain                    | CLI, scaffolding, build, local server, publish workflow                          | `brahma/src/**`     |
-| `@cyftech/signal`  | Reactive primitive           | Signals, derived signals, effects, trap helpers, async promise states            | External dependency |
-| `@cyftech/immutjs` | Immutable mutation detection | Array mutation analysis for keyed list rendering                                 | External dependency |
-| KVDB               | Intended persistence layer   | Mentioned in architecture, not implemented in this repository                    | External ecosystem  |
+| Package          | Architectural Role           | Current Responsibility                                                           | Primary Files       |
+| ---------------- | ---------------------------- | -------------------------------------------------------------------------------- | ------------------- |
+| `@cyftec/maya`   | Browser runtime              | Elements, components, phase tracking, DOM updates, custom elements, query helper | `maya/**`           |
+| `@cyftec/brahma` | Toolchain                    | CLI, scaffolding, build, local server, publish workflow                          | `brahma/src/**`     |
+| `@cyftec/signal` | Reactive primitive           | Signals, derived signals, effects, trap helpers, async promise states            | External dependency |
+| `@cyftec/immut`  | Immutable mutation detection | Array mutation analysis for keyed list rendering                                 | External dependency |
+| KVDB             | Intended persistence layer   | Mentioned in architecture, not implemented in this repository                    | External ecosystem  |
 
 ---
 
@@ -791,7 +791,7 @@ Direct DOM updates reduce abstraction overhead but require careful lifecycle han
 ## Simple Example
 
 ```ts
-import { m } from "@mufw/maya";
+import { m } from "@cyftec/maya";
 
 const heading = m.H1("Hello World");
 ```
@@ -853,7 +853,7 @@ The current component helper transforms most non-function props into non-signal 
 ## Simple Example
 
 ```ts
-import { component, m } from "@mufw/maya";
+import { component, m } from "@cyftec/maya";
 
 type Props = { label: string };
 
@@ -865,8 +865,8 @@ export const Label = component<Props>(({ label }) =>
 ## Realistic Example
 
 ```ts
-import { Child, component, m } from "@mufw/maya";
-import { tmpl } from "@cyftech/signal";
+import { Child, component, m } from "@cyftec/maya";
+import { tmpl } from "@cyftec/signal";
 
 type ButtonProps = {
   classNames?: string;
@@ -985,7 +985,7 @@ Signals are explicit and efficient, but global application state, persistence po
 
 ## Current Implementation
 
-The runtime depends on `@cyftech/signal`. Examples use `signal`, `derive`, `effect`, `tmpl`, `trap`, and `promstates`. Maya itself does not implement a separate store abstraction.
+The runtime depends on `@cyftec/signal`. Examples use `signal`, `derive`, `effect`, `tmpl`, `trap`, and `promstates`. Maya itself does not implement a separate store abstraction.
 
 ## Relevant Source Files
 
@@ -999,7 +999,7 @@ The runtime depends on `@cyftech/signal`. Examples use `signal`, `derive`, `effe
 ## Simple Example
 
 ```ts
-import { signal } from "@cyftech/signal";
+import { signal } from "@cyftec/signal";
 
 const count = signal(0);
 count.value += 1;
@@ -1008,8 +1008,8 @@ count.value += 1;
 ## Realistic Example
 
 ```ts
-import { derive, signal } from "@cyftech/signal";
-import { m } from "@mufw/maya";
+import { derive, signal } from "@cyftec/signal";
+import { m } from "@cyftec/maya";
 
 const todos = signal([{ id: 1, text: "Write architecture", done: false }]);
 
@@ -1032,7 +1032,7 @@ const App = () =>
 
 ```mermaid
 flowchart LR
-  A["signal.value mutation"] --> B["@cyftech/signal dependency tracking"]
+  A["signal.value mutation"] --> B["@cyftec/signal dependency tracking"]
   B --> C["derive/effect subscribers"]
   C --> D["Maya attribute updater"]
   C --> E["Maya child updater"]
@@ -1069,7 +1069,7 @@ Signal attributes are collected in `handleAttributeProps`; an `effect` re-applie
 ## Simple Example
 
 ```ts
-import { effect, signal } from "@cyftech/signal";
+import { effect, signal } from "@cyftec/signal";
 
 const name = signal("Maya");
 effect(() => console.log(name.value));
@@ -1243,7 +1243,7 @@ Simple lists are easy but may recreate children when the list changes. Keyed mut
 
 ## Current Implementation
 
-`m.For` maps non-signal arrays directly. Signal arrays without `itemKey` return a derived list. Signal arrays with `itemKey` use `getArrayMutations` from `@cyftech/immutjs`, keep `itemSignal` and `indexSignal` per mapped child, and preserve existing child getters where possible.
+`m.For` maps non-signal arrays directly. Signal arrays without `itemKey` return a derived list. Signal arrays with `itemKey` use `getArrayMutations` from `@cyftec/immut`, keep `itemSignal` and `indexSignal` per mapped child, and preserve existing child getters where possible.
 
 ## Relevant Source Files
 
@@ -1550,7 +1550,7 @@ The toolkit currently provides a minimal query helper rather than a comprehensiv
 ## Simple Example
 
 ```ts
-import { query } from "@mufw/maya/toolkit";
+import { query } from "@cyftec/maya/toolkit";
 
 const users = query<User[]>("/api/users", undefined);
 users.runQuery();
@@ -2000,8 +2000,8 @@ Responsibilities:
 
 Dependencies:
 
-- `@cyftech/signal`
-- `@cyftech/immutjs`
+- `@cyftec/signal`
+- `@cyftec/immut`
 - browser DOM APIs
 - `MutationObserver`
 
@@ -2045,8 +2045,8 @@ Responsibilities:
 
 Dependencies:
 
-- `@cyftech/signal`
-- `@cyftech/immutjs`
+- `@cyftec/signal`
+- `@cyftec/immut`
 - `m.Span` hidden fallback
 
 ## Lifecycle And Phases
@@ -2136,7 +2136,7 @@ Dependencies:
 
 - `fetch`
 - `AbortController`
-- `@cyftech/signal`
+- `@cyftec/signal`
 
 ## PWA And Offline
 
@@ -2170,7 +2170,7 @@ Dependencies:
 | Mount phase             | Runtime initializes page, components, state, events, reactive graph | Generated `mountAndRun` calls page function after resetting IDs           | Mostly aligned    | Matching depends on deterministic element creation                        |
 | Run phase               | User interaction, state mutation, reactive DOM synchronization      | Effects update attributes and children only when phase is `run`           | Aligned           | Effect disposal depends on unmount observation                            |
 | Rendering model         | Avoid Virtual DOM, update affected nodes directly                   | Direct DOM creation, replacement, attribute updates                       | Aligned           | Child replacement is index-based except keyed `For` behavior              |
-| Signals                 | Signals are foundational state primitive                            | External `@cyftech/signal` is used throughout runtime                     | Aligned           | Signal library source is external to this repo                            |
+| Signals                 | Signals are foundational state primitive                            | External `@cyftec/signal` is used throughout runtime                      | Aligned           | Signal library source is external to this repo                            |
 | Effects                 | Reactive effects propagate updates                                  | Attribute and child effects are registered on DOM elements                | Aligned           | Disposal exists through unmount listeners                                 |
 | Components              | Plain functions compose UI                                          | `component` helper normalizes props and returns element getters           | Aligned           | Prop normalization behavior should be documented for users                |
 | Conditional rendering   | Declarative conditional UI                                          | `m.If` returns child or derived child, with hidden span fallback          | Aligned           | Placeholder fallback is an implementation detail                          |
@@ -2191,7 +2191,7 @@ Dependencies:
 ## Hello World
 
 ```ts
-import { m } from "@mufw/maya";
+import { m } from "@cyftec/maya";
 
 export default m.Html({
   children: [

@@ -1,17 +1,19 @@
 {
   "name": "@cyftec/maya",
-  "version": "0.1.32",
+  "version": "0.0.1",
   "description": "Maya core implementation",
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
   "exports": {
     ".": "./index.ts",
     "./utils": "./utils/index.ts",
+    "./signal": "./exports/signal.ts",
+    "./immut": "./exports/immut.ts",
     "./toolkit": "./toolkit/index.ts"
   },
   "dependencies": {
-    "@cyftech/immutjs": "0.1.0",
-    "@cyftech/signal": "0.1.15"
+    "@cyftec/immut": "0.1.0",
+    "@cyftec/signal": "0.2.3"
   },
   "devDependencies": {
     "typescript": "^5.6.2"

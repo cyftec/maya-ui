@@ -1,5 +1,5 @@
-import { component, m } from "@mufw/maya";
-import { tmpl } from "@cyftech/signal";
+import { component, m } from "@cyftec/maya";
+import { tmpl } from "@cyftec/maya/signal";
 
 type BulbProps = {
   isOn: boolean;
@@ -20,5 +20,5 @@ export const Bulb = component<BulbProps>(({ isOn, classNames }) =>
         children: "फिलामेंट",
       }),
     ],
-  })
+  }),
 );

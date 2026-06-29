@@ -1,4 +1,4 @@
-import { valueIsNonSignal, valueIsSignal } from "@cyftech/signal";
+import { valueIsNonSignalObject, valueIsSignal } from "@cyftec/signal";
 
 export const valueIsArray = (value: any): boolean => Array.isArray(value);
 
@@ -22,13 +22,13 @@ export const validChildOrChildren = (value: any): boolean =>
   validChild(value) || validChildren(value);
 
 export const validNonSignalChild = (value: any): boolean =>
-  valueIsNonSignal(value) && validChild(value.value);
+  valueIsNonSignalObject(value) && validChild(value.value);
 
 export const validSignalChild = (value: any): boolean =>
   valueIsSignal(value) && validChild(value.value);
 
 export const validNonSignalChildOrChildren = (value: any): boolean =>
-  valueIsNonSignal(value) && validChildOrChildren(value.value);
+  valueIsNonSignalObject(value) && validChildOrChildren(value.value);
 
 export const validSignalChildOrChildren = (value: any): boolean =>
   valueIsSignal(value) && validChildOrChildren(value.value);
@@ -37,7 +37,7 @@ export const validPlainChildren = (value: any): boolean =>
   valueIsArray(value) &&
   value.every(
     (item: any) =>
-      validChild(item) || validNonSignalChild(item) || validSignalChild(item)
+      validChild(item) || validNonSignalChild(item) || validSignalChild(item),
   );
 
 export const validPlainChildOrChildren = (value: any): boolean =>

@@ -1,5 +1,5 @@
-import { m } from "@mufw/maya";
-import { Header } from "../view/@elements";
+import { m } from "@cyftec/maya";
+import { Header } from "../@elements";
 
 export default m.Html({
   lang: "en",

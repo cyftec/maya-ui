@@ -2,13 +2,13 @@ import {
   effect,
   value,
   valueIsSignalifiedObject,
-  valueIsNonSignal,
+  valueIsNonSignalObject,
   valueIsSignal,
   type SignalifiedObject,
   type MaybeSignalValue,
   type NonSignal,
   type Signal,
-} from "@cyftech/signal";
+} from "@cyftec/signal";
 import type {
   AttributeKey,
   AttributeProps,
@@ -72,7 +72,7 @@ const attributeIsEvent = (propKey: string, propValue: any): boolean =>
 
 const handleEventProps = (
   mHtmlElem: MHtmlElement,
-  eventProps: EventProps
+  eventProps: EventProps,
 ): void => {
   Object.entries(eventProps).forEach(([eventName, listenerFn]) => {
     if (attributeIsUndefinedEvent(eventName, listenerFn)) {
@@ -101,7 +101,7 @@ const handleEventProps = (
       }
     } else {
       console.error(
-        `Invalid event key: ${eventName} for element with tagName: ${mHtmlElem.tagName}`
+        `Invalid event key: ${eventName} for element with tagName: ${mHtmlElem.tagName}`,
       );
     }
   });
@@ -110,7 +110,7 @@ const handleEventProps = (
 const setAttribute = (
   mHtmlElement: MHtmlElement,
   attrKey: string,
-  attributePropValue: MaybeSignalValue<AttributeValue>
+  attributePropValue: MaybeSignalValue<AttributeValue>,
 ): void => {
   const unsafeAttrValue = valueIsSignalifiedObject(attributePropValue)
     ? (attributePropValue as SignalifiedObject<AttributeValue>).value
@@ -129,7 +129,7 @@ const setAttribute = (
 
 const handleAttributeProps = (
   mHtmlElem: MHtmlElement,
-  attributeProps: AttributeProps
+  attributeProps: AttributeProps,
 ): void => {
   const signalAttributeProps: SignalAttributeProps = {};
 
@@ -164,7 +164,7 @@ const getElementFromChild = (child: Child): MHtmlElement | Text => {
     const elem = (child as MHtmlElementGetter)();
     if (!valueIsMHtmlElement(elem)) {
       throw new Error(
-        `Invalid MHtml element getter child. Type: ${typeof child}`
+        `Invalid MHtml element getter child. Type: ${typeof child}`,
       );
     }
     return elem as MHtmlElement;
@@ -176,7 +176,7 @@ const getElementFromChild = (child: Child): MHtmlElement | Text => {
 const setChild = (
   parentNode: MHtmlElement,
   child: Child,
-  childPositionIndex: number
+  childPositionIndex: number,
 ) => {
   const prevChildNode = parentNode.childNodes[childPositionIndex];
   const newChildNode = getElementFromChild(child);
@@ -186,7 +186,7 @@ const setChild = (
     parentNode.appendChild(newChildNode);
   } else {
     console.error(
-      `No child found for node with tagName: ${parentNode.tagName}`
+      `No child found for node with tagName: ${parentNode.tagName}`,
     );
   }
 };
@@ -202,7 +202,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
         ? (signalChildOrChildrenValue as Child[])
         : [signalChildOrChildrenValue as Child];
       childrenList.forEach((child, index) =>
-        setChild(parentNode, child, index)
+        setChild(parentNode, child, index),
       );
 
       const newChildrenCount = childrenList.length;
@@ -216,21 +216,21 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
 
   const childrenList: (Child | SignalChild)[] = validChild(children)
     ? [children as Child]
-    : valueIsNonSignal(children)
-    ? validChild((children as NonSignal<any>).value)
-      ? [(children as NonSignal<any>).value as Child]
-      : validChildren((children as NonSignal<any>).value)
-      ? (children as NonSignalChildren).value
-      : []
-    : validPlainChildren(children)
-    ? (children as PlainChildren).map((ch) =>
-        validSignalChild(ch)
-          ? (ch as SignalChild)
-          : validNonSignalChild(ch)
-          ? (ch as NonSignalChild).value
-          : (ch as Child)
-      )
-    : [];
+    : valueIsNonSignalObject(children)
+      ? validChild((children as NonSignal<any>).value)
+        ? [(children as NonSignal<any>).value as Child]
+        : validChildren((children as NonSignal<any>).value)
+          ? (children as NonSignalChildren).value
+          : []
+      : validPlainChildren(children)
+        ? (children as PlainChildren).map((ch) =>
+            validSignalChild(ch)
+              ? (ch as SignalChild)
+              : validNonSignalChild(ch)
+                ? (ch as NonSignalChild).value
+                : (ch as Child),
+          )
+        : [];
 
   const signalChildren: { index: number; signalChild: SignalChild }[] = [];
   childrenList.forEach((maybeSignalChild, index) => {
@@ -258,7 +258,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
 
 const getNodesEventsAndAttributes = (
   props: Props,
-  tagName: string
+  tagName: string,
 ): {
   children: Children;
   eventProps: EventProps;
@@ -274,8 +274,8 @@ const getNodesEventsAndAttributes = (
       else
         throw new Error(
           `Invalid children prop for node with tagName: ${tagName}\n\n ${JSON.stringify(
-            propValue
-          )}`
+            propValue,
+          )}`,
         );
     } else if (attributeIsEvent(propKey, propValue)) {
       eventProps[propKey as DomEventKey] = propValue as DomEventValue;
@@ -289,7 +289,7 @@ const getNodesEventsAndAttributes = (
 
 export const createElementGetter = (
   tagName: HtmlTagName,
-  propsOrChildren?: PropsOrChildren
+  propsOrChildren?: PropsOrChildren,
 ): MHtmlElementGetter => {
   const elemGetter: MHtmlElementGetter = () => {
     const elementId = idGen.getNewId();

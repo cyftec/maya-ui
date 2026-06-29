@@ -56,8 +56,8 @@ export const showHelp = () => {
     - brahma install              // installs entire app
     - brahma install lodash       // installs only 'lodash' package
     - brahma version              // only shows the version e.g. v0.1.0
-    - brahma version latest       // upgrades to @mufw/brahma@latest
-    - brahma version 0.1.0        // shifts to @mufw/brahma@0.1.0
+    - brahma version latest       // upgrades to @cyftec/brahma@latest
+    - brahma version 0.1.0        // shifts to @cyftec/brahma@0.1.0
     - brahma reset --hard         // resets the karma for 'web' app mode
 `);
 

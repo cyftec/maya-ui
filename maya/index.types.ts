@@ -3,7 +3,7 @@ import {
   type NonSignal,
   type Signal,
   type SignalsEffect,
-} from "@cyftech/signal";
+} from "@cyftec/signal";
 import type {
   customEventKeys,
   htmlAttributes,

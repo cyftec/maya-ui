@@ -1,5 +1,5 @@
-import { m } from "@mufw/maya";
-import { tmpl, signal } from "@cyftech/signal";
+import { m } from "@cyftec/maya";
+import { signal, tmpl } from "@cyftec/maya/signal";
 import { Header } from "./@elements/index.js";
 
 const toggled = signal(false);

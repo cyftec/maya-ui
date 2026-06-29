@@ -5,28 +5,29 @@ import {
   type DerivedSignal,
   type MaybeSignalValue,
   type Signal,
-} from "@cyftech/signal";
+} from "@cyftec/signal";
 import type { Child } from "../../../index.types.ts";
 import { m } from "../m.ts";
 
-type SwitchReturn<Subject> = Subject extends Signal<any>
-  ? DerivedSignal<NonNullable<Child>>
-  : NonNullable<Child>;
+type SwitchReturn<Subject> =
+  Subject extends Signal<any>
+    ? DerivedSignal<NonNullable<Child>>
+    : NonNullable<Child>;
 
 type SubjectValue<S extends MaybeSignalValue<string | number>> =
   S extends MaybeSignalValue<number>
     ? number
     : S extends MaybeSignalValue<string>
-    ? string
-    : never;
+      ? string
+      : never;
 
 export type SwitchElement = <
-  S extends MaybeSignalValue<string | number>
+  S extends MaybeSignalValue<string | number>,
 >(props: {
   subject: S;
   caseMatcher?: (
     subjectValue: SubjectValue<S>,
-    matchingCase: string
+    matchingCase: string,
   ) => boolean;
   defaultCase?: () => Child;
   cases: MaybeSignalValue<{ [x in string]: () => Child }>;

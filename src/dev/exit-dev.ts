@@ -4,4 +4,4 @@ import { getCurrentBrahmaVersion, setPackageMode } from "../common";
 
 await setPackageMode("publish");
 const version = await getCurrentBrahmaVersion();
-await $`cd ./brahma && bun unlink && bun install -g @mufw/brahma@${version || "latest"}`;
+await $`cd ./brahma && bun unlink && bun install -g @cyftec/brahma@${version || "latest"}`;

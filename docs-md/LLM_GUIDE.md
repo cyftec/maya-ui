@@ -23,7 +23,7 @@ This guide provides comprehensive instructions for any LLM to generate applicati
 
 ## Framework Overview
 
-Maya is a reactive web development framework built with TypeScript, Node.js, and Bun.js. It uses a signal-based reactivity system from `@cyftech/signal` and immutable array operations from `@cyftech/immutjs`.
+Maya is a reactive web development framework built with TypeScript, Node.js, and Bun.js. It uses a signal-based reactivity system from `@cyftec/signal` and immutable array operations from `@cyftec/immut`.
 
 ### Architectural Philosophy
 
@@ -50,10 +50,10 @@ Maya occupies the middle ground between plain HTML/CSS/JS and modern frontend fr
 
 ### Key Dependencies
 
-- `@cyftech/signal` - Signal-based reactivity system
-- `@cyftech/immutjs` - Immutable array mutation detection
-- `@mufw/maya` - Core Maya framework package
-- `@mufw/brahma` - CLI tool for Maya apps
+- `@cyftec/signal` - Signal-based reactivity system
+- `@cyftec/immut` - Immutable array mutation detection
+- `@cyftec/maya` - Core Maya framework package
+- `@cyftec/brahma` - CLI tool for Maya apps
 
 ### Architecture
 
@@ -140,7 +140,7 @@ The `karma.ts` file contains app configuration and MUST export two specific vari
 
 ### 1. Signal-Based Reactivity
 
-Maya uses signals from `@cyftech/signal` for reactive state management:
+Maya uses signals from `@cyftec/signal` for reactive state management:
 
 - `signal(initialValue)` - Creates a reactive signal
 - `signal.value` - Access current value
@@ -184,7 +184,7 @@ Maya operates in three distinct phases:
 All standard HTML tags are available as capitalized properties on the `m` object:
 
 ```typescript
-import { m } from "@mufw/maya";
+import { m } from "@cyftec/maya";
 
 // Available elements (all HTML5 tags):
 m.Html, m.Head, m.Body, m.Div, m.Span, m.P, m.H1, m.H2, m.H3,
@@ -342,8 +342,8 @@ m.Div([m.Span("A"), m.Span("B")]); // Multiple children
 Use the `component()` higher-order function to create reusable components:
 
 ```typescript
-import { component, m } from "@mufw/maya";
-import { signal } from "@cyftech/signal";
+import { component, m } from "@cyftec/maya";
+import { signal } from "@cyftec/signal";
 
 type ButtonProps = {
   label: string;
@@ -401,7 +401,7 @@ This keeps component internals signal-friendly while maintaining reactivity.
 ### Basic Signal Usage
 
 ```typescript
-import { signal } from "@cyftech/signal";
+import { signal } from "@cyftec/signal";
 
 const count = signal(0);
 
@@ -427,7 +427,7 @@ m.Div({
 });
 
 // With template strings
-import { tmpl } from "@cyftech/signal";
+import { tmpl } from "@cyftec/signal";
 m.Div({
   class: tmpl`base-class ${colorCssClass} ${() => (isActive.value ? "active" : "inactive")}`,
   children: "Content",
@@ -442,7 +442,7 @@ const text = signal("Hello");
 m.Div({ children: text }); // Updates when text changes
 
 // With derived content
-import { derive } from "@cyftech/signal";
+import { derive } from "@cyftec/signal";
 const upperText = derive(() => text.value.toUpperCase());
 m.Div({ children: upperText });
 ```
@@ -450,7 +450,7 @@ m.Div({ children: upperText });
 ### Derived Signals
 
 ```typescript
-import { derive, signal } from "@cyftech/signal";
+import { derive, signal } from "@cyftec/signal";
 
 const firstName = signal("John");
 const lastName = signal("Doe");
@@ -462,7 +462,7 @@ m.Div({ children: fullName });
 ### Signal Operations
 
 ```typescript
-import { op, signal } from "@cyftech/signal";
+import { op, signal } from "@cyftec/signal";
 
 const isVisible = signal(true);
 
@@ -481,8 +481,8 @@ m.Div({
 The `For` element renders lists with optional mutable node tracking:
 
 ```typescript
-import { m } from "@mufw/maya";
-import { signal } from "@cyftech/signal";
+import { m } from "@cyftec/maya";
+import { signal } from "@cyftec/signal";
 
 // Simple list (non-mutable)
 const items = signal(["Apple", "Banana", "Cherry"]);
@@ -532,8 +532,8 @@ m.For({
 ### If Element - Conditional Rendering
 
 ```typescript
-import { m } from "@mufw/maya";
-import { signal } from "@cyftech/signal";
+import { m } from "@cyftec/maya";
+import { signal } from "@cyftec/signal";
 
 const isLoggedIn = signal(false);
 
@@ -556,8 +556,8 @@ m.If({
 ### Switch Element - Pattern Matching
 
 ```typescript
-import { m } from "@mufw/maya";
-import { signal } from "@cyftech/signal";
+import { m } from "@cyftec/maya";
+import { signal } from "@cyftec/signal";
 
 const view = signal("home");
 
@@ -756,7 +756,7 @@ const isActive = signal(true);
 m.Div({ class: isActive, children: "Content" });
 
 // Template literal
-import { tmpl } from "@cyftech/signal";
+import { tmpl } from "@cyftec/signal";
 m.Div({
   class: tmpl`base ${isActive ? "active" : "inactive"}`,
   children: "Content",
@@ -827,7 +827,7 @@ m.A({
 You can check the current phase:
 
 ```typescript
-import { phase } from "@mufw/maya/utils";
+import { phase } from "@cyftec/maya/utils";
 
 if (phase.currentIs("build")) {
   // Build phase logic
@@ -868,9 +868,9 @@ m.Div({
 ### Installation
 
 ```bash
-npm install -g @mufw/brahma
+npm install -g @cyftec/brahma
 # or
-bun install -g @mufw/brahma
+bun install -g @cyftec/brahma
 ```
 
 ### Create New App
@@ -1002,8 +1002,8 @@ Main configuration object:
 ### Example 1: Simple Counter
 
 ```typescript
-import { signal } from "@cyftech/signal";
-import { m } from "@mufw/maya";
+import { signal } from "@cyftec/signal";
+import { m } from "@cyftec/maya";
 
 const count = signal(0);
 
@@ -1046,8 +1046,8 @@ export default m.Html({
 ### Example 2: Todo List with For Element
 
 ```typescript
-import { signal } from "@cyftech/signal";
-import { m, component } from "@mufw/maya";
+import { signal } from "@cyftec/signal";
+import { m, component } from "@cyftec/maya";
 
 type Todo = { id: number; text: string; done: boolean };
 
@@ -1136,8 +1136,8 @@ export default m.Html({
 ### Example 3: Form with Validation
 
 ```typescript
-import { signal, derive } from "@cyftech/signal";
-import { m, tmpl } from "@mufw/maya";
+import { signal, derive } from "@cyftec/signal";
+import { m, tmpl } from "@cyftec/maya";
 
 const email = signal("");
 const password = signal("");
@@ -1218,8 +1218,8 @@ export default m.Html({
 ### Example 4: Data Fetching with Query
 
 ```typescript
-import { m } from "@mufw/maya";
-import { query } from "@mufw/maya/toolkit";
+import { m } from "@cyftec/maya";
+import { query } from "@cyftec/maya/toolkit";
 
 const { data, isLoading, error, runQuery } = query<User[]>(
   "https://api.example.com/users",
@@ -1286,8 +1286,8 @@ export default m.Html({
 
 ```typescript
 // @elements/button.ts
-import { component, m, type DomEventValue } from "@mufw/maya";
-import { signal, tmpl } from "@cyftech/signal";
+import { component, m, type DomEventValue } from "@cyftec/maya";
+import { signal, tmpl } from "@cyftec/signal";
 
 type ButtonProps = {
   variant?: "primary" | "secondary" | "danger";
@@ -1334,7 +1334,7 @@ const Button = component<ButtonProps>(
 export { Button };
 
 // @elements/card.ts
-import { component, m } from "@mufw/maya";
+import { component, m } from "@cyftec/maya";
 
 type CardProps = {
   title?: string;
@@ -1358,7 +1358,7 @@ export { Button } from "./button.ts";
 export { Card } from "./card.ts";
 
 // Usage in page.ts
-import { m } from "@mufw/maya";
+import { m } from "@cyftec/maya";
 import { Button, Card } from "./@elements/index.ts";
 
 export default m.Html({
@@ -1802,14 +1802,14 @@ m.Div({
 
 ### Package Documentation
 
-- `@cyftech/signal` - Signal reactivity system
-- `@cyftech/immutjs` - Immutable array operations
-- `@mufw/maya` - Core Maya framework
-- `@mufw/brahma` - CLI tool
+- `@cyftec/signal` - Signal reactivity system
+- `@cyftec/immut` - Immutable array operations
+- `@cyftec/maya` - Core Maya framework
+- `@cyftec/brahma` - CLI tool
 
 ### TypeScript Types
 
-All types are exported from `@mufw/maya`:
+All types are exported from `@cyftec/maya`:
 
 ```typescript
 import type {
@@ -1820,7 +1820,7 @@ import type {
   Props,
   PropsOrChildren,
   MayaAppPhase,
-} from "@mufw/maya";
+} from "@cyftec/maya";
 ```
 
 ---
@@ -1884,7 +1884,7 @@ Maya is a signal-based reactive framework that:
 - Uses a three-phase system (BUILD → MOUNT → RUN)
 - Provides HTML elements via the `m` object
 - Supports custom elements (For, If, Switch)
-- Uses signals from `@cyftech/signal` for reactivity
+- Uses signals from `@cyftec/signal` for reactivity
 - Requires a `karma.ts` configuration file
 - Uses the Brahma CLI for development workflow
 

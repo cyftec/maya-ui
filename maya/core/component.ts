@@ -8,7 +8,7 @@ import {
   type NonSignal,
   type PlainValue,
   type Signal,
-} from "@cyftech/signal";
+} from "@cyftec/signal";
 import type {
   Child,
   Children,
@@ -23,14 +23,14 @@ type InnerCompProps<P extends object> = {
     | (((...args: any) => any) | undefined)
     ? P[K]
     : P[K] extends string | string[] | undefined
-    ? SignalifiedObject<P[K]>
-    : P[K] extends NonSignal<(Child | NonSignalChild | SignalChild)[]>
-    ? PlainValue<P[K]>
-    : P[K] extends Child[]
-    ? MaybeSignalValue<P[K]>
-    : P[K] extends Children
-    ? P[K]
-    : SignalifiedObject<P[K]>;
+      ? SignalifiedObject<P[K]>
+      : P[K] extends NonSignal<(Child | NonSignalChild | SignalChild)[]>
+        ? PlainValue<P[K]>
+        : P[K] extends Child[]
+          ? MaybeSignalValue<P[K]>
+          : P[K] extends Children
+            ? P[K]
+            : SignalifiedObject<P[K]>;
 };
 type Props<P extends object> = {
   [K in keyof P]: P[K] extends
@@ -38,10 +38,10 @@ type Props<P extends object> = {
     | (((...args: any) => any) | undefined)
     ? P[K]
     : P[K] extends string | string[] | undefined
-    ? MaybeSignalValue<P[K]>
-    : P[K] extends Children
-    ? P[K]
-    : MaybeSignalValue<P[K]>;
+      ? MaybeSignalValue<P[K]>
+      : P[K] extends Children
+        ? P[K]
+        : MaybeSignalValue<P[K]>;
 };
 
 type InnerComp<P extends object> = (p: InnerCompProps<P>) => MHtmlElementGetter;
@@ -68,12 +68,12 @@ export const component =
           valueIsSignal(propValue) || typeof propValue === "function"
             ? propValue
             : arrayWithSignalifiedObjectItems(propValue)
-            ? value(propValue)
-            : getNonSignalObject(value(propValue));
+              ? value(propValue)
+              : getNonSignalObject(value(propValue));
         map[propKey] = innerPropValue as InnerCompProps<P>[keyof P];
         return map;
       },
-      {} as InnerCompProps<P>
+      {} as InnerCompProps<P>,
     );
     return innerComponent(innerCompProps);
   };

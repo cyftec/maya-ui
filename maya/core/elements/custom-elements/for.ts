@@ -1,4 +1,4 @@
-import { getArrayMutations } from "@cyftech/immutjs";
+import { getArrayMutations } from "@cyftec/immut";
 import {
   derive,
   signal,
@@ -10,7 +10,7 @@ import {
   type SourceSignal,
   type ObjectSourceSignal,
   type PlainValue,
-} from "@cyftech/signal";
+} from "@cyftec/signal";
 import type {
   Child,
   MHtmlElement,
@@ -21,7 +21,7 @@ import type {
 type MapFn<T> = (item: T, index: number) => Child;
 type MutableMapFn<T extends object> = (
   item: DerivedSignal<T>,
-  index: DerivedSignal<number>
+  index: DerivedSignal<number>,
 ) => Child;
 
 type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
@@ -33,14 +33,13 @@ type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
   n?: number;
   nthChild?: Child;
 };
-type ForReturnType<Sub> = Sub extends Signal<any[]>
-  ? DerivedSignal<Child[]>
-  : Child[];
+type ForReturnType<Sub> =
+  Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
 export type ForElement = <
   T,
-  ItemKey extends T extends object ? keyof T : never
+  ItemKey extends T extends object ? keyof T : never,
 >(
-  props: ForProps<T, ItemKey>
+  props: ForProps<T, ItemKey>,
 ) => ForReturnType<(typeof props)["subject"]>;
 
 type MappedChild<T extends object> = {
@@ -52,13 +51,13 @@ type MappedChild<T extends object> = {
 const getMappedChild = <T extends object>(
   item: T,
   i: number,
-  mutableMap: MutableMapFn<T>
+  mutableMap: MutableMapFn<T>,
 ): MappedChild<T> => {
   const indexSignal = signal(i);
   const itemSignal = signal(item) as ObjectSourceSignal<typeof item>;
   const child = mutableMap(
     derive(() => itemSignal.value),
-    derive(() => indexSignal.value)
+    derive(() => indexSignal.value),
   );
   let mappedChild: Child;
   let elem: MHtmlElement<HTMLElement>;
@@ -85,7 +84,7 @@ const getMappedChild = <T extends object>(
 const getChildrenAfterInjection = (
   children: Child[],
   n?: number,
-  nthChild?: Child
+  nthChild?: Child,
 ) => {
   if (n !== undefined && n >= 0 && nthChild) {
     const injectingIndex = n > children.length ? children.length : n;
@@ -145,7 +144,7 @@ const getChildrenAfterInjection = (
  */
 export const forElement: ForElement = <
   T,
-  ItemKey extends T extends object ? keyof T : never
+  ItemKey extends T extends object ? keyof T : never,
 >({
   subject,
   itemKey,
@@ -158,7 +157,7 @@ export const forElement: ForElement = <
     (n !== undefined && n > -1 && !nthChild)
   ) {
     throw new Error(
-      "Either both 'n' and 'nthChild' be passed or none of them."
+      "Either both 'n' and 'nthChild' be passed or none of them.",
     );
   }
   let injectableChild: Child = nthChild;
@@ -173,7 +172,7 @@ export const forElement: ForElement = <
     return getChildrenAfterInjection(
       value(subject).map(map as MapFn<T>),
       n,
-      injectableChild
+      injectableChild,
     ) as ForReturnType<typeof subject>;
   }
 
@@ -187,8 +186,8 @@ export const forElement: ForElement = <
       getChildrenAfterInjection(
         list.value.map(map as MapFn<T>),
         n,
-        injectableChild
-      )
+        injectableChild,
+      ),
     ) as ForReturnType<typeof subject>;
   }
 
@@ -214,15 +213,15 @@ export const forElement: ForElement = <
           getMappedChild(
             item as SubjectItem,
             i,
-            map as MutableMapFn<SubjectItem>
-          )
+            map as MutableMapFn<SubjectItem>,
+          ),
         );
       }
 
       const muts = getArrayMutations(
         previousItems,
         currentItems.value,
-        itemKey as string
+        itemKey as string,
       );
 
       return muts.map((mut, i) => {
@@ -230,7 +229,7 @@ export const forElement: ForElement = <
         console.assert(
           (mut.type === "add" && mut.oldIndex === -1 && !oldMappedChild) ||
             (mut.oldIndex > -1 && !!oldMappedChild),
-          "In case of mutation type 'add' oldIndex should be '-1', or else oldIndex should always be a non-negative integer."
+          "In case of mutation type 'add' oldIndex should be '-1', or else oldIndex should always be a non-negative integer.",
         );
 
         if (oldMappedChild) {
@@ -248,15 +247,15 @@ export const forElement: ForElement = <
 
         return getMappedChild(mut.value, i, map as MutableMapFn<SubjectItem>);
       });
-    }
+    },
   );
 
   const mappedChildrenSignal = derive(() =>
     getChildrenAfterInjection(
       mappedChildren.value.map((item) => item.mappedChild),
       n,
-      injectableChild
-    )
+      injectableChild,
+    ),
   );
 
   return mappedChildrenSignal as ForReturnType<typeof subject>;
