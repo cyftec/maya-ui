@@ -58,17 +58,17 @@ export const setPackageMode = async (mode: "dev" | "publish") => {
   if (!["dev", "publish"].includes(mode))
     throw `Incorrect mode '${mode}' provided.`;
   if (mode === "dev" && isDevMode(pkg))
-    console.log(`It is already '${mode}' mode.`);
+    console.warn(`It is already '${mode}' mode.`);
   if (mode === "publish" && isPublishMode(pkg))
-    console.log(`It is already '${mode}' mode.`);
+    console.warn(`It is already '${mode}' mode.`);
 
   if (mode === "dev") {
-    pkg.bin.devbrahma = brahmaIndexFile;
+    pkg.bin.dvbrm = brahmaIndexFile;
     delete pkg.bin.brahma;
   }
   if (mode === "publish") {
     pkg.bin.brahma = brahmaIndexFile;
-    delete pkg.bin.devbrahma;
+    delete pkg.bin.dvbrm;
   }
 
   await updatePackageJson(pkg);
