@@ -1,0 +1,5 @@
+#!/usr/bin/env bun
+import { exitProcessIfDevMode } from "./common";
+
+const pkg = await Bun.file("./brahma/package.json").json();
+exitProcessIfDevMode(pkg, "commit");
