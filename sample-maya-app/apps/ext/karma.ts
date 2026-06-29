@@ -1,4 +1,4 @@
-import type { Karma, ProjectFileNames } from "./karma-types.js";
+import type { Karma, ProjectFileNames } from "./karma-types.ts";
 
 const files = {
   buildable: {

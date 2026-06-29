@@ -1,4 +1,4 @@
-import { isDevMode } from "../src/common";
+import { isDevMode } from "../../src/common";
 
 export const LOGS = {
   errorFor: (gitMethod: string) =>
@@ -8,10 +8,8 @@ export const LOGS = {
   PASS: "✓ Publish-mode check passed",
 };
 
-export const exitProcessIfDevMode = (
-  pkg: any,
-  gitMethod: "commit" | "push",
-) => {
+export const exitProcessIfDevMode = async (gitMethod: "commit" | "push") => {
+  const pkg = await Bun.file("./brahma/package.json").json();
   if (isDevMode(pkg)) {
     console.error(LOGS.errorFor(gitMethod));
     console.error(LOGS.fixFor(gitMethod));

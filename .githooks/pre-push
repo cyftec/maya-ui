@@ -1,5 +1,4 @@
 #!/usr/bin/env bun
-import { exitProcessIfDevMode } from "./common";
+import { exitProcessIfDevMode } from "./utils/dev-mode-check";
 
-const pkg = await Bun.file("./brahma/package.json").json();
-exitProcessIfDevMode(pkg, "push");
+await exitProcessIfDevMode("push");

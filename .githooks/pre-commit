@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
-import { exitProcessIfDevMode } from "./common";
+import { exitProcessIfDevMode } from "./utils/dev-mode-check";
+import { syncIfKarmaFilesChange } from "./utils/karma-sync-check";
 
-const pkg = await Bun.file("./brahma/package.json").json();
-exitProcessIfDevMode(pkg, "commit");
+await exitProcessIfDevMode("commit");
+await syncIfKarmaFilesChange();
