@@ -22,7 +22,7 @@
     "typescript": "^5.0.0"
   },
   "bin": {
-    "devbrahma": "./src/index.ts"
+    "brahma": "./src/index.ts"
   },
   "publishConfig": {
     "access": "public"

@@ -38,7 +38,7 @@ const installPackages = async (appRootPath: string, karma: Karma) => {
   if (currentBrahmaVersion !== karmaBrahmaVersion) {
     console.log(
       `CLI VERSION MISMATCH
-          \nThe current brahma cli version does not match with brahma version declared in karma.ts file.
+          \nThe current brahma cli version - ${currentBrahmaVersion} does not match with brahma version declared in karma.ts file - ${karmaBrahmaVersion}.
           \nEither globally install the brahma cli version as mentioned in karma.ts file or update brahma version in karma ts.file with the value of current cli version.`,
     );
     process.exit(1);
