@@ -11,7 +11,7 @@
     },
     "brahma": {
       "name": "@cyftec/brahma",
-      "version": "0.1.31",
+      "version": "0.0.1",
       "bin": {
         "dvbrm": "./src/index.ts",
       },
@@ -58,6 +58,12 @@
         "@cyftec/maya": "workspace:*",
         "@types/chrome": "0.0.297",
         "@types/web-app-manifest": "1.0.8",
+      },
+    },
+    "workbench": {
+      "name": "sample-app",
+      "dependencies": {
+        "@cyftec/maya": "workspace:*",
       },
     },
   },
@@ -515,6 +521,8 @@
     "safe-regex": ["safe-regex@1.1.0", "", { "dependencies": { "ret": "~0.1.10" } }, "sha512-aJXcif4xnaNUzvUuC5gcb46oTS7zvg4jpMTnuqtrEPlR3vFr4pxtdTwaF1Qs3Enjn9HK+ZlwQui+a7z0SywIzg=="],
 
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
+
+    "sample-app": ["sample-app@workspace:workbench"],
 
     "saxes": ["saxes@6.0.0", "", { "dependencies": { "xmlchars": "^2.2.0" } }, "sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA=="],
 

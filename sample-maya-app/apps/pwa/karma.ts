@@ -26,7 +26,7 @@ const files = {
 // DO NOT CHANGE exported variable name
 export const karma: Karma = {
   brahma: {
-    version: "0.1.32",
+    version: "0.0.1",
     build: {
       appSrcDir: files.buildable.appSrcDir,
       appViewDir: files.buildable.appViewDir,
@@ -50,7 +50,7 @@ export const karma: Karma = {
     name: "sample-pwa",
     appType: "pwa",
     dependencies: {
-      "@cyftec/maya": "0.0.1",
+      "@cyftec/maya": "workspace:*",
       "@types/web-app-manifest": "1.0.8",
     },
   },

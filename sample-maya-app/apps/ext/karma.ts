@@ -26,7 +26,7 @@ const files = {
 // DO NOT CHANGE exported variable name
 export const karma: Karma = {
   brahma: {
-    version: "0.1.32",
+    version: "0.0.1",
     build: {
       appSrcDir: files.buildable.appSrcDir,
       appViewDir: files.buildable.appViewDir,
@@ -50,7 +50,7 @@ export const karma: Karma = {
     name: "sample-chrome-extension",
     appType: "ext",
     dependencies: {
-      "@cyftec/maya": "0.0.1",
+      "@cyftec/maya": "workspace:*",
       "@types/chrome": "0.0.297",
     },
   },
