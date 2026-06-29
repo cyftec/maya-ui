@@ -1,5 +1,5 @@
 import { rm } from "node:fs/promises";
-import type { Karma } from "../karma-probe/karma-types";
+import type { Karma } from "../probe/karma-probe/karma-types";
 import {
   DEST_HTML_DEFAULT_FILE_NAME,
   DEST_HTML_FILE_EXT,

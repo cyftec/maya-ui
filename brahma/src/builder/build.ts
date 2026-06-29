@@ -18,7 +18,7 @@ import {
   zipAndDeleteDir,
 } from "./build-helpers.ts";
 import type { BunFile } from "bun";
-import type { Karma } from "../karma-probe/karma-types.ts";
+import type { Karma } from "../probe/karma-probe/karma-types.ts";
 import { setupBuild } from "./build-setup.ts";
 import { getAppViewPath, getBuildDirPath } from "../utils/file-path-getters.ts";
 

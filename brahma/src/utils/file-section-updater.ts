@@ -1,20 +1,30 @@
-import { splitText } from "./common";
-
 const SectionEnclosers = {
   object: { start: "{", end: "}" },
   array: { start: "[", end: "]" },
 } as const;
 
+export const splitText = (
+  text: string,
+  splittersPathArray: string[],
+): [preTextIncludingSplitter: string, postSplitterText: string] =>
+  splittersPathArray.reduce(
+    ([preSplitter, postSplitter], splitter) => {
+      const [preText, postText] = postSplitter.split(splitter);
+      return [preSplitter + preText + splitter, postText];
+    },
+    ["", text],
+  );
+
 export const updateSectionInFile = async (
   filePath: string,
-  sectionSplittersPath: string[],
+  sectionSplittersPathArray: string[],
   updatedSectionText: string,
   sectionType: keyof typeof SectionEnclosers = "object",
 ) => {
   const fileText = await Bun.file(filePath).text();
   const [preSectionText, restOfText] = splitText(
     fileText,
-    sectionSplittersPath,
+    sectionSplittersPathArray,
   );
 
   let sectionStarted = false;

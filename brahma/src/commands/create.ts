@@ -1,6 +1,6 @@
 import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
-import type { AppMode } from "../karma-probe/karma-types";
+import type { AppMode } from "../probe/karma-probe/karma-types";
 import { getCWD } from "../utils/common";
 
 const createAppRootDir = async (appRootPath: string) => {

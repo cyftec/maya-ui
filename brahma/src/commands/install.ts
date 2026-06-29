@@ -1,6 +1,6 @@
 import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
-import type { Karma } from "../karma-probe/karma-types.ts";
+import type { Karma } from "../probe/karma-probe/karma-types.ts";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
 import { getCurrentBrahmaVersion } from "../brahma-version-getter.ts";

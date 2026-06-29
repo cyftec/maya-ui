@@ -1,5 +1,8 @@
 import { exists, mkdir } from "node:fs/promises";
-import type { Karma, KarmaConfigObject } from "../karma-probe/karma-types";
+import type {
+  Karma,
+  KarmaConfigObject,
+} from "../probe/karma-probe/karma-types";
 import { getKarmaPaths } from "./file-path-getters";
 import { ValidateAndExitIf } from "./file-validations";
 
@@ -34,18 +37,6 @@ export const getKarma = async (appRootPath: string): Promise<Karma> => {
   ValidateAndExitIf.exportedKarmaMissing(karma);
   return karma;
 };
-
-export const splitText = (
-  text: string,
-  splittersPath: string[],
-): [preTextIncludingSplitter: string, postSplitterText: string] =>
-  splittersPath.reduce(
-    ([presPlitter, postSplitter], splitter) => {
-      const [preText, postText] = postSplitter.split(splitter);
-      return [presPlitter + preText + splitter, postText];
-    },
-    ["", text],
-  );
 
 // TODO: Revisit 'MAYA_DEV_MODE'
 export const getCWD = () => {
