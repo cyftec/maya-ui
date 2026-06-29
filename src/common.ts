@@ -37,3 +37,56 @@ export async function getWorkspacePackageNames() {
   }
   return packageNames;
 }
+
+export const isDevMode = (pkg: any) =>
+  !pkg?.bin?.brahma && !!pkg?.bin?.devbrahma;
+
+export const isPublishMode = (pkg: any) =>
+  !!pkg?.bin?.brahma && !pkg?.bin?.devbrahma;
+
+export const updatePackageJson = async (packageJsonObject: any) => {
+  await Bun.write(
+    "./brahma/package.json",
+    JSON.stringify(packageJsonObject, null, "  ") + "\n",
+  );
+};
+
+export const setPackageMode = async (mode: "dev" | "publish") => {
+  const pkg = await Bun.file("./brahma/package.json").json();
+  const brahmaIndexFile = "./src/index.ts";
+
+  if (!["dev", "publish"].includes(mode))
+    throw `Incorrect mode '${mode}' provided.`;
+  if (mode === "dev" && isDevMode(pkg))
+    console.log(`It is already '${mode}' mode.`);
+  if (mode === "publish" && isPublishMode(pkg))
+    console.log(`It is already '${mode}' mode.`);
+
+  if (mode === "dev") {
+    pkg.bin.devbrahma = brahmaIndexFile;
+    delete pkg.bin.brahma;
+  }
+  if (mode === "publish") {
+    pkg.bin.brahma = brahmaIndexFile;
+    delete pkg.bin.devbrahma;
+  }
+
+  await updatePackageJson(pkg);
+};
+
+export const getCurrentBrahmaVersion = async () => {
+  try {
+    const globalBun = (await $`bun pm bin -g`.text()).replaceAll("\n", "");
+    const v = await $`${globalBun}/brahma v`.text();
+    const version = v
+      .split("- ")[1]
+      .replaceAll("\n", " ")
+      .split(" ")[0]
+      .replace("v", "");
+    console.log(version);
+    return version;
+  } catch (error) {
+    console.log(error);
+    return "";
+  }
+};

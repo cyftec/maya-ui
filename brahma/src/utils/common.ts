@@ -47,6 +47,7 @@ export const splitText = (
     ["", text],
   );
 
+// TODO: Revisit 'MAYA_DEV_MODE'
 export const getCWD = () => {
   const cwd =
     process.env.MAYA_DEV_MODE === "1"

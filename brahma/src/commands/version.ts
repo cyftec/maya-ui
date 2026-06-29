@@ -9,13 +9,9 @@ const showVersionOnly = async () => {
   try {
     const karma = await getKarma(cwd);
     currentMayaV = karma.maya.dependencies["@mufw/maya"];
-  } catch (error) {
-    console.log(`No 'karma.ts' file found in '${cwd}' directory.`);
-  }
-
-  if (!currentMayaV) {
-    console.log(`brahma - v${brahmaV}`);
-  }
+  } catch (error) {}
+  console.log(`brahma - ${brahmaV}`);
+  console.log(`maya   - ${currentMayaV || "(Not a Maya app directory)"}`);
 };
 
 export const showVersion = async (cmdArgs: string[]) => {
