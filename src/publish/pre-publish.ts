@@ -4,6 +4,7 @@ import {
   WORKSPACE_PACKAGE_DIRS,
   isDevMode,
   REPO_ROOT,
+  hasUncommittedChanges,
 } from "../common";
 import {
   PackagePublishState,
@@ -58,6 +59,11 @@ async function updateVersionsInPackageJson(
 export async function prePublishCleanup(targetVersion: string) {
   if (await isDevMode()) {
     console.error(`Change mode from 'dev' to 'publish' first.`);
+    process.exit(1);
+  }
+
+  if (await hasUncommittedChanges()) {
+    console.error(`Changes need to be commited first before publish.`);
     process.exit(1);
   }
 

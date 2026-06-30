@@ -73,4 +73,12 @@ export async function isPublishMode(): Promise<boolean> {
   return !(await isDevMode());
 }
 
-export async function hasUncommittedChanges() {}
+export async function hasUncommittedChanges() {
+  try {
+    const result = await $`git status --porcelain`.quiet();
+    return result.stdout.toString().trim().length > 0;
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
