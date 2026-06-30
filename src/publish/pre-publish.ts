@@ -7,7 +7,7 @@ import {
   hasUncommittedChanges,
   isDevMode,
 } from "../common";
-import { syncIfKarmaFilesChange } from "../karma-probe-syncer";
+import { syncKarmaFilesToSampleApps } from "../karma-probe-syncer";
 import {
   PackagePublishState,
   updatePublishState,
@@ -16,7 +16,7 @@ import {
 async function updateVersionsInKarmaProbe(targetVersion: string) {
   try {
     await updateKarmaProbeMayaVersion(targetVersion);
-    await syncIfKarmaFilesChange();
+    await syncKarmaFilesToSampleApps();
   } catch (error) {
     console.error(error);
     process.exit(1);

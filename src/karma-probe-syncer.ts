@@ -52,7 +52,7 @@ async function updateKarmaFile(appType: keyof typeof APP_CONFIGS) {
   console.log(`Updated karma.ts for ${appType}`);
 }
 
-async function syncKarmaFilesToSampleApps() {
+export async function syncKarmaFilesToSampleApps() {
   console.log("Starting karma file synchronization...");
 
   // Copy karma-types.ts to all three directories
@@ -77,38 +77,4 @@ async function syncKarmaFilesToSampleApps() {
   }
 
   console.log("Karma file synchronization completed!");
-}
-
-export async function syncIfKarmaFilesChange() {
-  const result = await $`git status --porcelain`.quiet();
-  const statusOutput = result.stdout.toString().trim();
-
-  const karmaProbeFiles = [
-    "brahma/src/probe/karma-probe/karma.ts",
-    "brahma/src/probe/karma-probe/karma-types.ts",
-  ];
-
-  const hasChanges = statusOutput
-    .split("\n")
-    .filter(Boolean)
-    .some((line) => {
-      const filePath = line.split(" ").filter((item) => !!item)[1];
-      console.log(filePath);
-      return karmaProbeFiles.includes(filePath);
-    });
-
-  if (hasChanges) {
-    console.log(`Syncing karma files...`);
-    try {
-      await syncKarmaFilesToSampleApps();
-      return true;
-    } catch (error) {
-      console.error("Error during karma file synchronization:", error);
-      process.exit(1);
-    }
-    console.log(`Karma files synced successfully.`);
-    console.log(`Running 'git add .' again to include synced files.`);
-  }
-
-  return false;
 }

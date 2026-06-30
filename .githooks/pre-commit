@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 import { exitProcessIfDevMode } from "./utils/dev-mode-check";
-import { syncIfKarmaFilesChange } from "../src/karma-probe-syncer";
+import { syncKarmaFilesToSampleApps } from "../src/karma-probe-syncer";
 import { $ } from "bun";
 
 await exitProcessIfDevMode("commit");
-const hadChanges = await syncIfKarmaFilesChange();
-if (hadChanges) await $`git add .`;
+await syncKarmaFilesToSampleApps();
+await $`git add .`;

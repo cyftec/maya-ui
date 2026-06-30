@@ -2,6 +2,7 @@ import * as path from "path";
 import { isDevMode, REPO_ROOT } from "../common";
 import { disposePublishState, getPublishedState } from "./publish-state-helper";
 import { updateKarmaProbeMayaVersion } from "../../brahma/src/probe/karma-version-updatore";
+import { syncKarmaFilesToSampleApps } from "../karma-probe-syncer";
 
 export async function postPublishReset() {
   if (await isDevMode()) {
@@ -11,6 +12,7 @@ export async function postPublishReset() {
 
   try {
     await updateKarmaProbeMayaVersion("workspace:*");
+    await syncKarmaFilesToSampleApps();
   } catch (error) {
     console.error(error);
     process.exit(1);

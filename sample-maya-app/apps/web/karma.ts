@@ -48,7 +48,7 @@ export const karma: Karma = {
   maya: {
     name: "sample-app",
     appType: "web",
-    dependencies:{"@cyftec/maya":"0.0.10"},
+    dependencies:{"@cyftec/maya":"workspace:*"},
   },
   vscode: {
     settings: {
