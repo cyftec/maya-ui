@@ -26,7 +26,6 @@ const files = {
 // DO NOT CHANGE exported variable name
 export const karma: Karma = {
   brahma: {
-    version: "0.0.1",
     build: {
       appSrcDir: files.buildable.appSrcDir,
       appViewDir: files.buildable.appViewDir,

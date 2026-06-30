@@ -21,7 +21,6 @@ export type ProjectFileNames = {
 
 export type Karma = {
   brahma: {
-    version: string;
     build: {
       appSrcDir: string;
       appViewDir: string;

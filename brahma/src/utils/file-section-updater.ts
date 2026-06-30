@@ -8,9 +8,11 @@ export const splitText = (
   splittersPathArray: string[],
 ): [preTextIncludingSplitter: string, postSplitterText: string] =>
   splittersPathArray.reduce(
-    ([preSplitter, postSplitter], splitter) => {
-      const [preText, postText] = postSplitter.split(splitter);
-      return [preSplitter + preText + splitter, postText];
+    ([preSplitter, postSplitter], splitterMilestone) => {
+      if (!postSplitter.includes(splitterMilestone))
+        throw `splitter path milestone '${splitterMilestone}' does exist in the text.`;
+      const [preText, postText] = postSplitter.split(splitterMilestone);
+      return [preSplitter + preText + splitterMilestone, postText];
     },
     ["", text],
   );
@@ -54,5 +56,8 @@ export const updateSectionInFile = async (
 
   const postSectionText = restOfText.slice(postSectionTextStartIndex);
   const updatedFileText = `${preSectionText}${updatedSectionText}${postSectionText}`;
+  console.log(preSectionText);
+  console.log(updatedSectionText);
+  console.log(postSectionText);
   await Bun.write(filePath, updatedFileText);
 };

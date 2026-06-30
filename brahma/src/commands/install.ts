@@ -1,10 +1,9 @@
 import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
 import type { Karma } from "../probe/karma-probe/karma-types.ts";
+import { getCWD } from "../utils/common.ts";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
-import { getCurrentBrahmaVersion } from "../brahma-version-getter.ts";
-import { getCWD } from "../utils/common.ts";
 
 const installDotVsCodeDir = async (appRootPath: string, karma: Karma) => {
   const dotVsCodePath = `${appRootPath}/.vscode`;
@@ -24,25 +23,18 @@ const installGitIgnore = async (appRootPath: string, karma: Karma) => {
 
 const installPackages = async (appRootPath: string, karma: Karma) => {
   const packageJsonPath = `${appRootPath}/package.json`;
-  const packageJsonBlob = karma.maya;
+  const packageJsonObject = karma.maya;
 
-  if (!packageJsonBlob) {
+  if (!packageJsonObject) {
     console.log(
       `ERROR: 'config' object does not contain any property named 'packageJson' in karma.ts file. Reset the karma file with the command 'brahma reset'.`,
     );
     process.exit(1);
   }
-  await Bun.write(packageJsonPath, JSON.stringify(packageJsonBlob, null, "\t"));
-  const currentBrahmaVersion = await getCurrentBrahmaVersion();
-  const karmaBrahmaVersion = karma.brahma.version;
-  if (currentBrahmaVersion !== karmaBrahmaVersion) {
-    console.log(
-      `CLI VERSION MISMATCH
-          \nThe current brahma cli version - ${currentBrahmaVersion} does not match with brahma version declared in karma.ts file - ${karmaBrahmaVersion}.
-          \nEither globally install the brahma cli version as mentioned in karma.ts file or update brahma version in karma ts.file with the value of current cli version.`,
-    );
-    process.exit(1);
-  }
+  await Bun.write(
+    packageJsonPath,
+    JSON.stringify(packageJsonObject, null, "\t"),
+  );
   await $`bun i`;
 };
 

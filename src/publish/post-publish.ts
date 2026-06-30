@@ -20,6 +20,7 @@ export async function postPublishReset() {
       });
       await Bun.write(pkgPath, JSON.stringify(updatedPkg, null, "  ") + "\n");
     }
+    await disposePublishState();
   } catch {
     console.log("No publish state found. Nothing to restore.");
   }

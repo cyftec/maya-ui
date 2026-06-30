@@ -26,7 +26,6 @@ const files = {
 // DO NOT CHANGE exported variable name
 export const karma: Karma = {
   brahma: {
-    version: "0.0.1",
     build: {
       appSrcDir: files.buildable.appSrcDir,
       appViewDir: files.buildable.appViewDir,
@@ -49,7 +48,7 @@ export const karma: Karma = {
   maya: {
     name: "sample-app",
     appType: "web",
-    dependencies: {},
+    dependencies:{"@cyftec/maya": "0.0.9"},
   },
   vscode: {
     settings: {

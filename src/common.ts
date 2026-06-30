@@ -12,8 +12,7 @@ export const WORKSPACE_PACKAGE_DIRS = [
   "brahma",
 ] as const;
 
-export const DEPENDENT_PACKAGE_NAMES = [
-  // preserve this order, as the latter depend on the former
+export const DEPENDABLE_PACKAGE_NAMES = [
   "@cyftec/maya",
   "@cyftec/sample-maya-app",
 ] satisfies string[];
@@ -38,6 +37,7 @@ export const getCurrentGlobalBrahmaVersion = async () => {
   }
 };
 
+// TODO: Block any dev or changes during publish mode
 export const setProjectMode = async (mode: ProjectMode) => {
   const brahmaPackageJsonPath = getBrahmaPackageJsonPath();
   const pkg = await Bun.file(brahmaPackageJsonPath).json();
@@ -72,3 +72,5 @@ export async function isDevMode(): Promise<boolean> {
 export async function isPublishMode(): Promise<boolean> {
   return !(await isDevMode());
 }
+
+export async function hasUncommittedChanges() {}
