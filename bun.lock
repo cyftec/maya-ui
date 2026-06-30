@@ -11,7 +11,7 @@
     },
     "brahma": {
       "name": "@cyftec/brahma",
-      "version": "0.0.1",
+      "version": "0.0.8",
       "bin": {
         "dvbrm": "./src/index.ts",
       },
@@ -35,7 +35,7 @@
     },
     "maya": {
       "name": "@cyftec/maya",
-      "version": "0.0.1",
+      "version": "0.0.8",
       "dependencies": {
         "@cyftec/immut": "0.1.0",
         "@cyftec/signal": "0.2.3",
@@ -46,7 +46,7 @@
     },
     "sample-maya-app": {
       "name": "@cyftec/sample-maya-app",
-      "version": "0.0.1",
+      "version": "0.0.8",
       "bin": {
         "sample-maya": "./index.ts",
       },
@@ -58,12 +58,6 @@
         "@cyftec/maya": "workspace:*",
         "@types/chrome": "0.0.297",
         "@types/web-app-manifest": "1.0.8",
-      },
-    },
-    "workbench": {
-      "name": "sample-app",
-      "dependencies": {
-        "@cyftec/maya": "workspace:*",
       },
     },
   },
@@ -312,7 +306,7 @@
 
     "from": ["from@0.1.7", "", {}, "sha512-twe20eF1OxVxp/ML/kq2p1uc6KvFK/+vs8WjEbeKmV2He22MKm7YF2ANIt+EOqhJ5L3K/SuuPhk0hWQDjOM23g=="],
 
-    "fs-extra": ["fs-extra@11.3.5", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^6.0.1", "universalify": "^2.0.0" } }, "sha512-eKpRKAovdpZtR1WopLHxlBWvAgPny3c4gX1G5Jhwmmw4XJj0ifSD5qB5TOo8hmA0wlRKDAOAhEE1yVPgs6Fgcg=="],
+    "fs-extra": ["fs-extra@11.3.6", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^6.0.1", "universalify": "^2.0.0" } }, "sha512-w8ZNZr2mKIc7qeNaQ9AVPT1+iFaI+Avd4xudVOvdDJ8VytREi1Ft5Ih7hd9jjehod8vAM5GMsfQ/TpPf4EyoEA=="],
 
     "fsevents": ["fsevents@1.2.13", "", { "dependencies": { "bindings": "^1.5.0", "nan": "^2.12.1" }, "os": "darwin" }, "sha512-oWb1Z6mkHIskLzEJ/XWX0srkpkTQ7vaopMQkyaEIoq0fmtFVxOthb8cCxeT+p3ynTdkk/RZwbgG4brR5BeWECw=="],
 
@@ -521,8 +515,6 @@
     "safe-regex": ["safe-regex@1.1.0", "", { "dependencies": { "ret": "~0.1.10" } }, "sha512-aJXcif4xnaNUzvUuC5gcb46oTS7zvg4jpMTnuqtrEPlR3vFr4pxtdTwaF1Qs3Enjn9HK+ZlwQui+a7z0SywIzg=="],
 
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
-
-    "sample-app": ["sample-app@workspace:workbench"],
 
     "saxes": ["saxes@6.0.0", "", { "dependencies": { "xmlchars": "^2.2.0" } }, "sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA=="],
 

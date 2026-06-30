@@ -1,11 +1,18 @@
 import { $ } from "bun";
-import { WORKSPACE_PACKAGE_DIRS } from "../common";
+import { isDevMode, WORKSPACE_PACKAGE_DIRS } from "../common";
 import { prePublishCleanup } from "./pre-publish";
-import { verifyPublishState } from "./verify-publish";
+import { verifyPublishState } from "./verify-version";
+import { postPublishReset } from "./post-publish";
 
 const targetVersion = process.argv[2];
 if (!targetVersion) {
-  console.error("Usage: bun run version:set <version>");
+  console.warn("Version is missing");
+  console.error("Usage: bun run publish <version>");
+  process.exit(1);
+}
+
+if (await isDevMode()) {
+  console.error(`Publishing of packages should happen only in 'publish' mode.`);
   process.exit(1);
 }
 
@@ -21,11 +28,12 @@ for (const pkgDirName of WORKSPACE_PACKAGE_DIRS) {
   console.log(`Publishing ${pkgDirName}...`);
   await $`cd ${pkgDirName} && bun publish --access public`;
 }
-await verifyPublishState(targetVersion);
+await Bun.sleep(8000);
+await verifyPublishState();
 console.log(`✓ All packages published.`);
 
 try {
-  await prePublishCleanup(targetVersion);
+  await postPublishReset();
 } catch (error) {
   console.error("Error during post-publish:", error);
   process.exit(1);
