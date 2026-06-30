@@ -96,12 +96,12 @@ export async function syncIfKarmaFilesChange() {
       console.log(filePath);
       return karmaProbeFiles.includes(filePath);
     });
-  console.log(`hasChanges: ${hasChanges}`);
 
   if (hasChanges) {
     console.log(`Syncing karma files...`);
     try {
       await syncKarmaFilesToSampleApps();
+      return true;
     } catch (error) {
       console.error("Error during karma file synchronization:", error);
       process.exit(1);
@@ -109,4 +109,6 @@ export async function syncIfKarmaFilesChange() {
     console.log(`Karma files synced successfully.`);
     console.log(`Running 'git add .' again to include synced files.`);
   }
+
+  return false;
 }
