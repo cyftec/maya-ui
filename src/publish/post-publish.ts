@@ -1,10 +1,18 @@
 import * as path from "path";
 import { isDevMode, REPO_ROOT } from "../common";
 import { disposePublishState, getPublishedState } from "./publish-state-helper";
+import { updateKarmaProbeMayaVersion } from "../../brahma/src/probe/karma-version-updatore";
 
 export async function postPublishReset() {
   if (await isDevMode()) {
     console.error(`This should not be reached is already in 'dev' mode.`);
+    process.exit(1);
+  }
+
+  try {
+    await updateKarmaProbeMayaVersion("workspace:*");
+  } catch (error) {
+    console.error(error);
     process.exit(1);
   }
 

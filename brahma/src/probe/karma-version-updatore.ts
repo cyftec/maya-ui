@@ -2,6 +2,7 @@ import { updateSectionInFile } from "../utils/file-section-updater";
 import path from "node:path";
 
 export const updateKarmaProbeMayaVersion = async (version: string) => {
+  console.log(`Updateing karma probe with version ${version}`);
   const karmaFilePath = path.join(__dirname, "karma-probe", "karma.ts");
   const updatedSectionText = `{"@cyftec/maya": "${version}"}`;
   await updateSectionInFile(
