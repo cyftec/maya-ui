@@ -45,6 +45,7 @@ export const karma: Karma = {
       serveDir: files.disposable.stagingDir,
     },
   },
+
   maya: {
     name: "sample-app",
     appType: "web",
