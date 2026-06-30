@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/web-app-manifest": "1.0.8",
     "@types/chrome": "0.0.297",
-    "@cyftec/maya": "workspace:*"
+    "@cyftec/maya": "0.0.1"
   },
   "publishConfig": {
     "access": "public"

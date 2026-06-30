@@ -1,4 +1,5 @@
 import { $ } from "bun";
+import * as path from "path";
 
 export const WORKSPACE_PACKAGE_DIRS = [
   // preserve this order, as the latter depend on the former
@@ -38,8 +39,41 @@ export async function getWorkspacePackageNames() {
   return packageNames;
 }
 
-export const isDevMode = (pkg: any) =>
-  !pkg?.bin?.brahma && !!pkg?.bin?.devbrahma;
+async function hasWorkspaceDependency(pkgPath: string): Promise<boolean> {
+  const pkgJson = await Bun.file(pkgPath).json();
+  const depSections = [
+    pkgJson.dependencies,
+    pkgJson.devDependencies,
+    pkgJson.peerDependencies,
+  ];
 
-export const isPublishMode = (pkg: any) =>
-  !!pkg?.bin?.brahma && !pkg?.bin?.devbrahma;
+  for (const section of depSections) {
+    if (section) {
+      for (const version of Object.values(section)) {
+        if (version === "workspace:*") {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+export async function isDevMode(): Promise<boolean> {
+  const REPO_ROOT = path.join(__dirname, "..");
+  const locationsOfInterest = [
+    path.join(REPO_ROOT, "brahma", "package.json"),
+    path.join(REPO_ROOT, "sample-maya-app", "package.json"),
+  ];
+
+  for (const pkgPath of locationsOfInterest) {
+    if (await hasWorkspaceDependency(pkgPath)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export async function isPublishMode(): Promise<boolean> {
+  return !(await isDevMode());
+}

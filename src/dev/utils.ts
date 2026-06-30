@@ -1,6 +1,8 @@
 import { $ } from "bun";
 import { isDevMode, isPublishMode } from "../common";
 
+export type ProjectMode = "dev" | "publish";
+
 const updatePackageJson = async (packageJsonObject: any) => {
   await Bun.write(
     "./brahma/package.json",
@@ -8,15 +10,15 @@ const updatePackageJson = async (packageJsonObject: any) => {
   );
 };
 
-export const setPackageMode = async (mode: "dev" | "publish") => {
+export const setPackageMode = async (mode: ProjectMode) => {
   const pkg = await Bun.file("./brahma/package.json").json();
   const brahmaIndexFile = "./src/index.ts";
 
   if (!["dev", "publish"].includes(mode))
     throw `Incorrect mode '${mode}' provided.`;
-  if (mode === "dev" && isDevMode(pkg))
+  if (mode === "dev" && (await isDevMode()))
     console.warn(`It is already '${mode}' mode.`);
-  if (mode === "publish" && isPublishMode(pkg))
+  if (mode === "publish" && (await isPublishMode()))
     console.warn(`It is already '${mode}' mode.`);
 
   if (mode === "dev") {
