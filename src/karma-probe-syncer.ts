@@ -108,30 +108,23 @@ async function syncKarmaFilesToSampleApps() {
 }
 
 export async function syncIfKarmaFilesChange() {
-  // Check for changes in karma files
-  const karmaProbeFilesMap = {
-    karma: "brahma/src/probe/karma-probe/karma.ts",
-    karmaTypes: "brahma/src/probe/karma-probe/karma-types.ts",
-  };
-  const karmaProbeFiles = Object.values(karmaProbeFilesMap);
+  const result = await $`git status --porcelain`.quiet();
+  const statusOutput = result.stdout.toString().trim();
 
-  const proc = Bun.spawn(
-    ["git", "diff", "--cached", "--name-only", ...karmaProbeFiles],
-    {
-      cwd: process.cwd(),
-      stdout: "pipe",
-    },
-  );
+  const karmaProbeFiles = [
+    "brahma/src/probe/karma-probe/karma.ts",
+    "brahma/src/probe/karma-probe/karma-types.ts",
+  ];
 
-  const reader = proc.stdout.getReader();
-  const { value: output } = await reader.read();
-  const changedFiles = new TextDecoder()
-    .decode(output)
-    .trim()
+  const hasChanges = statusOutput
     .split("\n")
-    .filter(Boolean);
+    .filter(Boolean)
+    .some((line) => {
+      const filePath = line.substring(3).trim();
+      return karmaProbeFiles.includes(filePath);
+    });
 
-  if (changedFiles.length) {
+  if (hasChanges) {
     console.log(`Syncing karma files...`);
     try {
       await syncKarmaFilesToSampleApps();
@@ -140,6 +133,6 @@ export async function syncIfKarmaFilesChange() {
       process.exit(1);
     }
     console.log(`Karma files synced successfully.`);
-    console.log(`Running 'git add .' again to unclude synced files.`);
+    console.log(`Running 'git add .' again to include synced files.`);
   }
 }
