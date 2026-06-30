@@ -1,20 +1,22 @@
 import * as path from "path";
+import { updateKarmaProbeMayaVersion } from "../../brahma/src/probe/karma-version-updatore";
 import {
   DEPENDABLE_PACKAGE_NAMES,
-  WORKSPACE_PACKAGE_DIRS,
-  isDevMode,
   REPO_ROOT,
+  WORKSPACE_PACKAGE_DIRS,
   hasUncommittedChanges,
+  isDevMode,
 } from "../common";
+import { syncIfKarmaFilesChange } from "../karma-probe-syncer";
 import {
   PackagePublishState,
   updatePublishState,
 } from "./publish-state-helper";
-import { updateKarmaProbeMayaVersion } from "../../brahma/src/probe/karma-version-updatore";
 
 async function updateVersionsInKarmaProbe(targetVersion: string) {
   try {
     await updateKarmaProbeMayaVersion(targetVersion);
+    await syncIfKarmaFilesChange();
   } catch (error) {
     console.error(error);
     process.exit(1);

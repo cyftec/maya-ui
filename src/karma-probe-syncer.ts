@@ -80,7 +80,7 @@ ${depsEntries},
   console.log(`Updated karma.ts for ${appType}`);
 }
 
-async function syncKarmaFiles() {
+async function syncKarmaFilesToSampleApps() {
   console.log("Starting karma file synchronization...");
 
   // Copy karma-types.ts to all three directories
@@ -134,13 +134,12 @@ export async function syncIfKarmaFilesChange() {
   if (changedFiles.length) {
     console.log(`Syncing karma files...`);
     try {
-      await syncKarmaFiles();
+      await syncKarmaFilesToSampleApps();
     } catch (error) {
       console.error("Error during karma file synchronization:", error);
       process.exit(1);
     }
     console.log(`Karma files synced successfully.`);
     console.log(`Running 'git add .' again to unclude synced files.`);
-    await $`git add .`;
   }
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { exitProcessIfDevMode } from "./utils/dev-mode-check";
-import { syncIfKarmaFilesChange } from "./utils/karma-sync-check";
+import { syncIfKarmaFilesChange } from "../src/karma-probe-syncer";
 
 await exitProcessIfDevMode("commit");
 await syncIfKarmaFilesChange();
