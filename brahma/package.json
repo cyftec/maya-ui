@@ -7,15 +7,15 @@
   "devDependencies": {
     "@types/archiver": "^6.0.3",
     "@types/bun": "^1.1.14",
+    "@types/browser-sync": "^2.29.0",
     "@types/jsdom": "^21.1.7",
-    "@types/live-server": "^1.2.3",
     "@types/node": "^24.3.0"
   },
   "dependencies": {
     "archiver": "^7.0.1",
+    "browser-sync": "^3.0.3",
     "chokidar": "^4.0.3",
     "jsdom": "^24.1.0",
-    "live-server": "^1.2.2",
     "@cyftec/sample-maya-app": "workspace:*"
   },
   "peerDependencies": {

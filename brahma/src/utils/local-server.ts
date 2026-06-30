@@ -1,23 +1,24 @@
-import liveServer from "live-server";
+import browserSync from "browser-sync";
 import { onProcessSigInt } from "./process-helpers";
+
+const server = browserSync.create();
 
 export const runLocalServer = (
   port: number,
   serveDir: string,
   openOnStart: boolean
 ) => {
-  liveServer.start({
+  server.init({
     port: port,
-    host: "0.0.0.0",
-    root: serveDir,
+    server: serveDir,
     open: openOnStart,
-    wait: 1000,
-    logLevel: 2,
+    ui: false,
+    logLevel: "silent",
   });
 
   const onExit = () => {
     console.log(`Closing local server at port: ${port}...`);
-    liveServer.shutdown();
+    server.exit();
   };
 
   process.on("exit", onExit);
