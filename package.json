@@ -17,7 +17,6 @@
     "clean:locks": "bun run clean:packagejsonlocks && bun run clean:bunlocks && bun run clean:bunlockbs",
     "clean:cache": "rm -rf ~/.bun/install/cache",
     "clean": "bun run clean:modules && bun run clean:locks",
-    "version:set": "bun run ./src/version/set.ts",
     "version:publish": "bun run ./src/version/publish.ts",
     "version:verify": "bun run ./src/version/verify.ts",
     "version:pre-publish": "bun run ./src/version/pre-publish.ts",

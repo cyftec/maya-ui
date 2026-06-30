@@ -1,32 +1,27 @@
-import * as fs from "fs-extra";
+import { isPublishMode } from "../common";
 import * as path from "path";
 
 const REPO_ROOT = path.join(__dirname, "../..");
 
-async function main() {
-  const statePath = path.join(REPO_ROOT, ".publish-state.json");
-
-  if (!(await fs.pathExists(statePath))) {
-    console.log("No publish state found. Nothing to restore.");
+export async function postPublishReset() {
+  if (!(await isPublishMode())) {
+    console.log("Already in dev mode. No changes needed.");
     return;
   }
 
-  console.log("Restoring workspace:* dependencies after publishing...\n");
+  const statePath = path.join(REPO_ROOT, ".publish-state.json");
 
-  const modifiedPackages = await fs.readJson(statePath);
+  try {
+    const modifiedPackages = await Bun.file(statePath).json();
 
-  for (const { pkg, original } of modifiedPackages) {
-    const pkgPath = path.join(REPO_ROOT, pkg, "package.json");
-    console.log(`Restoring ${pkg}...`);
-    await fs.writeJson(pkgPath, original, { spaces: 2 });
+    for (const { pkgDirName, original } of modifiedPackages) {
+      const pkgPath = path.join(REPO_ROOT, pkgDirName, "package.json");
+      await Bun.write(pkgPath, JSON.stringify(original, null, "  ") + "\n");
+    }
+
+    await Bun.file(statePath).delete();
+    console.log("✓ Workspace dependencies restored");
+  } catch {
+    console.log("No publish state found. Nothing to restore.");
   }
-
-  await fs.remove(statePath);
-  console.log("\n✓ Workspace dependencies restored");
-  console.log("Publish state file removed");
 }
-
-main().catch((error) => {
-  console.error("Error during post-publish:", error);
-  process.exit(1);
-});

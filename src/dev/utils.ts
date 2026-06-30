@@ -42,7 +42,7 @@ export const getCurrentBrahmaVersion = async () => {
       .replaceAll("\n", " ")
       .split(" ")[0]
       .replace("v", "");
-    console.log(version);
+    console.log(`Global 'brahma' version - ${version}`);
     return version;
   } catch (error) {
     console.log(error);

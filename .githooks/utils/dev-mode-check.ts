@@ -10,7 +10,7 @@ export const LOGS = {
 
 export const exitProcessIfDevMode = async (gitMethod: "commit" | "push") => {
   const pkg = await Bun.file("./brahma/package.json").json();
-  if (isDevMode(pkg)) {
+  if (await isDevMode()) {
     console.error(LOGS.errorFor(gitMethod));
     console.error(LOGS.fixFor(gitMethod));
     process.exit(1);

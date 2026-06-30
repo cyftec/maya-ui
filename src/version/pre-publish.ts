@@ -1,91 +1,54 @@
-import { $ } from "bun";
-import { WORKSPACE_PACKAGE_DIRS } from "../common";
+import { isDevMode, WORKSPACE_PACKAGE_DIRS } from "../common";
 import * as path from "path";
-
-console.log("Replacing workspace:* dependencies with actual versions...");
+import { setVersionToAllPackages } from "./set";
 
 const REPO_ROOT = path.join(__dirname, "../..");
 
-const readJSON = async (jsonFilePath: string) =>
-  await Bun.file(jsonFilePath).json();
-
-const writeJSON = async (filePath: string, json: object) =>
-  await Bun.write(filePath, JSON.stringify(json, null, "  ") + "\n");
-
 async function getPackageVersion(pkgName: string): Promise<string> {
   const pkgPath = path.join(REPO_ROOT, pkgName, "package.json");
-  const pkgJson = await readJSON(pkgPath);
+  const pkgJson = await Bun.file(pkgPath).json();
   return pkgJson.version;
 }
 
 async function replaceWorkspaceDependencies(pkgPath: string) {
-  const pkgJson = await readJSON(pkgPath);
+  const pkgJson = await Bun.file(pkgPath).json();
   let modified = false;
 
-  // Replace workspace:* in dependencies
-  if (pkgJson.dependencies) {
-    for (const [dep, version] of Object.entries(pkgJson.dependencies)) {
-      if (version === "workspace:*" && dep.startsWith("@cyftec")) {
-        const depPkgName = dep.replace("@cyftec/", "");
-        const actualVersion = await getPackageVersion(depPkgName);
-        pkgJson.dependencies[dep] = actualVersion;
-        modified = true;
-        console.log(`  Replaced ${dep}: workspace:* -> ${actualVersion}`);
-      }
-    }
-  }
-
-  // Replace workspace:* in devDependencies
-  if (pkgJson.devDependencies) {
-    for (const [dep, version] of Object.entries(pkgJson.devDependencies)) {
-      if (version === "workspace:*" && dep.startsWith("@cyftec")) {
-        const depPkgName = dep.replace("@cyftec/", "");
-        const actualVersion = await getPackageVersion(depPkgName);
-        pkgJson.devDependencies[dep] = actualVersion;
-        modified = true;
-        console.log(`  Replaced ${dep}: workspace:* -> ${actualVersion}`);
-      }
-    }
-  }
-
-  // Replace workspace:* in peerDependencies
-  if (pkgJson.peerDependencies) {
-    for (const [dep, version] of Object.entries(pkgJson.peerDependencies)) {
-      if (version === "workspace:*" && dep.startsWith("@cyftec")) {
-        const depPkgName = dep.replace("@cyftec/", "");
-        const actualVersion = await getPackageVersion(depPkgName);
-        pkgJson.peerDependencies[dep] = actualVersion;
-        modified = true;
-        console.log(`  Replaced ${dep}: workspace:* -> ${actualVersion}`);
+  for (const section of [
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+  ]) {
+    if (pkgJson[section]) {
+      for (const [dep, version] of Object.entries(pkgJson[section])) {
+        if (version === "workspace:*" && dep.startsWith("@cyftec")) {
+          const depPkgName = dep.replace("@cyftec/", "");
+          pkgJson[section][dep] = await getPackageVersion(depPkgName);
+          modified = true;
+        }
       }
     }
   }
 
   if (modified) {
-    await writeJSON(pkgPath, pkgJson);
-    return true;
+    await Bun.write(pkgPath, JSON.stringify(pkgJson, null, "  ") + "\n");
   }
-  return false;
+  return modified;
 }
 
-async function restoreWorkspaceDependencies(
-  pkgPath: string,
-  originalPkgJson: any,
-) {
-  await writeJSON(pkgPath, originalPkgJson);
-}
+export async function prePublishCleanup(targetVersion: string) {
+  if (!(await isDevMode())) {
+    console.log("Already in publish mode. No changes needed.");
+    return;
+  }
+  await setVersionToAllPackages(targetVersion);
 
-async function main() {
-  console.log("Preparing packages for publishing...");
-  console.log("Replacing workspace:* dependencies with actual versions\n");
-
+  console.log("Replacing workspace:* dependencies with actual versions...\n");
   const modifiedPackages: { pkgDirName: string; original: any }[] = [];
 
   for (const pkgDirName of WORKSPACE_PACKAGE_DIRS) {
     const pkgPath = path.join(REPO_ROOT, pkgDirName, "package.json");
     const originalPkgJson = await Bun.file(pkgPath).json();
-
-    console.log(`Processing ${pkgDirName}...`);
     const modified = await replaceWorkspaceDependencies(pkgPath);
 
     if (modified) {
@@ -93,22 +56,11 @@ async function main() {
     }
   }
 
-  console.log("\n✓ Workspace dependencies replaced");
-  console.log(
-    "Modified packages:",
-    modifiedPackages.map((p) => p.pkgDirName).join(", "),
-  );
-
-  // Save the state for restoration after publish
   const statePath = path.join(REPO_ROOT, ".publish-state.json");
-  await writeJSON(statePath, modifiedPackages);
-  console.log(`\nState saved to ${statePath}`);
-  console.log(
-    "Run 'bun run version:post-publish' to restore workspace:* dependencies after publishing",
+  await Bun.write(
+    statePath,
+    JSON.stringify(modifiedPackages, null, "  ") + "\n",
   );
+  console.log("✓ Workspace dependencies replaced");
+  console.log("Run 'bun run version:post-publish' to restore after publishing");
 }
-
-main().catch((error) => {
-  console.error("Error during pre-publish:", error);
-  process.exit(1);
-});
