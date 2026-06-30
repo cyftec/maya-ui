@@ -3,7 +3,7 @@ import type { Karma, ProjectFileNames } from "./karma-types.ts";
 const files = {
   buildable: {
     appSrcDir: "dev",
-    appViewDir: "dev/view",
+    appViewDir: "dev",
     pageFile: "page.ts",
     manifestFile: "manifest.ts",
   },
@@ -46,7 +46,7 @@ export const karma: Karma = {
     },
   },
   maya: {
-    name: "sample-web-app",
+    name: "sample-app",
     appType: "web",
     dependencies: { "@cyftec/maya": "workspace:*" },
   },

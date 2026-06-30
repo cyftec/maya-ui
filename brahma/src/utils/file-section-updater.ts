@@ -56,8 +56,5 @@ export const updateSectionInFile = async (
 
   const postSectionText = restOfText.slice(postSectionTextStartIndex);
   const updatedFileText = `${preSectionText}${updatedSectionText}${postSectionText}`;
-  console.log(preSectionText);
-  console.log(updatedSectionText);
-  console.log(postSectionText);
   await Bun.write(filePath, updatedFileText);
 };

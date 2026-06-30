@@ -1,33 +1,13 @@
 import { $ } from "bun";
+import { updateSectionInFile } from "../brahma/src/utils/file-section-updater";
 
 const SOURCE_DIR = "brahma/src/probe/karma-probe";
 const TARGET_BASE_DIR = "sample-maya-app/apps";
 
 const APP_CONFIGS = {
-  ext: {
-    appViewDir: "dev",
-    publishDir: "prod",
-    name: "sample-chrome-extension",
-    appType: "ext",
-    dependencies: { "@cyftec/maya": "workspace:*", "@types/chrome": "0.0.297" },
-  },
-  pwa: {
-    appViewDir: "dev",
-    publishDir: "prod",
-    name: "sample-pwa",
-    appType: "pwa",
-    dependencies: {
-      "@cyftec/maya": "workspace:*",
-      "@types/web-app-manifest": "1.0.8",
-    },
-  },
-  web: {
-    appViewDir: "dev/view",
-    publishDir: "docs",
-    name: "sample-app",
-    appType: "web",
-    dependencies: { "@cyftec/maya": "workspace:*" },
-  },
+  ext: { "@types/chrome": "0.0.297" },
+  pwa: { "@types/web-app-manifest": "1.0.8" },
+  web: {},
 };
 
 async function copyFile(source: string, target: string) {
@@ -37,46 +17,38 @@ async function copyFile(source: string, target: string) {
 }
 
 async function updateKarmaFile(appType: keyof typeof APP_CONFIGS) {
-  const config = APP_CONFIGS[appType];
+  const appTypeDeps = APP_CONFIGS[appType];
   const targetKarmaPath = `${TARGET_BASE_DIR}/${appType}/karma.ts`;
-
   let content = await Bun.file(targetKarmaPath).text();
 
-  // Update appViewDir in the files object
-  content = content.replace(
-    /buildable: \{[\s\S]*?appViewDir: "[^"]+",/,
-    (match) =>
-      match.replace(
-        /appViewDir: "[^"]+",/,
-        `appViewDir: "${config.appViewDir}",`,
-      ),
-  );
-
-  // Update publishDir in the static object
-  content = content.replace(/static: \{[\s\S]*?publishDir: "[^"]+",/, (match) =>
-    match.replace(
-      /publishDir: "[^"]+",/,
-      `publishDir: "${config.publishDir}",`,
-    ),
-  );
-
-  // Update maya section
-  const depsEntries = Object.entries(config.dependencies)
-    .map(([key, value]) => `      "${key}": "${value}"`)
-    .join(",\n");
-
-  content = content.replace(
-    /maya: \{[\s\S]*?\n  \},/,
-    `maya: {
-    name: "${config.name}",
-    appType: "${config.appType}",
-    dependencies: {
-${depsEntries},
-    },
-  },`,
-  );
-
+  // Replace appType with "ext" | "pwa" | "web"
+  content = content.replace(`appType: "web"`, `appType: "${appType}"`);
+  if (appType === "web") {
+    // Set appViewDir to 'dev/view' for "web" app type
+    content = content.replace(`appViewDir: "dev"`, `appViewDir: "dev/view"`);
+    // Set publishDir to 'docs' for "web" app type
+    content = content.replace(`publishDir: "prod"`, `publishDir: "docs"`);
+  }
   await Bun.write(targetKarmaPath, content);
+
+  // Replace deps with specific deps for each type
+  const karmaProbeContent = await Bun.file(
+    "brahma/src/probe/karma-probe/karma.ts",
+  ).text();
+  const currVersion = karmaProbeContent
+    .split("dependencies:")[1]
+    .split(`"@cyftec/maya":`)[1]
+    .trim()
+    .split(`"`)[1];
+  const baseDeps = { "@cyftec/maya": currVersion };
+  const deps = appType === "web" ? baseDeps : { ...baseDeps, ...appTypeDeps };
+
+  await updateSectionInFile(
+    targetKarmaPath,
+    ["karma:", "maya:", "dependencies:"],
+    JSON.stringify(deps),
+  );
+
   console.log(`Updated karma.ts for ${appType}`);
 }
 
@@ -120,9 +92,11 @@ export async function syncIfKarmaFilesChange() {
     .split("\n")
     .filter(Boolean)
     .some((line) => {
-      const filePath = line.substring(3).trim();
+      const filePath = line.split(" ").filter((item) => !!item)[1];
+      console.log(filePath);
       return karmaProbeFiles.includes(filePath);
     });
+  console.log(`hasChanges: ${hasChanges}`);
 
   if (hasChanges) {
     console.log(`Syncing karma files...`);
