@@ -1,20 +1,25 @@
 import { $ } from "bun";
 import { WORKSPACE_PACKAGE_DIRS } from "../common";
-import * as fs from "fs-extra";
 import * as path from "path";
 
 console.log("Replacing workspace:* dependencies with actual versions...");
 
 const REPO_ROOT = path.join(__dirname, "../..");
 
+const readJSON = async (jsonFilePath: string) =>
+  await Bun.file(jsonFilePath).json();
+
+const writeJSON = async (filePath: string, json: object) =>
+  await Bun.write(filePath, JSON.stringify(json, null, "  ") + "\n");
+
 async function getPackageVersion(pkgName: string): Promise<string> {
   const pkgPath = path.join(REPO_ROOT, pkgName, "package.json");
-  const pkgJson = await fs.readJson(pkgPath);
+  const pkgJson = await readJSON(pkgPath);
   return pkgJson.version;
 }
 
 async function replaceWorkspaceDependencies(pkgPath: string) {
-  const pkgJson = await fs.readJson(pkgPath);
+  const pkgJson = await readJSON(pkgPath);
   let modified = false;
 
   // Replace workspace:* in dependencies
@@ -57,7 +62,7 @@ async function replaceWorkspaceDependencies(pkgPath: string) {
   }
 
   if (modified) {
-    await fs.writeJson(pkgPath, pkgJson, { spaces: 2 });
+    await writeJSON(pkgPath, pkgJson);
     return true;
   }
   return false;
@@ -67,7 +72,7 @@ async function restoreWorkspaceDependencies(
   pkgPath: string,
   originalPkgJson: any,
 ) {
-  await fs.writeJson(pkgPath, originalPkgJson, { spaces: 2 });
+  await writeJSON(pkgPath, originalPkgJson);
 }
 
 async function main() {
@@ -78,7 +83,7 @@ async function main() {
 
   for (const pkgDirName of WORKSPACE_PACKAGE_DIRS) {
     const pkgPath = path.join(REPO_ROOT, pkgDirName, "package.json");
-    const originalPkgJson = await fs.readJson(pkgPath);
+    const originalPkgJson = await Bun.file(pkgPath).json();
 
     console.log(`Processing ${pkgDirName}...`);
     const modified = await replaceWorkspaceDependencies(pkgPath);
@@ -96,7 +101,7 @@ async function main() {
 
   // Save the state for restoration after publish
   const statePath = path.join(REPO_ROOT, ".publish-state.json");
-  await fs.writeJson(statePath, modifiedPackages, { spaces: 2 });
+  await writeJSON(statePath, modifiedPackages);
   console.log(`\nState saved to ${statePath}`);
   console.log(
     "Run 'bun run version:post-publish' to restore workspace:* dependencies after publishing",

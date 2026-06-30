@@ -1,6 +1,5 @@
-//cd packages/brahma && bun unlink && npm install -g @my-org/brahma
 import { $ } from "bun";
-import { getCurrentBrahmaVersion, setPackageMode } from "../common";
+import { getCurrentBrahmaVersion, setPackageMode } from "./utils";
 
 await setPackageMode("publish");
 const version = await getCurrentBrahmaVersion();
