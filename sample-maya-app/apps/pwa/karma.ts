@@ -45,14 +45,10 @@ export const karma: Karma = {
       serveDir: files.disposable.stagingDir,
     },
   },
-
   maya: {
-    name: "sample-pwa",
+    name: "sample-app",
     appType: "pwa",
-    dependencies: {
-      "@cyftec/maya": "workspace:*",
-      "@types/web-app-manifest": "1.0.8",
-    },
+    dependencies:{"@cyftec/maya":"workspace:*","@types/web-app-manifest":"1.0.8"},
   },
   vscode: {
     settings: {

@@ -45,14 +45,10 @@ export const karma: Karma = {
       serveDir: files.disposable.stagingDir,
     },
   },
-
   maya: {
-    name: "sample-chrome-extension",
+    name: "sample-app",
     appType: "ext",
-    dependencies: {
-      "@cyftec/maya": "workspace:*",
-      "@types/chrome": "0.0.297",
-    },
+    dependencies:{"@cyftec/maya":"workspace:*","@types/chrome":"0.0.297"},
   },
   vscode: {
     settings: {
