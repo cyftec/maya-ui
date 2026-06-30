@@ -1,6 +1,6 @@
 {
   "name": "@cyftec/sample-maya-app",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "private": false,
   "description": "Official sample application for the Maya framework.",
   "license": "MIT",
