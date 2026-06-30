@@ -1,6 +1,6 @@
 {
   "name": "@cyftec/brahma",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CLI app to generate, develop and manage Maya app",
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "chokidar": "^4.0.3",
     "jsdom": "^24.1.0",
     "live-server": "^1.2.2",
-    "@cyftec/sample-maya-app": "workspace:*"
+    "@cyftec/sample-maya-app": "0.0.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
