@@ -56,9 +56,9 @@ const arrayWithSignalifiedObjectItems = (input: any) => {
 };
 export const component =
   <P extends object>(innerComponent: InnerComp<P>): Component<P> =>
-  (props) => {
-    for (const key of Object.keys(props)) {
-      if (props[key as keyof P] === undefined) delete props[key as keyof P];
+  (props: Props<P> = {} as Props<P>) => {
+    for (const key of Object.keys(props) as Array<keyof P>) {
+      if (props[key] === undefined) delete props[key];
     }
     const innerCompProps: InnerCompProps<P> = Object.entries(props).reduce(
       (map, prop) => {
