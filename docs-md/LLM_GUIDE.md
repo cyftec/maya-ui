@@ -333,6 +333,26 @@ m.Div("Hello World"); // Equivalent to m.Div({ children: "Hello World" })
 m.Div([m.Span("A"), m.Span("B")]); // Multiple children
 ```
 
+### Children Array Composition
+
+Children can be passed as arrays containing mixed types: strings, elements, and nested arrays. This allows inline composition of text and elements within a single children array:
+
+```typescript
+m.Div({
+  children: ["text ", m.Code({ children: "code" }), " more text"],
+});
+```
+
+### innerHTML Property Should Never Be Used
+
+**IMPORTANT:** The `innerHTML` property should STRICTLY be avoided in Maya. While it exists in HTML for preserving formatting (particularly useful for code blocks with syntax highlighting), Maya provides a better approach:
+
+- Use the `children` property which converts text input to Text Node
+- Maya's `children` property handles text content safely and efficiently
+- Example: `m.Code({ children: "const x = 1;" })` instead of `m.Code({ innerHTML: "const x = 1;" })`
+
+This approach maintains security, follows Maya's reactive patterns, and ensures proper text node handling.
+
 ---
 
 ## Component System
@@ -393,6 +413,46 @@ const Button = component<ButtonProps>(({ label }) => {
 ```
 
 This keeps component internals signal-friendly while maintaining reactivity.
+
+### Component Organization Best Practices for Multi-Page Sites
+
+For multi-page applications, shared components should be organized systematically:
+
+- **Directory Structure:** Shared components should be organized in a directory at the view root
+- **Naming Convention:** This root directory should be named something like `elements`, `components`, `@elements` or `@components`
+- **Ignore Delimiter:** The `@` prefix (or any prefix) before a directory name is an ignore-delimiter mentioned in karma.ts file
+- **Purpose of Ignore Delimiter:** It helps the compiler skip searching for page files in directories prefixed with it
+
+Example structure:
+
+```
+dev/
+├── view/
+│   ├── @elements/          # Shared components (ignored for page search)
+│   │   ├── button.ts
+│   │   ├── header.ts
+│   │   └── index.ts
+│   ├── page.ts             # Main page
+│   └── about.page.ts       # Additional page
+```
+
+### DRY Component Patterns
+
+Always follow DRY (Don't Repeat Yourself) principles by extracting common page structures into reusable components. This approach is exactly similar to other web dev frameworks like React, Vue, etc.
+
+**Common reusable components:**
+
+- **PageHead:** Meta tags, title, and stylesheet links
+- **ContentNav:** Sidebar navigation with brand and links
+- **Header:** Top navigation bar with logo and links
+- **Footer:** Bottom navigation bar with copyright, branding, sitemaps and other social links
+
+**Benefits:**
+
+- Components accept props for dynamic content (e.g., `title`, `cssHref`)
+- Eliminates boilerplate code across multiple pages
+- Easier maintenance - changes made in one place affect all pages
+- Consistent structure across the application
 
 ---
 
@@ -689,6 +749,24 @@ m.Input({
 });
 ```
 
+### Attribute Naming Conventions
+
+HTML attributes are passed as-is to Maya elements:
+
+- **class** is used (not `className` like in React)
+- **aria-\*** attributes are preserved exactly as written
+- **data-\*** attributes are preserved exactly as written
+- Boolean attributes like `defer`, `async`, `disabled` are passed as-is
+
+```typescript
+m.Div({
+  class: "my-class", // Use 'class', not 'className'
+  "aria-label": "Button", // ARIA attributes preserved
+  "data-id": "123", // Data attributes preserved
+  children: "Content",
+});
+```
+
 ### Data Attributes
 
 Custom data attributes are supported:
@@ -775,6 +853,41 @@ m.A({
   href: "/path", // Safe
   // href: "javascript:alert('xss')" // This will throw an error
   children: "Link",
+});
+```
+
+### Script Tag Placement
+
+Script tags should preferably be placed at the top of the body with the `defer` attribute:
+
+```typescript
+// ✅ Preferred - Top of body with defer
+m.Body({
+  children: [
+    m.Script({ src: "path/to/script.js", defer: true }),
+    // Rest of your content
+  ],
+});
+```
+
+**Why use `defer`:**
+
+- The `defer` attribute is a MUST and ensures that scripts are executed after the document has been parsed
+- This prevents blocking the HTML parsing and improves page load performance
+- Scripts execute in order when using defer
+
+**Alternative placement:**
+
+- Scripts can safely be placed at the end of the body
+- When placed at the end, the `defer` attribute is optional since the document is already parsed
+
+```typescript
+// ✅ Alternative - End of body
+m.Body({
+  children: [
+    // Your content
+    m.Script({ src: "path/to/script.js" }),
+  ],
 });
 ```
 
