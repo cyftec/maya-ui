@@ -1,4 +1,5 @@
 import type { Karma } from "../probe/karma-probe/karma-types";
+import path from "node:path";
 
 export const getAppSrcPath = (appRootPath: string, karma: Karma): string => {
   return `${appRootPath}/${karma.brahma.build.appSrcDir}`;
@@ -22,13 +23,13 @@ export const getBuildDirPath = (
   karma: Karma,
   buildProd: boolean,
 ) => {
-  const { stagingDirName, publishDirName } = karma.brahma.build;
-  const buildDirName = buildProd ? publishDirName : stagingDirName;
-  const buildDirRootPath = `${appRootPath}/${buildDirName}`;
+  const { stagingDir, publishDir } = karma.brahma.build;
+  const buildDirNameOrPath = buildProd ? publishDir : stagingDir;
+  const buildDirRootPath = path.join(appRootPath, buildDirNameOrPath);
 
   const appViewPath = getAppViewPath(appRootPath, karma);
   const subPath = appSrcPath.split(appViewPath)[1];
 
-  const buildDirPath = `${buildDirRootPath}${subPath}`;
+  const buildDirPath = path.join(buildDirRootPath, subPath);
   return buildDirPath;
 };

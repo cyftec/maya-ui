@@ -31,8 +31,8 @@ export type Karma = {
       ignoreDelimiter: string;
       buildablePageFileName: string;
       buildableManifestFileName: string;
-      stagingDirName: string;
-      publishDirName: string;
+      stagingDir: string;
+      publishDir: string;
       disposable: string[];
     };
     serve: {

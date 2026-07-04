@@ -33,8 +33,8 @@ export const karma: Karma = {
       ignoreDelimiter: "@",
       buildablePageFileName: files.buildable.pageFile,
       buildableManifestFileName: files.buildable.manifestFile,
-      stagingDirName: files.disposable.stagingDir,
-      publishDirName: files.static.publishDir,
+      stagingDir: files.disposable.stagingDir,
+      publishDir: files.static.publishDir,
       disposable: Object.values(files.disposable),
     },
     serve: {
