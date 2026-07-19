@@ -5,4 +5,4 @@ import { $ } from "bun";
 
 await exitProcessIfDevMode("commit");
 await syncKarmaFilesToSampleApps();
-await $`git add .`;
+// await $`git add .`;
