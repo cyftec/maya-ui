@@ -67,7 +67,7 @@ During build:
 
 ### Mount
 
-The generated page script runs `mountAndRun()`. It resets the ID generator again and calls the same page function in `mount` phase. Instead of creating fresh nodes, `createElementGetter()` queries the existing static nodes with `[data-elem-id="<id>"]`.
+The generated page script runs `mountAndRun()`. It resets the ID generator again and calls the same page function in `mount` phase. Instead of creating fresh nodes, `elementGetter()` queries the existing static nodes with `[data-elem-id="<id>"]`.
 
 During mount:
 

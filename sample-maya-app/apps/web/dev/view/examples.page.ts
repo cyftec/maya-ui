@@ -1,4 +1,4 @@
-import { component, DomEventValue, m } from "@cyftec/maya";
+import { Children, component, DomEventValue, m } from "@cyftec/maya";
 import { op, signal, tmpl } from "@cyftec/maya/signal";
 import { Header } from "./@elements/index.js";
 
@@ -20,8 +20,9 @@ type BulbProps = {
 
 const Bulb = component<BulbProps>(({ fontColor, changeFontColor }) => {
   const isOn = signal(false);
+
   return m.Div({
-    class: tmpl`mv2 pa4 ${op(isOn).ternary("bg-yellow", "bg-light-gray")}`,
+    class: tmpl`mv2 pa4 ${op(isOn).then("bg-yellow", "bg-light-gray")}`,
     onclick: () => (isOn.value = !isOn.value),
     children: m.Div({
       class: tmpl`pointer hover-bg-washed-yellow ${fontColor}`,

@@ -1,5 +1,5 @@
-import { phase, valueIsMHtmlElement } from "../../utils/index.ts";
-import type { CustomEventValue, MHtmlElement } from "../../index.types.ts";
+import { phase, valueIsMHtmlElement } from "../utils/index.ts";
+import type { CustomEventValue, MHtmlElement } from "../index.types.ts";
 
 type ListenerData = {
   element: MHtmlElement;
@@ -46,7 +46,7 @@ const unmountObserver: MutationObserver = new MutationObserver((mutations) => {
 
 const execSubtreeUnmountListeners = (
   element: MHtmlElement,
-  elUnmountListener: CustomEventValue | undefined
+  elUnmountListener: CustomEventValue | undefined,
 ): void => {
   if (!valueIsMHtmlElement(element)) return;
 

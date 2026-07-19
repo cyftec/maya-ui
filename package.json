@@ -4,7 +4,8 @@
   "workspaces": [
     "maya",
     "sample-maya-app",
-    "brahma"
+    "brahma",
+    "website"
   ],
   "scripts": {
     "dev": "bun ./src/dev/run-dev.ts && bun run clean && bun i",

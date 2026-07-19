@@ -1,5 +1,5 @@
 import {
-  type MaybeSignalValue,
+  type MaybeSignal,
   type NonSignal,
   type Signal,
   type SignalsEffect,
@@ -12,7 +12,6 @@ import type {
 } from "./utils/index.ts";
 
 export type MaybeArray<T> = T | T[];
-export type Object<T> = T extends object ? T : never;
 
 /**
  * Event type-defs
@@ -55,13 +54,11 @@ export type SignalChild = Signal<Child>;
 export type SignalChildren = Signal<Child[]>;
 export type SignalChildOrChildren = SignalChild | SignalChildren;
 
-export type PlainChildren = (Child | NonSignal<Child> | Signal<Child>)[];
-export type PlainChildOrChildren =
-  | Child
-  | NonSignalChildOrChildren
-  | PlainChildren;
+export type ChildrenArray = MaybeSignal<Child>[];
 
-export type Children = PlainChildOrChildren | SignalChildOrChildren;
+export type Children =
+  | MaybeArray<MaybeSignal<Child>>
+  | MaybeSignal<MaybeArray<Child>>;
 
 /**
  * Props type-defs
@@ -71,7 +68,7 @@ export type EventProps = Partial<{
   [E in DomEventKey]: DomEventValue;
 }>;
 export type AttributeProps = Partial<{
-  [A in AttributeKey]: MaybeSignalValue<AttributeValue>;
+  [A in AttributeKey]: MaybeSignal<AttributeValue>;
 }>;
 export type SignalAttributeProps = Partial<{
   [A in AttributeKey]: Signal<AttributeValue>;

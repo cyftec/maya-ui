@@ -5,58 +5,45 @@ import {
   value,
   valueIsSignal,
   type DerivedSignal,
-  type MaybeSignalValue,
+  type MaybeSignal,
   type Signal,
+  type SignalifiedObject,
   type SourceSignal,
-  type ObjectSourceSignal,
-  type PlainValue,
 } from "@cyftec/signal";
 import type {
   Child,
   MHtmlElement,
   MHtmlElementGetter,
-  Object,
-} from "../../../index.types.ts";
+} from "../../index.types.js";
 
-type MapFn<T> = (item: T, index: number) => Child;
-type MutableMapFn<T extends object> = (
-  item: DerivedSignal<T>,
+type PlainMapFn<Item> = (item: Item, index: number) => Child;
+
+type MutableMapFn<Item extends Record<string, any>> = (
+  item: DerivedSignal<Item>,
   index: DerivedSignal<number>,
 ) => Child;
 
-type ForProps<T, ItemKey extends T extends object ? keyof T : never> = {
-  subject: MaybeSignalValue<T[]>;
-  itemKey?: ItemKey;
-  map: (T extends object ? keyof T : never) extends ItemKey
-    ? MapFn<PlainValue<T>>
-    : MutableMapFn<T extends object ? T : never>;
-  n?: number;
-  nthChild?: Child;
-};
-type ForReturnType<Sub> =
-  Sub extends Signal<any[]> ? DerivedSignal<Child[]> : Child[];
-export type ForElement = <
-  T,
-  ItemKey extends T extends object ? keyof T : never,
->(
-  props: ForProps<T, ItemKey>,
-) => ForReturnType<(typeof props)["subject"]>;
-
-type MappedChild<T extends object> = {
+type MappedChild<Item extends Record<string, any>> = {
   indexSignal: SourceSignal<number>;
-  itemSignal: ObjectSourceSignal<T>;
+  itemSignal: SourceSignal<Item>;
   mappedChild: Child;
 };
 
-const getMappedChild = <T extends object>(
-  item: T,
+type ForReturnType<Subject extends MaybeSignal<any[]>> = [any[]] extends [
+  Subject,
+]
+  ? Child[]
+  : DerivedSignal<Child[]>;
+
+const getMappedChild = <Item extends Record<string, any>>(
+  item: Item,
   i: number,
-  mutableMap: MutableMapFn<T>,
-): MappedChild<T> => {
+  mutableMap: MutableMapFn<Item>,
+): MappedChild<Item> => {
   const indexSignal = signal(i);
-  const itemSignal = signal(item) as ObjectSourceSignal<typeof item>;
+  const itemSignal = signal(item) as SourceSignal<typeof item>;
   const child = mutableMap(
-    derive(() => itemSignal.value),
+    derive(() => itemSignal.value as Item),
     derive(() => indexSignal.value),
   );
   let mappedChild: Child;
@@ -142,16 +129,34 @@ const getChildrenAfterInjection = (
  * @returns a derived signal of a list of maya-html-elements
  * 
  */
-export const forElement: ForElement = <
-  T,
-  ItemKey extends T extends object ? keyof T : never,
+export const forElement = <
+  Subject extends MaybeSignal<any[]>,
+  ItemKey extends Subject extends SignalifiedObject<(infer Item)[]>
+    ? Item extends Record<string, any>
+      ? keyof Item | undefined
+      : undefined
+    : undefined,
 >({
   subject,
   itemKey,
   map,
   n,
   nthChild,
-}: ForProps<T, ItemKey>) => {
+}: {
+  subject: Subject;
+  itemKey?: ItemKey;
+  map: Subject extends (infer Item)[]
+    ? PlainMapFn<Item>
+    : Subject extends SignalifiedObject<(infer Item)[]>
+      ? Item extends Record<string, any>
+        ? [ItemKey] extends [keyof Item]
+          ? MutableMapFn<Item>
+          : PlainMapFn<Item>
+        : PlainMapFn<Item>
+      : never;
+  n?: number;
+  nthChild?: Child;
+}): ForReturnType<typeof subject> => {
   if (
     (nthChild && n === undefined) ||
     (n !== undefined && n > -1 && !nthChild)
@@ -168,37 +173,36 @@ export const forElement: ForElement = <
     injectableChild = injectable;
   }
 
-  if (!valueIsSignal(subject)) {
-    return getChildrenAfterInjection(
-      value(subject).map(map as MapFn<T>),
-      n,
-      injectableChild,
-    ) as ForReturnType<typeof subject>;
-  }
-
-  const list = derive(() => {
-    const items = value(subject);
-    return Array.isArray(items) ? items : [];
-  });
-
   if (!itemKey) {
-    return derive(() =>
+    const elementsGetter = () =>
       getChildrenAfterInjection(
-        list.value.map(map as MapFn<T>),
+        value(subject).map(map as PlainMapFn<any>),
         n,
         injectableChild,
-      ),
+      );
+
+    return (
+      valueIsSignal(subject) ? derive(elementsGetter) : elementsGetter()
     ) as ForReturnType<typeof subject>;
   }
 
   /**
    * Mutable nodes list logic below
    */
-  const itemsValue = list.value;
+
+  const itemsValue = value(subject);
   if (itemsValue.length && typeof itemsValue[0] !== "object")
     throw new Error("for mutable map, item in the list must be an object");
 
-  type SubjectItem = Object<T>;
+  const list = derive(() => {
+    const items = value(subject) as Record<string, any>[];
+    if (!Array.isArray(items))
+      throw `subject must be an array or signalified-object of array, found ${JSON.stringify(subject)}`;
+
+    return items;
+  });
+
+  type SubjectItem = Record<string, any>;
   let previousItems: SubjectItem[] | null = null;
   const currentItems = derive((prevItems: SubjectItem[] | undefined) => {
     previousItems = prevItems || previousItems;

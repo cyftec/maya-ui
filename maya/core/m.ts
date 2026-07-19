@@ -2,16 +2,13 @@ import type {
   PropsOrChildren,
   HtmlTagName,
   MHtmlElementGetter,
-} from "../../index.types.ts";
-import { htmlTagNames } from "../../utils/index.ts";
-import { createElementGetter } from "../dom/index.ts";
+} from "../index.types.ts";
+import { htmlTagNames } from "../utils/index.ts";
+import { elementGetter } from "./element.ts";
 import {
   forElement,
   ifElement,
   switchElement,
-  type ForElement,
-  type IfElement,
-  type SwitchElement,
 } from "./custom-elements/index.ts";
 
 type MayaTagName = Capitalize<HtmlTagName>;
@@ -26,17 +23,17 @@ const mayaElementsMap: MayaElementsMap = htmlTagNames.reduce(
       .map((char, index) => (!index ? char.toUpperCase() : char))
       .join("") as MayaTagName;
     const mHtmlComp: MayaElement = (propsOrChildren?: PropsOrChildren) =>
-      createElementGetter(htmlTagName, propsOrChildren);
+      elementGetter(htmlTagName, propsOrChildren);
     map[mayaTagName] = mHtmlComp;
     return map;
   },
-  {} as MayaElementsMap
+  {} as MayaElementsMap,
 );
 
 type CustomElementsMap = {
-  For: ForElement;
-  If: IfElement;
-  Switch: SwitchElement;
+  For: typeof forElement;
+  If: typeof ifElement;
+  Switch: typeof switchElement;
 };
 const customElementsMap: CustomElementsMap = {
   For: forElement,

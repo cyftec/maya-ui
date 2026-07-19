@@ -5,7 +5,7 @@ import {
   valueIsNonSignalObject,
   valueIsSignal,
   type SignalifiedObject,
-  type MaybeSignalValue,
+  type MaybeSignal,
   type NonSignal,
   type Signal,
 } from "@cyftec/signal";
@@ -27,13 +27,13 @@ import type {
   MHtmlElementGetter,
   NonSignalChild,
   NonSignalChildren,
-  PlainChildren,
+  ChildrenArray,
   Props,
   PropsOrChildren,
   SignalAttributeProps,
   SignalChild,
   SignalChildOrChildren,
-} from "../../index.types.ts";
+} from "../index.types.js";
 import {
   customEventKeys,
   decodeHTMLEntities,
@@ -51,8 +51,8 @@ import {
   validSignalChildOrChildren,
   valueIsArray,
   valueIsMHtmlElement,
-} from "../../utils/index.ts";
-import { startUnmountObserver } from "./unmount-observer.ts";
+} from "../utils/index.js";
+import { startUnmountObserver } from "./unmount-observer.js";
 
 const attributeIsUndefinedEvent = (propKey: string, propValue: any): boolean =>
   eventKeys.includes(propKey as DomEventKey) && propValue === undefined;
@@ -110,7 +110,7 @@ const handleEventProps = (
 const setAttribute = (
   mHtmlElement: MHtmlElement,
   attrKey: string,
-  attributePropValue: MaybeSignalValue<AttributeValue>,
+  attributePropValue: MaybeSignal<AttributeValue>,
 ): void => {
   const unsafeAttrValue = valueIsSignalifiedObject(attributePropValue)
     ? (attributePropValue as SignalifiedObject<AttributeValue>).value
@@ -223,7 +223,7 @@ const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
           ? (children as NonSignalChildren).value
           : []
       : validPlainChildren(children)
-        ? (children as PlainChildren).map((ch) =>
+        ? (children as ChildrenArray).map((ch) =>
             validSignalChild(ch)
               ? (ch as SignalChild)
               : validNonSignalChild(ch)
@@ -287,7 +287,7 @@ const getNodesEventsAndAttributes = (
   return { children, eventProps, attributeProps };
 };
 
-export const createElementGetter = (
+export const elementGetter = (
   tagName: HtmlTagName,
   propsOrChildren?: PropsOrChildren,
 ): MHtmlElementGetter => {
