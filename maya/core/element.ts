@@ -17,10 +17,8 @@ import type {
   Children,
   CustomEventKey,
   CustomEventValue,
-  DomEventKey,
   DomEventValue,
   EventProps,
-  HtmlEventKey,
   HtmlEventValue,
   HtmlTagName,
   MHtmlElement,
@@ -35,10 +33,7 @@ import type {
   SignalChildOrChildren,
 } from "../index.types.js";
 import {
-  customEventKeys,
   decodeHTMLEntities,
-  eventKeys,
-  htmlEventKeys,
   idGen,
   phase,
   sanitizeAttributeValue,
@@ -54,15 +49,20 @@ import {
 } from "../utils/index.js";
 import { startUnmountObserver } from "./unmount-observer.js";
 
+const isEventPropKey = (propKey: string): boolean => propKey.startsWith("on");
+const isCustomEventKey = (propKey: string): propKey is CustomEventKey =>
+  propKey === "onmount" || propKey === "onunmount";
+
 const attributeIsUndefinedEvent = (propKey: string, propValue: any): boolean =>
-  eventKeys.includes(propKey as DomEventKey) && propValue === undefined;
+  isEventPropKey(propKey) && propValue === undefined;
 
 const attributeIsHtmlEvent = (propKey: string, propValue: any): boolean =>
-  htmlEventKeys.includes(propKey as HtmlEventKey) &&
+  isEventPropKey(propKey) &&
+  !isCustomEventKey(propKey) &&
   typeof propValue === "function";
 
 const attributeIsCustomEvent = (propKey: string, propValue: any): boolean =>
-  customEventKeys.includes(propKey as CustomEventKey) &&
+  isCustomEventKey(propKey) &&
   typeof propValue === "function";
 
 const attributeIsEvent = (propKey: string, propValue: any): boolean =>
@@ -278,7 +278,8 @@ const getNodesEventsAndAttributes = (
           )}`,
         );
     } else if (attributeIsEvent(propKey, propValue)) {
-      eventProps[propKey as DomEventKey] = propValue as DomEventValue;
+      (eventProps as Record<string, DomEventValue>)[propKey] =
+        propValue as DomEventValue;
     } else {
       attributeProps[propKey as AttributeKey] = propValue as string;
     }
