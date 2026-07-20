@@ -29,7 +29,7 @@ const links = derive<Link[]>(() => {
     {
       isSelected: false,
       colorCss: "purple",
-      href: "https://www.cyfer.tech/blogs/?tags=maya",
+      href: "https://www.cyfer.tech/blogs?tags=maya",
       label: "Blogs",
       target: "_blank",
     },

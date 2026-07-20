@@ -1,5 +1,5 @@
 import { m } from "@cyftec/maya";
-import { ChaptersPage } from "../@libs/components";
+import { ChaptersPage } from "../@libs/components/ChaptersPage";
 import { TUTORIAL_CHAPTERS } from "./@libs/constants";
 
 export default ChaptersPage({

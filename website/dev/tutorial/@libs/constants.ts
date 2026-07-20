@@ -1,10 +1,34 @@
-import { ComingSoon } from "../../@libs/components/ComingSoon";
 import {
   Disclaimer,
   GettingFamiliar,
   Prerequisites,
 } from "./chapters/before-starting";
-import { InstallationAndSetup } from "./chapters/project-setup";
+import {
+  AppStructure,
+  Brahma,
+  FirstApp,
+  InstallationAndSetup,
+  Karma,
+  Maya,
+} from "./chapters/project-setup";
+import {
+  Component,
+  Element,
+  FolderRoutes,
+  Fragment,
+  Overview,
+  Page,
+  Props,
+  Syntax,
+} from "./chapters/learning";
+import {
+  DerivedSignals,
+  Effect,
+  SignalForReactivity,
+  StaticVsReactive,
+  TodoList,
+  WhatIsSignal,
+} from "./chapters/reactivity";
 
 export const TUTORIAL_CHAPTERS = [
   {
@@ -32,91 +56,123 @@ export const TUTORIAL_CHAPTERS = [
         article: InstallationAndSetup,
       },
       {
-        title: "Create your first app",
-        article: ComingSoon,
+        // show how to bootstrap an app using brahma
+        // also tell different modes in which app
+        // can be bootstrapped like 'web', 'pwa' and 'ext'
+        // then as an example create a sample web app
+        title: "Your first app using 'brahma create'",
+        article: FirstApp,
       },
       {
-        title: "Understanding app structure",
-        article: ComingSoon,
+        // show the app structure alonside karma.ts files
+        // and the app directory structure of the sample
+        // app bootstrapped by 'brahma create'
+        // detailed karma.ts structure is discussed in
+        // subsequent chapters
+        // folder-based routes
+        // assets folder gets generated exactly during build
+        title: "App structure",
+        article: AppStructure,
       },
       {
-        title: "Brahma, Karma & Maya",
-        article: ComingSoon,
+        // basic overview of Maya as a rendering engine
+        // rest of the specifics are covered below in
+        // subsequent chapters ('Sample App' section)
+        title: "Maya",
+        article: Maya,
+      },
+      {
+        // how all the configs stored here in karma.ts
+        // and broadly what all config values mean
+        // also show that how it's in TS and not in JSON
+        // so that same variable can be reused
+        title: "Karma",
+        article: Karma,
+      },
+      {
+        // how brahma takes help of karma to spawn
+        // and stages the app for continuous development
+        title: "Brahma",
+        article: Brahma,
       },
     ],
   },
   {
-    title: "Tic Tac Toe",
+    title: "Learning Maya from sample app",
     topics: [
       {
         title: "Syntax",
-        article: ComingSoon,
+        article: Syntax,
       },
       {
         title: "Overview",
-        article: ComingSoon,
+        article: Overview,
       },
       {
         title: "Element",
-        article: ComingSoon,
+        article: Element,
       },
       {
-        title: "component",
-        article: ComingSoon,
+        title: "Fragment",
+        article: Fragment,
+      },
+      {
+        title: "Component",
+        article: Component,
       },
       {
         title: "Props",
-        article: ComingSoon,
+        article: Props,
       },
       {
         title: "Page",
-        article: ComingSoon,
+        article: Page,
       },
       {
-        title: "App structure",
-        article: ComingSoon,
+        title: "Folder based routes",
+        article: FolderRoutes,
       },
     ],
   },
   {
-    title: "Todos List",
+    title: "Reactivity",
     topics: [
       {
-        title: "What is signal?",
-        article: ComingSoon,
+        // Maya can totally be used to generate
+        // static html pages
+        // but also built with @cyftec/signal under
+        // the hood. SO reactivity in Maya
+        // apps can be acheived by using signals
+        title: "Static vs Reactive Maya app",
+        article: StaticVsReactive,
       },
       {
-        title: "Custom implementation",
-        article: ComingSoon,
+        // Introduction only
+        // custom implementation specifically for
+        // Maya. Comprehensive intuitive api.
+        title: "What is signal?",
+        article: WhatIsSignal,
       },
       {
         title: "Effect",
-        article: ComingSoon,
+        article: Effect,
       },
       {
         title: "Derived signals",
-        article: ComingSoon,
+        article: DerivedSignals,
       },
       {
-        title: "Signal for mutating list",
-        article: ComingSoon,
+        title: "Signal for reactivity",
+        article: SignalForReactivity,
       },
     ],
   },
   {
-    title: "Living Room",
+    title: "Todo List app example",
     topics: [
       {
-        title: "Default HTML page",
-        article: ComingSoon,
-      },
-      {
-        title: "Router",
-        article: ComingSoon,
-      },
-      {
-        title: "UI toolkit",
-        article: ComingSoon,
+        title: "Build a Todo List",
+        article: TodoList,
       },
     ],
   },

@@ -15,7 +15,7 @@ export const SETUP: Section = {
   PARA: `Firstly, make sure that below environments are ready.`,
   STEPS: [
     {
-      DESCRIPTION: `Install VS Code from ##here|https://code.visualstudio.com/##. You can also use any other editor of your choice. But you'll miss some good-to-have benefits.`,
+      DESCRIPTION: `Install VS Code from ##here|https://code.visualstudio.com/## if not already done. You can also use any other editor of your choice. But you'll miss some good-to-have benefits.`,
       ALERT: undefined,
       CODE: undefined,
     },

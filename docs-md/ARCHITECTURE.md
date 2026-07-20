@@ -1,6 +1,6 @@
 # Maya Architecture
 
-Codebase audit date: 2026-07-13
+Codebase audit date: 2026-07-20
 
 This document describes the implementation that is present in this repository. It intentionally prefers observed source code over older product notes or external naming. The local packages currently identify as `@cyftec/maya` and `@cyftec/brahma`, both at `0.0.14`. If the public package scope is later moved to other names or versioned as `0.1.x`, update package metadata and examples together.
 
@@ -48,7 +48,9 @@ const title = m.H1("Hello Maya");
 const node = title();
 ```
 
-Children may be strings, element getters, arrays of those values, signals of children, or derived signals of children. Numeric values should be converted to strings, for example with `tmpl`.
+Children may be strings, element getters, arrays of those values, signalified values, or derived signals of children. The public `Child` type is intentionally narrow: `undefined`, strings, and Maya element getters. Numeric and boolean values should be converted to strings, for example with `String(...)` or `tmpl`.
+
+The runtime accepts both the direct-child form and the props form. Event keys are lower-case DOM names such as `onclick` and `oninput`; `onmount` and `onunmount` are Maya-only lifecycle events. Attribute values are strings, booleans, `undefined`, or signalified versions of those values.
 
 ## Build, Mount, Run
 
@@ -80,7 +82,7 @@ During mount:
 
 After mount, `phase.start("run")` enables reactive writes. Signal effects mutate the specific DOM text node, child position, or attribute they own. No parent component tree is re-rendered and there is no virtual DOM diff.
 
-When nodes are removed, `onunmount` starts a document-level `MutationObserver`. Maya calls subtree unmount listeners and disposes signal effects attached to removed elements.
+When an element uses `onunmount`, Maya starts a document-level `MutationObserver`. Removed subtrees are walked from the deepest child upward; registered unmount listeners run and each element's signal effects are disposed. The observer is only started outside the build phase.
 
 ## Element Creation
 
@@ -109,7 +111,7 @@ HTML event prop values must be functions. The event name is lower-case and match
 
 ## Components
 
-`component()` wraps a function and normalizes props before passing them to the inner implementation.
+`component()` is implemented by the generic `fragment()` helper. It wraps a function and normalizes props before passing them to the inner implementation.
 
 - signals and functions pass through unchanged.
 - plain strings and arrays become signalified non-signal objects with `.value`.
@@ -151,7 +153,7 @@ Important primitives:
 
 Dependency tracking happens when `.value` is read inside `derive()` or `effect()`. Conditional reads matter: if a signal is not read on the first run, it is not tracked until the effect is re-created.
 
-Source signals store values immutably. Reading `.value` returns a fresh plain value through `@cyftec/immut`.
+Source signals store values immutably through `@cyftec/immut`. Reading `.value` returns a plain value, while signalified objects expose the helper methods supplied by `@cyftec/signal`.
 
 Object source signals expose:
 
@@ -193,7 +195,7 @@ m.If({
 
 ### `m.For`
 
-`m.For({ subject, map })` maps an array to children. If `subject` is a signal, the return value is a derived children array signal.
+`m.For({ subject, map })` maps an array to children. If `subject` is a signal, the return value is a derived children array signal. Without `itemKey`, the mapped result is recomputed as a normal list. With `itemKey`, the keyed diff uses `@cyftec/immut` array mutations and preserves mapped element getters for shuffle/update operations.
 
 For object arrays, `itemKey` enables keyed mutable mapping. With `itemKey`, Maya preserves existing DOM nodes and updates per-item signals instead of recreating every mapped child.
 
@@ -227,7 +229,7 @@ brahma help
 
 The CLI is Bun-first. The entrypoint is `brahma/src/index.ts`.
 
-`brahma create` copies one of the sample app folders. `brahma install` writes `package.json`, `.vscode/settings.json`, and `.gitignore` from `karma.ts`, then runs `bun i`. Installing or uninstalling a specific package syncs `package.json` back into `karma.maya`.
+`brahma create` copies one of the sample app folders. `brahma install` writes `package.json`, `.vscode/settings.json`, and `.gitignore` from `karma.ts`, then runs `bun i`. Installing or uninstalling a specific package runs Bun for that package and synchronizes the resulting `package.json` back into `karma.maya`. `brahma reset` restores the scaffold's `karma.ts` and supports soft/hard reset modes.
 
 `brahma stage` builds to the configured staging directory, watches the source directory, and serves with BrowserSync. `brahma publish` builds the production output and minifies page JavaScript.
 
@@ -268,6 +270,8 @@ Any non-page `.ts` file under the view tree is compiled to `.js`. A top-level co
 
 Files and directories prefixed with the ignore delimiter, usually `@`, are not copied or traversed by the builder. This is the intended place for shared source-only components such as `@components`, `@elements`, or `@site`.
 
+The builder only treats the configured page filename as a page entry. A prefixed page filename such as `contacts.page.ts` produces `contacts.html` and `contacts.main.js`; a directory `page.ts` produces that directory's `index.html` and `main.js`. The generated page JavaScript contains the bundled source plus a build helper and a mount-and-run function; production page scripts are minified.
+
 ## App Targets
 
 ### Web
@@ -284,7 +288,7 @@ Files and directories prefixed with the ignore delimiter, usually `@`, are not c
 
 ## Toolkit
 
-`@cyftec/maya/toolkit` currently exports `query()`. It creates a signal state around `fetch` with:
+`@cyftec/maya/toolkit` currently exports `query()`. It creates a signal state around a GET `fetch` request with:
 
 - `isLoading`
 - `data`
@@ -308,6 +312,7 @@ Do not claim these are implemented unless the code changes:
 - full service-worker caching strategy
 - dedicated form abstraction
 - global store abstraction
+- client-side route transitions (the website has a small pathname/hash signal helper, but Maya itself has no router)
 
 ## Authoring Rules
 
@@ -319,3 +324,4 @@ Do not claim these are implemented unless the code changes:
 - Keep shared source-only modules under an ignored `@...` folder.
 - Use relative asset and page links when the site may be hosted under a GitHub Pages project path.
 - Keep `karma.ts` and package metadata in sync.
+- Keep browser-only reads and APIs out of page construction because pages are executed in JSDOM during build.

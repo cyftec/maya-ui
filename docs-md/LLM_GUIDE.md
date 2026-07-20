@@ -1,6 +1,6 @@
 # Maya Framework LLM Guide
 
-Codebase audit date: 2026-07-13
+Codebase audit date: 2026-07-20
 
 Use this guide when generating Maya application code for the repository in its current state. The local packages are `@cyftec/maya` and `@cyftec/brahma` at `0.0.14`.
 
@@ -15,7 +15,7 @@ Generate native Maya code only:
 - no `innerHTML`
 - no SCSS or framework-specific post-processing
 
-Maya templates are TypeScript expressions made from `m.*` element factories.
+Maya templates are TypeScript expressions made from `m.*` element factories. A buildable page is normally a default-exported getter such as `m.Html(...)`; do not return a JSX tree or an HTML string.
 
 ## Imports
 
@@ -142,12 +142,12 @@ m.Input({ value: "initial", oninput: (event) => console.log(event) });
 Rules:
 
 - Pass children directly or as `children`.
-- Children must be strings, element getters, arrays of valid children, or signals/derived signals that resolve to valid children.
+- Children must be `undefined`, strings, element getters, arrays of valid children, or signal/derived values that resolve to valid children.
 - Convert numbers and booleans to strings before using them as children.
 - Attribute names match HTML names: `class`, `id`, `href`, `value`, `data-*`.
 - Event names match lower-case DOM event attributes: `onclick`, `oninput`, `onsubmit`.
 - Event values are functions, never strings.
-- Use `onmount` for browser-only code.
+- Use `onmount` for browser-only code. It is scheduled asynchronously during mount/run and does not run while the page is rendered in JSDOM build phase.
 - Use `onunmount` for cleanup when the element may be removed.
 
 ## Text And Code Blocks
