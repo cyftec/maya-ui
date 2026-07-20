@@ -1,4 +1,4 @@
-export const BASE_MAYA_VERSION = "0.1.23";
+export const BASE_MAYA_VERSION = "0.0.14";
 export const MAYA_TITLE = "Maya UI Framework";
 export const LINKS = {
   DOCS: {

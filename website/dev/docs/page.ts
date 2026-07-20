@@ -1,6 +1,42 @@
 import { m } from "@cyftec/maya";
-import { ChaptersPage } from "../@libs/components";
-import { ComingSoon } from "../@libs/components/ComingSoon";
+import { ChaptersPage } from "../@libs/components/ChaptersPage";
+import {
+  GettingFamiliar,
+  Prerequisites,
+} from "../tutorial/@libs/chapters/before-starting";
+import { InstallationAndSetup } from "../tutorial/@libs/chapters/project-setup";
+import {
+  AppStructure,
+  Karma,
+  Maya as MayaRuntime,
+} from "../tutorial/@libs/chapters/project-setup";
+import {
+  Component,
+  Element,
+  Overview as MayaOverview,
+  Page,
+  Props,
+  Syntax,
+} from "../tutorial/@libs/chapters/learning";
+import {
+  DerivedSignals,
+  Effect,
+  SignalForReactivity,
+  WhatIsSignal,
+} from "../tutorial/@libs/chapters/reactivity";
+import {
+  BrahmaKarmaMaya,
+  Create,
+  DefaultHtmlPage,
+  Install,
+  Publish,
+  Reset,
+  Router,
+  SignalImplementation,
+  UiToolkit,
+  Uninstall,
+  WhyCli,
+} from "./@libs/articles";
 
 const DOCS_CHAPTERS = [
   {
@@ -8,27 +44,27 @@ const DOCS_CHAPTERS = [
     topics: [
       {
         title: "Getting familiar",
-        article: ComingSoon,
+        article: GettingFamiliar,
       },
       {
         title: "Prerequisites",
-        article: ComingSoon,
+        article: Prerequisites,
       },
       {
         title: "Installation",
-        article: ComingSoon,
+        article: InstallationAndSetup,
       },
       {
         title: "App structure",
-        article: ComingSoon,
+        article: AppStructure,
       },
       {
         title: "Brahma, Karma & Maya",
-        article: ComingSoon,
+        article: BrahmaKarmaMaya,
       },
       {
         title: "Karma config",
-        article: ComingSoon,
+        article: Karma,
       },
     ],
   },
@@ -37,27 +73,27 @@ const DOCS_CHAPTERS = [
     topics: [
       {
         title: "Why the CLI?",
-        article: ComingSoon,
+        article: WhyCli,
       },
       {
         title: "brahma create",
-        article: ComingSoon,
+        article: Create,
       },
       {
         title: "brahma install",
-        article: ComingSoon,
+        article: Install,
       },
       {
-        title: "brahma add",
-        article: ComingSoon,
+        title: "brahma uninstall",
+        article: Uninstall,
       },
       {
-        title: "brahma remove",
-        article: ComingSoon,
+        title: "brahma reset",
+        article: Reset,
       },
       {
         title: "brahma publish",
-        article: ComingSoon,
+        article: Publish,
       },
     ],
   },
@@ -66,27 +102,27 @@ const DOCS_CHAPTERS = [
     topics: [
       {
         title: "Syntax",
-        article: ComingSoon,
+        article: Syntax,
       },
       {
         title: "Overview",
-        article: ComingSoon,
+        article: MayaOverview,
       },
       {
         title: "Element",
-        article: ComingSoon,
+        article: Element,
       },
       {
         title: "component",
-        article: ComingSoon,
+        article: Component,
       },
       {
         title: "Props",
-        article: ComingSoon,
+        article: Props,
       },
       {
         title: "Page",
-        article: ComingSoon,
+        article: Page,
       },
     ],
   },
@@ -95,23 +131,23 @@ const DOCS_CHAPTERS = [
     topics: [
       {
         title: "What is signal?",
-        article: ComingSoon,
+        article: WhatIsSignal,
       },
       {
         title: "Custom implementation",
-        article: ComingSoon,
+        article: SignalImplementation,
       },
       {
         title: "Effect",
-        article: ComingSoon,
+        article: Effect,
       },
       {
         title: "Derived signals",
-        article: ComingSoon,
+        article: DerivedSignals,
       },
       {
         title: "Signal for mutating list",
-        article: ComingSoon,
+        article: SignalForReactivity,
       },
     ],
   },
@@ -120,15 +156,15 @@ const DOCS_CHAPTERS = [
     topics: [
       {
         title: "Default HTML page",
-        article: ComingSoon,
+        article: DefaultHtmlPage,
       },
       {
         title: "Router",
-        article: ComingSoon,
+        article: Router,
       },
       {
         title: "UI toolkit",
-        article: ComingSoon,
+        article: UiToolkit,
       },
     ],
   },
