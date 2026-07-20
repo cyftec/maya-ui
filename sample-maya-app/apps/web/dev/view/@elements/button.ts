@@ -1,4 +1,4 @@
-import { Child, component, m } from "@cyftec/maya";
+import { Child, component, m } from "@cyftec/maya/core";
 import { tmpl } from "@cyftec/maya/signal";
 
 type ButtonProps = {

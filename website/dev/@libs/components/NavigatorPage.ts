@@ -1,6 +1,5 @@
-import { Child, Children, m, MHtmlElement } from "@cyftec/maya";
+import { fragment, Child, Children, m, MHtmlElement } from "@cyftec/maya/core";
 import { effect, Signal, tmpl } from "@cyftec/maya/signal";
-import { fragment } from "../../../../maya/core/fragment";
 import { Navbar } from "../elements";
 
 type NavigatorPageProps = {

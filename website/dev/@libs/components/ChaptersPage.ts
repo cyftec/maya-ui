@@ -1,8 +1,8 @@
+import { Child, component, m } from "@cyftec/maya/core";
 import { derive, signal } from "@cyftec/maya/signal";
-import { Child, component, m } from "@cyftec/maya";
+import { Button, TitledList } from "../elements";
 import { NavigatorPage } from "./NavigatorPage";
 import { Page } from "./Page";
-import { Button, TitledList } from "../elements";
 type Chapter = {
   title: string;
   topics: {

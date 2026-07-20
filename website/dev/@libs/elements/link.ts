@@ -1,5 +1,5 @@
-import { nullable, op, tmpl } from "@cyftec/maya/signal";
-import { component, m } from "@cyftec/maya";
+import { component, m } from "@cyftec/maya/core";
+import { op, tmpl } from "@cyftec/maya/signal";
 
 type LinkProps = {
   classNames?: string;

@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Article, Bullets, Code, Paragraphs, Section } from "../article";
 
 export const Brahma = Article(
@@ -21,5 +21,7 @@ brahma uninstall`),
       "Run brahma publish when you want minified production output.",
     ),
   ),
-  Code("brahma stage  # build, watch, and serve\nbrahma publish # build production files"),
+  Code(
+    "brahma stage  # build, watch, and serve\nbrahma publish # build production files",
+  ),
 );

@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Link } from "../../../../../@libs/elements";
 import { runHighlightJsScriptOnMount } from "../../../../../@libs/utils";
 import {

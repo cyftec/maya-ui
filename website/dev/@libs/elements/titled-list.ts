@@ -1,5 +1,5 @@
 import { tmpl } from "@cyftec/maya/signal";
-import { Child, Children, component, m } from "@cyftec/maya";
+import { Child, Children, component, m } from "@cyftec/maya/core";
 import { Link } from "./link";
 
 type TitledListProps = {

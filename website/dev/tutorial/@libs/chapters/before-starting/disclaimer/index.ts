@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 
 export const Disclaimer = m.Div({
   children: m.For({

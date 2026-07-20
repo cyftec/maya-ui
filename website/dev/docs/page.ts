@@ -1,15 +1,9 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { ChaptersPage } from "../@libs/components/ChaptersPage";
 import {
   GettingFamiliar,
   Prerequisites,
 } from "../tutorial/@libs/chapters/before-starting";
-import { InstallationAndSetup } from "../tutorial/@libs/chapters/project-setup";
-import {
-  AppStructure,
-  Karma,
-  Maya as MayaRuntime,
-} from "../tutorial/@libs/chapters/project-setup";
 import {
   Component,
   Element,
@@ -18,6 +12,11 @@ import {
   Props,
   Syntax,
 } from "../tutorial/@libs/chapters/learning";
+import {
+  AppStructure,
+  InstallationAndSetup,
+  Karma,
+} from "../tutorial/@libs/chapters/project-setup";
 import {
   DerivedSignals,
   Effect,

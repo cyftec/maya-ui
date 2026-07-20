@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Header } from "../@elements";
 
 export default m.Html({

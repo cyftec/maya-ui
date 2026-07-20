@@ -1,5 +1,5 @@
 import { derive } from "@cyftec/maya/signal";
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { BASE_MAYA_VERSION } from "../constants";
 import { BrandLogo, GithubLink, Icon, Link, ViewFrame } from "../elements";
 import { path } from "../router";

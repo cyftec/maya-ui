@@ -1,4 +1,4 @@
-import { Child, Children, component, m } from "@cyftec/maya";
+import { Child, Children, component, m } from "@cyftec/maya/core";
 import { value } from "@cyftec/maya/signal";
 import { Footer } from "./Footer";
 import { Header } from "./Header";

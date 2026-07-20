@@ -1,5 +1,5 @@
 import { tmpl } from "@cyftec/maya/signal";
-import { Children, component, m } from "@cyftec/maya";
+import { Children, component, m } from "@cyftec/maya/core";
 
 type ViewFrameProps = {
   classNames?: string;

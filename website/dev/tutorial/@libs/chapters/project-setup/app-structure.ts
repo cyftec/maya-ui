@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Article, Bullets, Code, Paragraphs, Section } from "../article";
 
 export const AppStructure = Article(

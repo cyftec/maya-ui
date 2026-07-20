@@ -1,4 +1,4 @@
-import { Children, component, DomEventValue, m } from "@cyftec/maya";
+import { component, DomEventValue, m } from "@cyftec/maya/core";
 import { op, signal, tmpl } from "@cyftec/maya/signal";
 import { Header } from "./@elements/index.js";
 
@@ -15,7 +15,7 @@ const changeFilaColor = (e: Event) => {
 
 type BulbProps = {
   fontColor: string;
-  changeFontColor: DomEventValue;
+  changeFontColor: DomEventValue<"onclick">;
 };
 
 const Bulb = component<BulbProps>(({ fontColor, changeFontColor }) => {

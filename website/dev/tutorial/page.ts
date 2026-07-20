@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { ChaptersPage } from "../@libs/components/ChaptersPage";
 import { TUTORIAL_CHAPTERS } from "./@libs/constants";
 

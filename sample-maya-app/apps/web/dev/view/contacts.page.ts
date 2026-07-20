@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { signal, tmpl } from "@cyftec/maya/signal";
 import { Header } from "./@elements/index.js";
 

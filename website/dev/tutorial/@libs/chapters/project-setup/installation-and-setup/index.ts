@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Icon, TextWithLinks } from "../../../../../@libs/elements";
 import { TASKS } from "./constants";
 

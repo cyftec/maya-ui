@@ -1,4 +1,4 @@
-import { m, type Child } from "@cyftec/maya";
+import { m, type Child } from "@cyftec/maya/core";
 import { runHighlightJsScriptOnMount } from "../../../@libs/utils";
 
 export const Code = (code: string) =>

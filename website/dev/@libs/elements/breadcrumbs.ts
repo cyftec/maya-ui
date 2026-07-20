@@ -1,4 +1,4 @@
-import { Children, component, m } from "@cyftec/maya";
+import { Children, component, m } from "@cyftec/maya/core";
 
 type BreadcrumbsProps = {
   children: Children;

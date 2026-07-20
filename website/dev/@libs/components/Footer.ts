@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Divider, GithubLink, Link, TitledList, ViewFrame } from "../elements";
 
 export const Footer = ViewFrame({

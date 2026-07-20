@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Article, Code, Paragraphs, Section } from "../article";
 
 export const Maya = Article(
@@ -7,7 +7,7 @@ export const Maya = Article(
     "Maya turns TypeScript expressions into real DOM elements. Its m object contains one capitalized factory for each supported HTML tag, such as m.Div, m.H1, and m.Button.",
     "Maya is built on UI mutation philosophy and thus the browser DOM remains the actual UI tree, eliminating the need of any Virtual DOM like ther in other frrameworks. Maya remembers the exact nodes it created with the help of Signals, and then signal effects update only the text, child position, or attribute that depends on changed signal state.",
   ),
-  Code(`import { m } from "@cyftec/maya";
+  Code(`import { m } from "@cyftec/maya/core";
 
 const greeting = m.H1("Hello Maya");
 

@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { derive, signal, tmpl } from "@cyftec/maya/signal";
 import { Button } from "../@elements";
 import { Bulb, PhotoFrame } from "./@components";

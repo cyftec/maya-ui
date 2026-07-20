@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Article, Bullets, Code, Note, Paragraphs, Section } from "./article";
 
 export const Syntax = Article(
@@ -87,7 +87,7 @@ export const Component = Article(
   Paragraphs(
     "Use component() when a reusable function has named props. Maya normalizes ordinary props so the implementation can read them through .value, while signals and callback functions remain usable as signals and functions.",
   ),
-  Code(`import { component, m } from "@cyftec/maya";
+  Code(`import { component, m } from "@cyftec/maya/core";
 
 type BadgeProps = { label: string; tone: string };
 const Badge = component<BadgeProps>(({ label, tone }) =>
@@ -125,7 +125,7 @@ export const Page = Article(
     "Brahma recognizes a file as a page when its filename matches karma.brahma.build.buildablePageFileName. The page module's default export must be the root Maya HTML getter.",
     "Include the generated page script in the body. It mounts the page and starts the run phase in the browser.",
   ),
-  Code(`import { m } from "@cyftec/maya";
+  Code(`import { m } from "@cyftec/maya/core";
 
 export default m.Html({
   lang: "en",

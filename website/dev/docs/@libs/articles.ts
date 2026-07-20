@@ -1,5 +1,12 @@
-import { m } from "@cyftec/maya";
-import { Article, Bullets, Code, Note, Paragraphs, Section } from "../../tutorial/@libs/chapters/article";
+import { m } from "@cyftec/maya/core";
+import {
+  Article,
+  Bullets,
+  Code,
+  Note,
+  Paragraphs,
+  Section,
+} from "../../tutorial/@libs/chapters/article";
 
 export const BrahmaKarmaMaya = Article(
   m.H3({ class: "black", children: "Three pieces, one workflow" }),
@@ -35,7 +42,9 @@ export const WhyCli = Article(
     "Build and serve a staging directory while watching source changes.",
     "Build minified static output for deployment.",
   ),
-  Code("brahma help\nbrahma create my-app\nbrahma install\nbrahma stage\nbrahma publish"),
+  Code(
+    "brahma help\nbrahma create my-app\nbrahma install\nbrahma stage\nbrahma publish",
+  ),
 );
 
 export const Create = Article(
@@ -43,8 +52,12 @@ export const Create = Article(
   Paragraphs(
     "create makes a new app directory from the matching sample scaffold. The first argument is the folder name; the optional flag selects web, pwa, or ext mode.",
   ),
-  Code("brahma create my-app\nbrahma create my-pwa --pwa\nbrahma create my-extension --ext"),
-  Note("create only prepares the source scaffold. Enter the folder and run brahma install before staging the app."),
+  Code(
+    "brahma create my-app\nbrahma create my-pwa --pwa\nbrahma create my-extension --ext",
+  ),
+  Note(
+    "create only prepares the source scaffold. Enter the folder and run brahma install before staging the app.",
+  ),
   Code("cd my-app\nbrahma install\nbrahma stage"),
 );
 
@@ -63,7 +76,9 @@ export const Uninstall = Article(
     "uninstall is the reverse of install. With a package argument it removes that dependency and updates karma.ts. Without one, it removes installed packages and generated project files according to the app configuration.",
   ),
   Code("brahma uninstall lodash\nbrahma uninstall"),
-  Note("Use version control before resetting or removing generated files if you need to recover local changes."),
+  Note(
+    "Use version control before resetting or removing generated files if you need to recover local changes.",
+  ),
 );
 
 export const Publish = Article(
@@ -72,7 +87,9 @@ export const Publish = Article(
     "publish builds the app using the production flag. Brahma writes to brahma.build.publishDir and minifies the generated page JavaScript. A web app can then be served by a static host such as a CDN or GitHub Pages.",
     "The command does not start the development server; it produces the files you deploy.",
   ),
-  Code("brahma publish\n# output location comes from karma.brahma.build.publishDir"),
+  Code(
+    "brahma publish\n# output location comes from karma.brahma.build.publishDir",
+  ),
 );
 
 export const Reset = Article(
@@ -81,7 +98,9 @@ export const Reset = Article(
     "reset restores karma.ts from the base scaffold. A soft reset preserves the app mode; a hard reset returns to the base web configuration. Changes made to karma.ts can be lost, so check version control first.",
   ),
   Code("brahma reset\nbrahma reset --hard"),
-  Note("Reset changes configuration source. It does not replace your page implementation files."),
+  Note(
+    "Reset changes configuration source. It does not replace your page implementation files.",
+  ),
 );
 
 export const SignalImplementation = Article(
@@ -96,7 +115,9 @@ const count = signal(0);
 const doubled = derive(() => count.value * 2);
 
 effect(() => console.log(doubled.value));`),
-  Note("Use the public Maya signal import in app code. The dependency package supplies the implementation; Maya supplies the DOM integration."),
+  Note(
+    "Use the public Maya signal import in app code. The dependency package supplies the implementation; Maya supplies the DOM integration.",
+  ),
 );
 
 export const DefaultHtmlPage = Article(
@@ -104,7 +125,7 @@ export const DefaultHtmlPage = Article(
   Paragraphs(
     "A page is a Maya HTML getter with head metadata, a body, and the page-local script emitted by Brahma. The script must be deferred so the static DOM exists before mount begins.",
   ),
-  Code(`import { m } from "@cyftec/maya";
+  Code(`import { m } from "@cyftec/maya/core";
 
 export default m.Html({
   lang: "en",
@@ -136,7 +157,9 @@ export const hash = signal(document.location.hash);
 window.onpopstate = () => {
   path.value = document.location.pathname;
 };`),
-  Note("Read document and window only in browser-safe code. A page is evaluated in JSDOM during build."),
+  Note(
+    "Read document and window only in browser-safe code. A page is evaluated in JSDOM during build.",
+  ),
 );
 
 export const UiToolkit = Article(

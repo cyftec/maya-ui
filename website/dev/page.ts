@@ -1,4 +1,4 @@
-import { m } from "@cyftec/maya";
+import { m } from "@cyftec/maya/core";
 import { Page } from "./@libs/components/Page";
 import {
   LINKS,
