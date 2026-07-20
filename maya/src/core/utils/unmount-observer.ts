@@ -1,5 +1,6 @@
-import { phase, valueIsMHtmlElement } from "../utils/index.ts";
-import type { CustomEventValue, MHtmlElement } from "../index.types.ts";
+import type { CustomEventValue, MHtmlElement } from "../types.ts";
+import { phase } from "./phase-helpers.ts";
+import { valueIsMHtmlElement } from "./type-checkers.ts";
 
 type ListenerData = {
   element: MHtmlElement;

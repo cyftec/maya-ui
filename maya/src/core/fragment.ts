@@ -9,12 +9,7 @@ import {
   type Signal,
   type SignalifiedObject,
 } from "@cyftec/signal";
-import type {
-  Child,
-  Children,
-  NonSignalChild,
-  SignalChild,
-} from "../index.types";
+import type { Child, Children, NonSignalChild, SignalChild } from "./types";
 
 type InnerFragmentProps<P extends Record<string, any>> = {
   [K in keyof P]: P[K] extends

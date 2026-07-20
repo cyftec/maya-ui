@@ -1,4 +1,4 @@
-import type { AttributeValue } from "../index.types";
+import type { AttributeValue } from "../types";
 import {
   decodeHTMLEntities,
   decodeJSUnicode,
@@ -8,7 +8,7 @@ import {
 const baseSanitizer = (
   input: string,
   dangerousPatterns: RegExp[],
-  errorMsg: string
+  errorMsg: string,
 ) => {
   let decoded = input;
   decoded = decodeHTMLEntities(decoded);
@@ -28,7 +28,7 @@ export const sanitizeHref = (input: string) =>
   baseSanitizer(
     input,
     [/^javascript\s*:/i, /^data\s*:/i, /^vbscript\s*:/i, /^file\s*:/i],
-    `The href attribute value starting with one of "javascript:", "data:", "vbscript:" or "file:" is not allowed.`
+    `The href attribute value starting with one of "javascript:", "data:", "vbscript:" or "file:" is not allowed.`,
   );
 
 export const sanitizeStyle = (input: string) =>
@@ -42,12 +42,12 @@ export const sanitizeStyle = (input: string) =>
       /vbscript\s*:/i,
       /file\s*:/i,
     ],
-    `The style attribute value starting with one of "url(..", "expression(..", "javascript:", "data:", "vbscript:" or "file:" is not allowed.`
+    `The style attribute value starting with one of "url(..", "expression(..", "javascript:", "data:", "vbscript:" or "file:" is not allowed.`,
   );
 
 export const sanitizeAttributeValue = (
   attribKey: string,
-  attribValue: AttributeValue
+  attribValue: AttributeValue,
 ): AttributeValue => {
   if (attribKey === "href") {
     if (typeof attribValue === "boolean")

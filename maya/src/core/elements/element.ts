@@ -31,7 +31,7 @@ import type {
   SignalAttributeProps,
   SignalChild,
   SignalChildOrChildren,
-} from "../index.types.js";
+} from "../types";
 import {
   decodeHTMLEntities,
   idGen,
@@ -47,16 +47,22 @@ import {
   validSignalChildOrChildren,
   valueIsArray,
   valueIsMHtmlElement,
-} from "../utils/index.js";
-import { startUnmountObserver } from "./unmount-observer.js";
+  startUnmountObserver,
+} from "../utils";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
 const createElementForTag = (tagName: MayaTagName): MHtmlElement => {
   if (mathMlTagNames.includes(tagName as (typeof mathMlTagNames)[number]))
-    return document.createElementNS(MATHML_NAMESPACE, tagName) as unknown as MHtmlElement;
+    return document.createElementNS(
+      MATHML_NAMESPACE,
+      tagName,
+    ) as unknown as MHtmlElement;
   if (tagName === "svg")
-    return document.createElementNS(SVG_NAMESPACE, tagName) as unknown as MHtmlElement;
+    return document.createElementNS(
+      SVG_NAMESPACE,
+      tagName,
+    ) as unknown as MHtmlElement;
   return document.createElement(tagName) as unknown as MHtmlElement;
 };
 
@@ -73,8 +79,7 @@ const attributeIsHtmlEvent = (propKey: string, propValue: any): boolean =>
   typeof propValue === "function";
 
 const attributeIsCustomEvent = (propKey: string, propValue: any): boolean =>
-  isCustomEventKey(propKey) &&
-  typeof propValue === "function";
+  isCustomEventKey(propKey) && typeof propValue === "function";
 
 const attributeIsEvent = (propKey: string, propValue: any): boolean =>
   attributeIsUndefinedEvent(propKey, propValue) ||

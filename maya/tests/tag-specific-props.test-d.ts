@@ -1,4 +1,4 @@
-import { m } from "../index.ts";
+import { m } from "../src/core";
 
 // Global, data-*, events, and valid element-specific attributes remain usable.
 m.Div({ class: "panel", "data-state": "open", onclick: () => {} });

@@ -6,7 +6,7 @@ import {
   type MaybeSignal,
   type Signal,
 } from "@cyftec/signal";
-import type { Children } from "../../index.types.ts";
+import type { Children } from "../../types.ts";
 import { m } from "../m.ts";
 
 type SwitchReturn<Subject, C extends Children> =

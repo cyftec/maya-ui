@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { m } from "../src/core/m.ts";
 
 const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
@@ -42,8 +43,6 @@ globalThis.document = {
   createTextNode: (textContent) => ({ textContent }),
   querySelector: () => null,
 };
-
-const { m } = await import("../core/m.ts");
 
 test("uses the correct namespace for HTML, SVG, and MathML elements", () => {
   expect(m.Div()().namespaceURI).toBe(HTML_NAMESPACE);

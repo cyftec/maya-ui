@@ -5,11 +5,10 @@
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
   "exports": {
-    ".": "./index.ts",
-    "./utils": "./utils/index.ts",
-    "./signal": "./re-exports/signal.ts",
-    "./immut": "./re-exports/immut.ts",
-    "./toolkit": "./toolkit/index.ts"
+    "./core": "./src/core/index.ts",
+    "./signal": "./src/re-exports/signal.ts",
+    "./immut": "./src/re-exports/immut.ts",
+    "./toolkit": "./src/toolkit/index.ts"
   },
   "dependencies": {
     "@cyftec/immut": "0.1.0",

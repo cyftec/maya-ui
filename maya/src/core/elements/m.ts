@@ -5,7 +5,7 @@ import type {
   PropsOrChildren,
   PropsForTag,
   VoidHtmlTagName,
-} from "../index.types.ts";
+} from "../types.ts";
 import { htmlTagNames, mathMlTagNames } from "../utils/index.ts";
 import { elementGetter } from "./element.ts";
 import {
@@ -26,19 +26,18 @@ type MayaElementsMap = {
 type PascalCase<T extends string> = T extends `${infer Head}-${infer Tail}`
   ? `${Capitalize<Head>}${PascalCase<Tail>}`
   : Capitalize<T>;
-const mayaElementsMap = [...htmlTagNames, ...mathMlTagNames].reduce<Record<string, unknown>>(
-  (map, htmlTagName) => {
-    const mayaTagName = htmlTagName
-      .split("-")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join("") as PascalCase<typeof htmlTagName>;
-    const mHtmlComp = (propsOrChildren?: PropsOrChildren) =>
-      elementGetter(htmlTagName, propsOrChildren);
-    map[mayaTagName] = mHtmlComp;
-    return map;
-  },
-  {},
-) as MayaElementsMap;
+const mayaElementsMap = [...htmlTagNames, ...mathMlTagNames].reduce<
+  Record<string, unknown>
+>((map, htmlTagName) => {
+  const mayaTagName = htmlTagName
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("") as PascalCase<typeof htmlTagName>;
+  const mHtmlComp = (propsOrChildren?: PropsOrChildren) =>
+    elementGetter(htmlTagName, propsOrChildren);
+  map[mayaTagName] = mHtmlComp;
+  return map;
+}, {}) as MayaElementsMap;
 
 type CustomElementsMap = {
   For: typeof forElement;

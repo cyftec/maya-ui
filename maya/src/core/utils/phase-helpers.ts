@@ -1,4 +1,4 @@
-import type { MayaAppPhase } from "../index.types";
+import type { MayaAppPhase } from "../types";
 
 export const phase = {
   currentIs: (p: MayaAppPhase): boolean => window._currentAppPhase === p,

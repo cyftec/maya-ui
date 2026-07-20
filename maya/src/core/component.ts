@@ -1,4 +1,4 @@
-import type { Child } from "../index.types";
+import type { Child } from "./types";
 import { fragment, type Fragment, type InnerFragment } from "./fragment";
 
 type InnerComponent<P extends Record<string, any>> = InnerFragment<P, Child>;

@@ -10,11 +10,7 @@ import {
   type SignalifiedObject,
   type SourceSignal,
 } from "@cyftec/signal";
-import type {
-  Child,
-  MHtmlElement,
-  MHtmlElementGetter,
-} from "../../index.types.js";
+import type { Child, MHtmlElement, MHtmlElementGetter } from "../../types";
 
 type PlainMapFn<Item> = (item: Item, index: number) => Child;
 

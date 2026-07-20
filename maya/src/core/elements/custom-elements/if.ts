@@ -6,7 +6,7 @@ import {
   type NonNullSignalValue,
   type Signal,
 } from "@cyftec/signal";
-import type { Children, MHtmlElementGetter } from "../../index.types.ts";
+import type { Children, MHtmlElementGetter } from "../../types";
 import { m } from "../m.ts";
 
 export const ifElement = <S, TC extends Children, FC extends Children>({
