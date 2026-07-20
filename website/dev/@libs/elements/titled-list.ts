@@ -25,8 +25,8 @@ export const TitledList = component<TitledListProps>(
     onLinkClick,
     linkColorCss,
     bottomComponent,
-  }) =>
-    m.Div({
+  }) => {
+    return m.Div({
       class: tmpl`${() => (justifyRight?.value ? "tr" : "")} ${classNames}`,
       children: [
         m.P({
@@ -43,6 +43,7 @@ export const TitledList = component<TitledListProps>(
                 class: itemClassNames,
                 children: [
                   Link({
+                    classNames: "ph2",
                     colorCss: linkColorCss,
                     label: title,
                     onClick: () => onLinkClick && onLinkClick(linkIndex.value),
@@ -59,5 +60,6 @@ export const TitledList = component<TitledListProps>(
           isTruthy: () => bottomComponent as Child,
         }),
       ],
-    }),
+    });
+  },
 );

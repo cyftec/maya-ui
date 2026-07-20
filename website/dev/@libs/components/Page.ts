@@ -26,7 +26,7 @@ export const Page = component<PageProps>(
           m.Link({
             rel: "icon",
             type: "image/x-icon",
-            href: "/assets/favicon.ico",
+            href: "/assets/images/maya-favicon.ico",
           }),
           ...restHeadElems,
         ]),

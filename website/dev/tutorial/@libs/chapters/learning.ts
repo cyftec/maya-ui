@@ -94,7 +94,7 @@ const Badge = component<BadgeProps>(({ label, tone }) =>
   m.Span({ class: tone.value, children: label.value }),
 );
 
-Badge({ label: "New", tone: "purple" });`),
+Badge({ label: "New", tone: "theme-col" });`),
   Note(
     "A component is your TypeScript function; m.Div and m.Span are the element factories it composes.",
   ),

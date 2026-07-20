@@ -37,7 +37,7 @@ export const GettingFamiliar = m.Div({
                 children: example.title,
               }),
               m.Pre({
-                class: "ma0",
+                class: "ma0 hljs pa2",
                 children: m.Code(example.code),
               }),
             ],
@@ -64,7 +64,7 @@ export const GettingFamiliar = m.Div({
       subject: CONCLUSION_PARAS,
       n: 1,
       nthChild: Link({
-        colorCss: "purple",
+        colorCss: "theme-col",
         href: "/docs",
         label: "documentation here",
       }),

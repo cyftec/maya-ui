@@ -36,10 +36,10 @@ export const NavigatorPage = fragment<NavigatorPageProps, Child[]>(
 
     return [
       m.Div({
-        class: tmpl`mb3 flex-ns flex-wrap items-center ${headerClassNames}`,
+        class: tmpl`mt3 mb5 flex-ns flex-wrap items-end ${headerClassNames}`,
         children: [
           m.H1({
-            class: "mr3 mv2 mv3-ns",
+            class: "mr3 mv2 mv1-ns",
             children: headerTitle,
           }),
           m.If({

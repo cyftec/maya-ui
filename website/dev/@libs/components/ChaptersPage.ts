@@ -100,16 +100,16 @@ export const ChaptersPage = component<ChaptersPageProps>(
       app: NavigatorPage({
         headerTitle: pageTitle,
         headerComponent: m.Div({
-          class: "flex flex-wrap items-center f7 b silver light-silver-ns",
+          class: "flex flex-wrap items-end f7 b silver light-silver-ns",
           children: m.For({
             subject: selectedTopicPathNames,
             map: (pathName) =>
               m.Div({
-                class: `mb2 mb0-ns pointer`,
+                class: `mb2 mb0-ns`,
                 children: [
-                  "/",
+                  m.Span({ class: "mh1 mh2-ns", children: "/" }),
                   m.Span({
-                    class: "pa1 ph2-ns mh1 br3",
+                    class: "pa1 ph2-ns mh1 br3 pointer",
                     children: pathName,
                   }),
                 ],
@@ -120,10 +120,10 @@ export const ChaptersPage = component<ChaptersPageProps>(
           subject: chapters,
           map: ({ title, topics }, chapterIndex) =>
             TitledList({
-              classNames: "mb4 pb3",
+              classNames: "mb0 mb4-ns pb3",
               titleClassNames: "f4",
-              itemClassNames: "mb2 pb1 f6",
-              linkColorCss: "purple",
+              itemClassNames: "mb3 f6 lh-title",
+              linkColorCss: "theme-col",
               title: `${chapterIndex + 1}. ${title}`,
               onLinkClick: (linkIndex) =>
                 (selectedTopicPathIndeces.value = [chapterIndex, linkIndex]),

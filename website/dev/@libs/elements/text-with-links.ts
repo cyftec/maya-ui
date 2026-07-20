@@ -23,7 +23,7 @@ export const TextWithLinks = component<TextWithLinksProps>(
                 isTruthy: () => section,
                 isFalsy: () =>
                   Link({
-                    colorCss: linkColorCss || "purple",
+                    colorCss: linkColorCss || "theme-col",
                     target: "_blank",
                     label: section.split("|")[0],
                     href: section.split("|")[1],

@@ -16,19 +16,19 @@ const links = derive<Link[]>(() => {
   return [
     {
       isSelected: path.value.startsWith("/docs"),
-      colorCss: "purple",
+      colorCss: "theme-col",
       href: "/docs/",
       label: "Docs",
     },
     {
       isSelected: path.value.startsWith("/tutorial"),
-      colorCss: "purple",
+      colorCss: "theme-col",
       href: "/tutorial/",
       label: "Tutorial",
     },
     {
       isSelected: false,
-      colorCss: "purple",
+      colorCss: "theme-col",
       href: "https://www.cyfer.tech/blogs?tags=maya",
       label: "Blogs",
       target: "_blank",
@@ -43,7 +43,7 @@ export const Header = () => {
       children: [
         BrandLogo({
           logoSize: 36,
-          logoSrc: `/assets/images/maya-logo.png`,
+          logoSrc: `/assets/images/maya-logo.svg`,
           logoHref: `/`,
           labelComponent: m.A({
             class: "ml3 link black no-underline",

@@ -27,7 +27,7 @@ export const InstallationAndSetup = m.Div({
                       isTruthy: () =>
                         m.Div({
                           class:
-                            "list bg-near-white pa3 mv3 bl bw4 br4 b--yellow",
+                            "list bg-near-white pa3 mv3 bl bw4 br4 b--theme-col",
                           children: TextWithLinks({ text: ALERT || "" }),
                         }),
                     }),

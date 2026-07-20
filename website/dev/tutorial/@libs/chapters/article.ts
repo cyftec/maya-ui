@@ -3,13 +3,13 @@ import { runHighlightJsScriptOnMount } from "../../../@libs/utils";
 
 export const Code = (code: string) =>
   m.Div({
-    class: "mv3 pa3 bg-dark-gray br4 white overflow-auto",
+    class: "mv3 pa3 br4 hljs overflow-auto",
     children: m.Pre({ class: "ma0", children: m.Code(code) }),
   });
 
 export const Note = (children: Child) =>
   m.Div({
-    class: "list bg-near-white pa3 mv3 bl bw4 br4 b--yellow",
+    class: "list bg-near-white pa3 mv3 bl bw4 br4 b--theme-col",
     children,
   });
 

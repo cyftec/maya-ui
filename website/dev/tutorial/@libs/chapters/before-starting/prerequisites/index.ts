@@ -23,7 +23,7 @@ export const Prerequisites = m.Div([
                       isTruthy: () => section,
                       isFalsy: () =>
                         Link({
-                          colorCss: "purple",
+                          colorCss: "theme-col",
                           target: "_blank",
                           label: section.split("|")[0],
                           href: section.split("|")[1],
