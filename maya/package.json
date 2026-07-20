@@ -7,8 +7,8 @@
   "exports": {
     ".": "./index.ts",
     "./utils": "./utils/index.ts",
-    "./signal": "./exports/signal.ts",
-    "./immut": "./exports/immut.ts",
+    "./signal": "./re-exports/signal.ts",
+    "./immut": "./re-exports/immut.ts",
     "./toolkit": "./toolkit/index.ts"
   },
   "dependencies": {

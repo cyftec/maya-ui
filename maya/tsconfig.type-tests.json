@@ -14,7 +14,7 @@
     "globals.d.ts",
     "core/**/*.ts",
     "utils/**/*.ts",
-    "exports/**/*.ts",
+    "re-exports/**/*.ts",
     "tests/**/*.ts",
     "tests/**/*.d.ts"
   ],
