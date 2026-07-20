@@ -11,7 +11,7 @@ type ButtonProps = {
 
 export const Button = component<ButtonProps>(
   ({ classNames, labelClassNames, href, label, onClick }) => {
-    const buttonCss = tmpl`flex justify-stretch pointer bg-near-white hover-bg-moon-gray b--gray ba bw1 br-pill ${classNames}`;
+    const buttonCss = tmpl`flex justify-stretch pointer bg-white hover-bg-light-gray b--gray ba bw1 br-pill ${classNames}`;
     const anchorCss = tmpl`w-100 no-underline bg-transparent dark-gray pv2 ph3 ${labelClassNames}`;
 
     return m.Button({

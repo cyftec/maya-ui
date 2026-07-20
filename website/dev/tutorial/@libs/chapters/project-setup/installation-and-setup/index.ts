@@ -1,5 +1,6 @@
 import { m } from "@cyftec/maya/core";
-import { Icon, TextWithLinks } from "../../../../../@libs/elements";
+import { TextWithLinks } from "../../../../../@libs/elements";
+import { Code, Note } from "../../article";
 import { TASKS } from "./constants";
 
 export const InstallationAndSetup = m.Div({
@@ -25,27 +26,11 @@ export const InstallationAndSetup = m.Div({
                     m.If({
                       subject: ALERT,
                       isTruthy: () =>
-                        m.Div({
-                          class:
-                            "list bg-near-white pa3 mv3 bl bw4 br4 b--theme-col",
-                          children: TextWithLinks({ text: ALERT || "" }),
-                        }),
+                        Note(TextWithLinks({ text: ALERT || "" })),
                     }),
                     m.If({
                       subject: CODE,
-                      isTruthy: () =>
-                        m.Div({
-                          class:
-                            "flex items-center justify-between mv3 ph4 pv3 bg-dark-gray br4 white",
-                          children: [
-                            CODE || "",
-                            Icon({
-                              name: "content_copy",
-                              onClick: () =>
-                                navigator.clipboard.writeText(CODE || ""),
-                            }),
-                          ],
-                        }),
+                      isTruthy: () => Code(CODE || ""),
                     }),
                   ],
                 }),
