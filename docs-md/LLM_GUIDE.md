@@ -145,6 +145,8 @@ Rules:
 - Children must be `undefined`, strings, element getters, arrays of valid children, or signal/derived values that resolve to valid children.
 - Convert numbers and booleans to strings before using them as children.
 - Attribute names match HTML names: `class`, `id`, `href`, `value`, `data-*`.
+- Attribute values are typed by attribute and tag where the platform has a finite grammar. For example, `m.Input({ type: "email", required: true })`, `m.Button({ type: "submit" })`, and `m.Link({ rel: "stylesheet" })` are valid, while `m.A({ rel: "stylesheet" })`, arbitrary input types, and strings for boolean attributes are rejected by TypeScript. Signals retain the same hints, e.g. `m.Input({ type: signal("search") })`.
+- Free-form `data-*`, ARIA, class, style, URL, and token-list attributes remain string-valued; `undefined` removes/clears an attribute and boolean attributes use `true`/`false`.
 - Event names match lower-case DOM event attributes: `onclick`, `oninput`, `onsubmit`.
 - Event values are functions, never strings.
 - Use `onmount` for browser-only code. It is scheduled asynchronously during mount/run and does not run while the page is rendered in JSDOM build phase.

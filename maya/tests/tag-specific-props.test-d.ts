@@ -1,4 +1,5 @@
 import { m } from "../src/core";
+import { signal } from "../src/re-exports/signal";
 
 // Global, data-*, events, and valid element-specific attributes remain usable.
 m.Div({ class: "panel", "data-state": "open", onclick: () => {} });
@@ -14,6 +15,27 @@ m.Slot({ name: "actions" });
 m.Math({ display: "block", children: m.Mfrac([m.Mn("1"), m.Mn("2")]) });
 m.Mo({ stretchy: "true", "aria-label": "sum" });
 m.Span("Text child is valid on non-void elements");
+
+// Attribute values provide completions for boolean and enumerated HTML/MathML attributes
+m.Input({ type: "email", required: true });
+m.Link({ rel: "stylesheet", href: "/styles.css" });
+m.A({ rel: "nofollow", target: "_blank", href: "/docs" });
+m.Form({ method: "post", enctype: "multipart/form-data" });
+m.Math({ display: "block" });
+// signals retain the same value hints.
+m.Input({ type: signal("search"), checked: signal(false) });
+m.Link({ rel: signal("stylesheet"), href: "/styles.css" });
+
+// @ts-expect-error stylesheet is a link relation, not an anchor relation
+m.A({ rel: "stylesheet", href: "/styles.css" });
+// @ts-expect-error input type is an enumerated attribute
+m.Input({ type: "phone" });
+// @ts-expect-error button type has a smaller grammar than input type
+m.Button({ type: "email" });
+// @ts-expect-error boolean attributes do not accept arbitrary strings
+m.Input({ required: "yes" });
+// @ts-expect-error MathML display is block or inline
+m.Math({ display: "fullscreen" });
 
 // Element-specific completion must reject attributes that the target element
 // does not support, while preserving valid attributes on their own elements.

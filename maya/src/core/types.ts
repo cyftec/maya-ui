@@ -499,10 +499,248 @@ export type AttributeKey =
   | MathMlAttributesByTag[keyof MathMlAttributesByTag]
   | AriaAttributeKey;
 
+type BooleanAttributeValue = boolean | undefined;
+type StringAttributeValue = string | undefined;
+type StringWithSuggestions<Values extends string> = Values | (string & {});
+
+type BooleanAttributeKey =
+  | "allowfullscreen"
+  | "async"
+  | "autofocus"
+  | "autoplay"
+  | "checked"
+  | "controls"
+  | "default"
+  | "defer"
+  | "disabled"
+  | "formnovalidate"
+  | "inert"
+  | "ismap"
+  | "itemscope"
+  | "loop"
+  | "multiple"
+  | "muted"
+  | "nomodule"
+  | "novalidate"
+  | "open"
+  | "playsinline"
+  | "readonly"
+  | "required"
+  | "reversed"
+  | "selected";
+
+type InputType =
+  | "button"
+  | "checkbox"
+  | "color"
+  | "date"
+  | "datetime-local"
+  | "email"
+  | "file"
+  | "hidden"
+  | "image"
+  | "month"
+  | "number"
+  | "password"
+  | "radio"
+  | "range"
+  | "reset"
+  | "search"
+  | "submit"
+  | "tel"
+  | "text"
+  | "time"
+  | "url"
+  | "week";
+type ButtonType = "button" | "reset" | "submit";
+type ScriptType =
+  | "text/javascript"
+  | "module"
+  | "importmap"
+  | "speculationrules";
+type CrossOrigin = "anonymous" | "use-credentials";
+type Decoding = "async" | "sync" | "auto";
+type Direction = "ltr" | "rtl" | "auto";
+type Loading = "eager" | "lazy";
+type Preload = "none" | "metadata" | "auto";
+type ReferrerPolicy =
+  | ""
+  | "no-referrer"
+  | "no-referrer-when-downgrade"
+  | "origin"
+  | "origin-when-cross-origin"
+  | "same-origin"
+  | "strict-origin"
+  | "strict-origin-when-cross-origin"
+  | "unsafe-url";
+type FormMethod = "get" | "post" | "dialog";
+type FormEnctype =
+  | "application/x-www-form-urlencoded"
+  | "multipart/form-data"
+  | "text/plain";
+type ImageShape = "circle" | "default" | "poly" | "rect";
+type TableScope = "col" | "colgroup" | "row" | "rowgroup";
+type TrackKind =
+  | "captions"
+  | "chapters"
+  | "descriptions"
+  | "metadata"
+  | "subtitles";
+type TextareaWrap = "hard" | "soft";
+type MathDisplay = "block" | "inline";
+type LinkRelation =
+  | "alternate"
+  | "canonical"
+  | "dns-prefetch"
+  | "expect"
+  | "icon"
+  | "manifest"
+  | "modulepreload"
+  | "next"
+  | "pingback"
+  | "preconnect"
+  | "prefetch"
+  | "preload"
+  | "prev"
+  | "privacy-policy"
+  | "search"
+  | "stylesheet"
+  | "terms-of-service";
+type AnchorRelation =
+  | "alternate"
+  | "author"
+  | "bookmark"
+  | "external"
+  | "help"
+  | "license"
+  | "me"
+  | "next"
+  | "nofollow"
+  | "noopener"
+  | "noreferrer"
+  | "opener"
+  | "prev"
+  | "tag";
+/*
+ * `rel` is deliberately strict and tag-specific. In particular,
+ * `stylesheet` is a link relation and is not valid on an anchor or area.
+ */
+type LegacyLinkRelationSuggestions = StringWithSuggestions<
+  | "alternate"
+  | "author"
+  | "bookmark"
+  | "canonical"
+  | "external"
+  | "help"
+  | "icon"
+  | "license"
+  | "manifest"
+  | "me"
+  | "modulepreload"
+  | "next"
+  | "nofollow"
+  | "noopener"
+  | "noreferrer"
+  | "opener"
+  | "pingback"
+  | "preconnect"
+  | "prefetch"
+  | "preload"
+  | "prev"
+  | "privacy-policy"
+  | "search"
+  | "stylesheet"
+  | "tag"
+  | "terms-of-service"
+>;
+type Target = StringWithSuggestions<"_blank" | "_parent" | "_self" | "_top">;
+type AutoComplete = StringWithSuggestions<"on" | "off">;
+type EnterKeyHint = StringWithSuggestions<
+  "enter" | "done" | "go" | "next" | "previous" | "search" | "send"
+>;
+type FetchPriority = "high" | "low" | "auto";
+type InputMode =
+  | "none"
+  | "text"
+  | "decimal"
+  | "numeric"
+  | "tel"
+  | "search"
+  | "email"
+  | "url";
+
+/**
+ * Values for attributes whose HTML grammar is more specific than a string.
+ * Unlisted attributes intentionally fall back to the runtime's string/
+ * boolean representation so custom and legacy attributes remain usable.
+ */
+type AttributeValueByKey<A extends string> = A extends BooleanAttributeKey
+  ? BooleanAttributeValue
+  : A extends "crossorigin"
+    ? CrossOrigin | undefined
+    : A extends "decoding"
+      ? Decoding | undefined
+      : A extends "dir"
+        ? Direction | undefined
+        : A extends "enctype" | "formenctype"
+          ? FormEnctype | undefined
+          : A extends "formmethod" | "method"
+            ? FormMethod | undefined
+            : A extends "loading"
+              ? Loading | undefined
+              : A extends "preload"
+                ? Preload | undefined
+                : A extends "referrerpolicy"
+                  ? ReferrerPolicy | undefined
+                  : A extends "shape"
+                    ? ImageShape | undefined
+                    : A extends "scope"
+                      ? TableScope | undefined
+                      : A extends "kind"
+                        ? TrackKind | undefined
+                : A extends "wrap"
+                  ? TextareaWrap | undefined
+                  : A extends "target"
+                    ? Target | undefined
+                    : A extends "autocomplete"
+                      ? AutoComplete | undefined
+                      : A extends "enterkeyhint"
+                        ? EnterKeyHint | undefined
+                        : A extends "fetchpriority"
+                          ? FetchPriority | undefined
+                          : A extends "inputmode"
+                            ? InputMode | undefined
+                            : A extends "rel"
+                              ? LegacyLinkRelationSuggestions | undefined
+                              : StringAttributeValue;
+
+export type AttributeValueForTag<
+  T extends MayaTagName,
+  A extends string,
+> = A extends "type"
+  ? T extends "input"
+    ? InputType | undefined
+    : T extends "button"
+      ? ButtonType | undefined
+      : T extends "script"
+        ? ScriptType | undefined
+        : StringAttributeValue
+  : A extends "rel"
+    ? T extends "a" | "area"
+      ? AnchorRelation | undefined
+      : T extends "link"
+        ? LinkRelation | undefined
+        : never
+  : A extends "display"
+    ? T extends "math"
+      ? MathDisplay | undefined
+      : never
+    : AttributeValueByKey<A>;
+
 export type AttributePropsForTag<T extends MayaTagName> = Partial<{
-  [A in AttributeKeyForTag<T>]: MaybeSignal<AttributeValue>;
+  [A in AttributeKeyForTag<T>]: MaybeSignal<AttributeValueForTag<T, A>>;
 }> &
-  Partial<{ [A in AriaAttributeKey]: MaybeSignal<string | undefined> }>;
+  Partial<{ [A in AriaAttributeKey]: MaybeSignal<StringAttributeValue> }>;
 
 /** DOM event handlers are globally attachable; the map keeps the API tag-centric. */
 export type HtmlEventKeysByTag = {

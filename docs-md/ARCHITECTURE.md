@@ -50,7 +50,7 @@ const node = title();
 
 Children may be strings, element getters, arrays of those values, signalified values, or derived signals of children. The public `Child` type is intentionally narrow: `undefined`, strings, and Maya element getters. Numeric and boolean values should be converted to strings, for example with `String(...)` or `tmpl`.
 
-The runtime accepts both the direct-child form and the props form. Event keys are lower-case DOM names such as `onclick` and `oninput`; `onmount` and `onunmount` are Maya-only lifecycle events. Attribute values are strings, booleans, `undefined`, or signalified versions of those values.
+The runtime accepts both the direct-child form and the props form. Event keys are lower-case DOM names such as `onclick` and `oninput`; `onmount` and `onunmount` are Maya-only lifecycle events. Attribute values are strings, booleans, `undefined`, or signalified versions of those values at runtime. The public TypeScript API narrows known boolean and enumerated attributes by tag (for example, `m.Input({ type: "email" })`, `m.Button({ type: "submit" })`, `m.Link({ rel: "stylesheet" })`, and `m.Input({ required: true })`) while leaving custom `data-*`, ARIA, and free-form attributes usable.
 
 ## Build, Mount, Run
 
@@ -108,6 +108,8 @@ Props are split into:
 HTML event prop values must be functions. The event name is lower-case and matches DOM event attribute spelling, for example `onclick`.
 
 `href` and `style` values are sanitized. `href` rejects `javascript:`, `data:`, `vbscript:`, and `file:`. `style` rejects `url(...)`, `expression(...)`, and the same dangerous schemes. Prefer CSS classes and stylesheet files for layout.
+
+`PropsForTag<T>` supplies tag-specific attribute-name and attribute-value hints to each `m.*` factory. Some attributes are also constrained by tag: `rel: "stylesheet"` is valid for `m.Link` but rejected for `m.A` and `m.Area`. Signals preserve the same value type, so `m.Input({ type: signal("email") })` is checked like the literal form. This is compile-time guidance only; runtime attribute handling still serializes string and boolean values through the common sanitizer and setter.
 
 ## Components
 
