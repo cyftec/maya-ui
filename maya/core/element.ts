@@ -20,7 +20,7 @@ import type {
   DomEventValue,
   EventProps,
   HtmlEventValue,
-  HtmlTagName,
+  MayaTagName,
   MHtmlElement,
   MHtmlElementGetter,
   NonSignalChild,
@@ -35,6 +35,7 @@ import type {
 import {
   decodeHTMLEntities,
   idGen,
+  mathMlTagNames,
   phase,
   sanitizeAttributeValue,
   validChild,
@@ -48,6 +49,16 @@ import {
   valueIsMHtmlElement,
 } from "../utils/index.js";
 import { startUnmountObserver } from "./unmount-observer.js";
+
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
+const createElementForTag = (tagName: MayaTagName): MHtmlElement => {
+  if (mathMlTagNames.includes(tagName as (typeof mathMlTagNames)[number]))
+    return document.createElementNS(MATHML_NAMESPACE, tagName) as unknown as MHtmlElement;
+  if (tagName === "svg")
+    return document.createElementNS(SVG_NAMESPACE, tagName) as unknown as MHtmlElement;
+  return document.createElement(tagName) as unknown as MHtmlElement;
+};
 
 const isEventPropKey = (propKey: string): boolean => propKey.startsWith("on");
 const isCustomEventKey = (propKey: string): propKey is CustomEventKey =>
@@ -289,7 +300,7 @@ const getNodesEventsAndAttributes = (
 };
 
 export const elementGetter = (
-  tagName: HtmlTagName,
+  tagName: MayaTagName,
   propsOrChildren?: PropsOrChildren,
 ): MHtmlElementGetter => {
   const elemGetter: MHtmlElementGetter = () => {
@@ -298,7 +309,7 @@ export const elementGetter = (
     const mHtmlElem = (
       phase.currentIs("mount")
         ? document.querySelector(`[data-elem-id="${elementId}"]`)
-        : document.createElement(tagName)
+        : createElementForTag(tagName)
     ) as MHtmlElement;
     mHtmlElem.elementId = elementId;
     mHtmlElem.effects = [];

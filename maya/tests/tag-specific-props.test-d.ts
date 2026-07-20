@@ -9,6 +9,10 @@ m.Video({ controls: true, poster: "/poster.jpg", playsinline: true });
 m.Table({ bgcolor: "white" });
 m.Meta({ charset: "UTF-8", name: "viewport", content: "width=device-width" });
 m.Div({ onpointerdown: (event) => event.pointerId });
+m.Search({ role: "search", "aria-label": "Site search", inert: true });
+m.Slot({ name: "actions" });
+m.Math({ display: "block", children: m.Mfrac([m.Mn("1"), m.Mn("2")]) });
+m.Mo({ stretchy: "true", "aria-label": "sum" });
 m.Span("Text child is valid on non-void elements");
 
 // Element-specific completion must reject attributes that the target element
@@ -31,3 +35,5 @@ m.Meta("Document metadata");
 m.Img({ alt: "Maya logo", children: "fallback" });
 // @ts-expect-error href is not supported by meta
 m.Meta({ href: "/document" });
+// @ts-expect-error display is only supported by the MathML math root
+m.Mrow({ display: "block" });

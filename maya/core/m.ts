@@ -1,12 +1,12 @@
 import type {
   Children,
-  HtmlTagName,
+  MayaTagName,
   MHtmlElementGetter,
   PropsOrChildren,
   PropsForTag,
   VoidHtmlTagName,
 } from "../index.types.ts";
-import { htmlTagNames } from "../utils/index.ts";
+import { htmlTagNames, mathMlTagNames } from "../utils/index.ts";
 import { elementGetter } from "./element.ts";
 import {
   forElement,
@@ -14,21 +14,24 @@ import {
   switchElement,
 } from "./custom-elements/index.ts";
 
-type MayaElement<T extends HtmlTagName> = T extends VoidHtmlTagName
+type MayaElement<T extends MayaTagName> = T extends VoidHtmlTagName
   ? (props?: PropsForTag<T>) => MHtmlElementGetter
   : {
       (props?: PropsForTag<T>): MHtmlElementGetter;
       (children: Children): MHtmlElementGetter;
     };
 type MayaElementsMap = {
-  [T in HtmlTagName as Capitalize<T>]: MayaElement<T>;
+  [T in MayaTagName as PascalCase<T>]: MayaElement<T>;
 };
-const mayaElementsMap = htmlTagNames.reduce<Record<string, unknown>>(
+type PascalCase<T extends string> = T extends `${infer Head}-${infer Tail}`
+  ? `${Capitalize<Head>}${PascalCase<Tail>}`
+  : Capitalize<T>;
+const mayaElementsMap = [...htmlTagNames, ...mathMlTagNames].reduce<Record<string, unknown>>(
   (map, htmlTagName) => {
     const mayaTagName = htmlTagName
-      .split("")
-      .map((char, index) => (!index ? char.toUpperCase() : char))
-      .join("") as Capitalize<typeof htmlTagName>;
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join("") as PascalCase<typeof htmlTagName>;
     const mHtmlComp = (propsOrChildren?: PropsOrChildren) =>
       elementGetter(htmlTagName, propsOrChildren);
     map[mayaTagName] = mHtmlComp;

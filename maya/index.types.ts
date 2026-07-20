@@ -4,7 +4,7 @@ import {
   type Signal,
   type SignalsEffect,
 } from "@cyftec/signal";
-import type { htmlTagNames } from "./utils/index.ts";
+import type { htmlTagNames, mathMlTagNames } from "./utils/index.ts";
 
 export type MaybeArray<T> = T | T[];
 
@@ -38,7 +38,9 @@ export type AttributeValue = string | boolean | undefined;
  * Maya Html Element and Children type-defs
  */
 export type HtmlTagName = (typeof htmlTagNames)[number];
-export type MHtmlElement<H extends HTMLElement = HTMLElement> = H & {
+export type MathMlTagName = (typeof mathMlTagNames)[number];
+export type MayaTagName = HtmlTagName | MathMlTagName;
+export type MHtmlElement<H extends Element = HTMLElement> = H & {
   elementId: number;
   effects: SignalsEffect[];
   unmountListener: CustomEventValue | undefined;
@@ -94,15 +96,27 @@ type GlobalAttributeKey =
   | "anchor-offset"
   | "anchor-side"
   | "autocapitalize"
+  | "autocorrect"
+  | "autofocus"
   | "class"
   | "contenteditable"
   | "dir"
   | "draggable"
+  | "enterkeyhint"
+  | "exportparts"
   | "hidden"
   | "id"
   | "inputmode"
+  | "inert"
+  | "is"
+  | "itemid"
   | "itemprop"
+  | "itemref"
+  | "itemscope"
+  | "itemtype"
   | "lang"
+  | "nonce"
+  | "part"
   | "popover"
   | "role"
   | "slot"
@@ -110,17 +124,61 @@ type GlobalAttributeKey =
   | "style"
   | "tabindex"
   | "title"
-  | "translate";
+  | "translate"
+  | "virtualkeyboardpolicy"
+  | "writingsuggestions";
 
 /** Attribute keys are declared from the element downward, not reverse-mapped. */
 export type HtmlAttributesByTag = {
-  a: "download" | "href" | "hreflang" | "media" | "ping" | "referrerpolicy" | "rel" | "shape" | "target";
-  area: "alt" | "coords" | "download" | "href" | "media" | "ping" | "referrerpolicy" | "rel" | "shape" | "target";
-  audio: "autoplay" | "controls" | "crossorigin" | "loop" | "muted" | "preload" | "src";
+  a:
+    | "attributionsrc"
+    | "download"
+    | "href"
+    | "hreflang"
+    | "media"
+    | "ping"
+    | "referrerpolicy"
+    | "rel"
+    | "shape"
+    | "target";
+  area:
+    | "alt"
+    | "attributionsrc"
+    | "coords"
+    | "download"
+    | "href"
+    | "media"
+    | "ping"
+    | "referrerpolicy"
+    | "rel"
+    | "shape"
+    | "target";
+  audio:
+    | "autoplay"
+    | "controls"
+    | "crossorigin"
+    | "loop"
+    | "muted"
+    | "preload"
+    | "src";
   base: "href" | "target";
   blockquote: "cite";
   body: "background" | "bgcolor";
-  button: "disabled" | "form" | "formaction" | "formenctype" | "formmethod" | "formnovalidate" | "formtarget" | "name" | "popovertarget" | "popovertargetaction" | "type" | "value";
+  button:
+    | "command"
+    | "commandfor"
+    | "disabled"
+    | "form"
+    | "formaction"
+    | "formenctype"
+    | "formmethod"
+    | "formnovalidate"
+    | "formtarget"
+    | "name"
+    | "popovertarget"
+    | "popovertargetaction"
+    | "type"
+    | "value";
   canvas: "height" | "width";
   col: "span";
   colgroup: "span";
@@ -131,19 +189,113 @@ export type HtmlAttributesByTag = {
   embed: "height" | "src" | "type" | "width";
   fieldset: "disabled" | "form" | "name";
   font: "color";
-  form: "accept" | "accept-charset" | "action" | "autocomplete" | "enctype" | "method" | "name" | "novalidate" | "target";
+  form:
+    | "accept"
+    | "accept-charset"
+    | "action"
+    | "autocomplete"
+    | "enctype"
+    | "method"
+    | "name"
+    | "novalidate"
+    | "target";
   hr: "color";
-  iframe: "allow" | "height" | "name" | "referrerpolicy" | "sandbox" | "src" | "srcdoc" | "width";
-  img: "alt" | "border" | "crossorigin" | "decoding" | "height" | "ismap" | "referrerpolicy" | "sizes" | "src" | "srcset" | "usemap" | "width";
-  input: "accept" | "alt" | "capture" | "checked" | "dirname" | "disabled" | "form" | "formaction" | "formenctype" | "formmethod" | "formnovalidate" | "formtarget" | "height" | "list" | "max" | "maxlength" | "min" | "minlength" | "multiple" | "name" | "pattern" | "placeholder" | "popovertarget" | "popovertargetaction" | "readonly" | "required" | "size" | "src" | "step" | "type" | "usemap" | "value" | "width";
+  iframe:
+    | "allow"
+    | "allowfullscreen"
+    | "credentialless"
+    | "csp"
+    | "height"
+    | "loading"
+    | "name"
+    | "referrerpolicy"
+    | "sandbox"
+    | "src"
+    | "srcdoc"
+    | "width";
+  img:
+    | "alt"
+    | "attributionsrc"
+    | "border"
+    | "crossorigin"
+    | "decoding"
+    | "elementtiming"
+    | "fetchpriority"
+    | "height"
+    | "ismap"
+    | "loading"
+    | "referrerpolicy"
+    | "sizes"
+    | "src"
+    | "srcset"
+    | "usemap"
+    | "width";
+  input:
+    | "accept"
+    | "alpha"
+    | "alt"
+    | "capture"
+    | "checked"
+    | "colorspace"
+    | "dirname"
+    | "disabled"
+    | "form"
+    | "formaction"
+    | "formenctype"
+    | "formmethod"
+    | "formnovalidate"
+    | "formtarget"
+    | "height"
+    | "list"
+    | "max"
+    | "maxlength"
+    | "min"
+    | "minlength"
+    | "multiple"
+    | "name"
+    | "pattern"
+    | "placeholder"
+    | "popovertarget"
+    | "popovertargetaction"
+    | "readonly"
+    | "required"
+    | "size"
+    | "src"
+    | "step"
+    | "type"
+    | "usemap"
+    | "value"
+    | "width";
   ins: "cite" | "datetime";
   label: "for";
-  link: "as" | "crossorigin" | "href" | "hreflang" | "integrity" | "media" | "referrerpolicy" | "rel" | "sizes" | "type";
+  link:
+    | "as"
+    | "blocking"
+    | "crossorigin"
+    | "fetchpriority"
+    | "href"
+    | "hreflang"
+    | "imagesizes"
+    | "imagesrcset"
+    | "integrity"
+    | "media"
+    | "referrerpolicy"
+    | "rel"
+    | "sizes"
+    | "type";
   li: "value";
   map: "name";
   meta: "charset" | "content" | "http-equiv" | "name";
   meter: "high" | "low" | "max" | "min" | "optimum" | "value";
-  object: "border" | "data" | "form" | "height" | "name" | "type" | "usemap" | "width";
+  object:
+    | "border"
+    | "data"
+    | "form"
+    | "height"
+    | "name"
+    | "type"
+    | "usemap"
+    | "width";
   ol: "reversed" | "start" | "type";
   optgroup: "disabled" | "label";
   option: "disabled" | "label" | "selected" | "value";
@@ -151,44 +303,215 @@ export type HtmlAttributesByTag = {
   param: "name" | "value";
   progress: "max" | "value";
   q: "cite";
-  script: "async" | "charset" | "crossorigin" | "defer" | "integrity" | "referrerpolicy" | "src" | "type";
-  select: "autocomplete" | "disabled" | "form" | "multiple" | "name" | "required" | "size";
+  script:
+    | "async"
+    | "attributionsrc"
+    | "blocking"
+    | "charset"
+    | "crossorigin"
+    | "defer"
+    | "fetchpriority"
+    | "integrity"
+    | "nomodule"
+    | "referrerpolicy"
+    | "src"
+    | "type";
+  select:
+    | "autocomplete"
+    | "disabled"
+    | "form"
+    | "multiple"
+    | "name"
+    | "required"
+    | "size";
   source: "media" | "sizes" | "src" | "srcset" | "type";
   style: "media" | "type";
   table: "background" | "bgcolor" | "border";
   td: "background" | "bgcolor" | "colspan" | "headers" | "rowspan";
-  textarea: "autocomplete" | "cols" | "dirname" | "disabled" | "form" | "maxlength" | "minlength" | "name" | "placeholder" | "readonly" | "required" | "rows" | "wrap";
+  textarea:
+    | "autocomplete"
+    | "cols"
+    | "dirname"
+    | "disabled"
+    | "form"
+    | "maxlength"
+    | "minlength"
+    | "name"
+    | "placeholder"
+    | "readonly"
+    | "required"
+    | "rows"
+    | "wrap";
   th: "background" | "bgcolor" | "colspan" | "headers" | "rowspan" | "scope";
   time: "datetime";
   track: "default" | "kind" | "label" | "src" | "srclang";
-  video: "autoplay" | "controls" | "crossorigin" | "height" | "loop" | "muted" | "playsinline" | "poster" | "preload" | "src" | "width";
+  slot: "name";
+  video:
+    | "autoplay"
+    | "controls"
+    | "crossorigin"
+    | "disableremoteplayback"
+    | "height"
+    | "loop"
+    | "muted"
+    | "playsinline"
+    | "poster"
+    | "preload"
+    | "src"
+    | "width";
 };
 
 type TagSpecificAttributeKey<T extends HtmlTagName> =
   T extends keyof HtmlAttributesByTag ? HtmlAttributesByTag[T] : never;
 
-export type AttributeKeyForTag<T extends HtmlTagName> =
-  | `data-${string}`
-  | GlobalAttributeKey
-  | TagSpecificAttributeKey<T>;
+export type AriaAttributeKey =
+  | "aria-activedescendant"
+  | "aria-atomic"
+  | "aria-autocomplete"
+  | "aria-busy"
+  | "aria-checked"
+  | "aria-colcount"
+  | "aria-colindex"
+  | "aria-colspan"
+  | "aria-controls"
+  | "aria-current"
+  | "aria-describedby"
+  | "aria-description"
+  | "aria-details"
+  | "aria-disabled"
+  | "aria-errormessage"
+  | "aria-expanded"
+  | "aria-flowto"
+  | "aria-haspopup"
+  | "aria-hidden"
+  | "aria-invalid"
+  | "aria-keyshortcuts"
+  | "aria-label"
+  | "aria-labelledby"
+  | "aria-level"
+  | "aria-live"
+  | "aria-modal"
+  | "aria-multiline"
+  | "aria-multiselectable"
+  | "aria-orientation"
+  | "aria-owns"
+  | "aria-placeholder"
+  | "aria-posinset"
+  | "aria-pressed"
+  | "aria-readonly"
+  | "aria-relevant"
+  | "aria-required"
+  | "aria-roledescription"
+  | "aria-rowcount"
+  | "aria-rowindex"
+  | "aria-rowindextext"
+  | "aria-rowspan"
+  | "aria-selected"
+  | "aria-setsize"
+  | "aria-sort"
+  | "aria-valuemax"
+  | "aria-valuemin"
+  | "aria-valuenow"
+  | "aria-valuetext"
+  | `aria-${string}`;
+
+type MathMlGlobalAttributeKey =
+  | "class"
+  | "dir"
+  | "displaystyle"
+  | "href"
+  | "id"
+  | "intent"
+  | "mathbackground"
+  | "mathcolor"
+  | "mathsize"
+  | "mathvariant"
+  | "nonce"
+  | "scriptlevel"
+  | "style";
+export type MathMlAttributesByTag = {
+  math: "display";
+  annotation: "encoding";
+  "annotation-xml": "encoding";
+  maction: "actiontype" | "selection";
+  menclose: "notation";
+  mfenced: "close" | "open" | "separators";
+  mfrac: "bevel" | "denomalign" | "linethickness" | "numalign";
+  mo:
+    | "accent"
+    | "fence"
+    | "form"
+    | "largeop"
+    | "lspace"
+    | "maxsize"
+    | "minsize"
+    | "movablelimits"
+    | "rspace"
+    | "separator"
+    | "stretchy"
+    | "symmetric";
+  mpadded: "depth" | "height" | "lspace" | "voffset" | "width";
+  ms: "lquote" | "rquote";
+  mspace: "depth" | "height" | "width";
+  mstyle:
+    | "decimalpoint"
+    | "infixlinebreakstyle"
+    | "scriptminsize"
+    | "scriptsizemultiplier";
+  mtable:
+    | "align"
+    | "columnalign"
+    | "columnlines"
+    | "columnspacing"
+    | "columnwidth"
+    | "equalcolumns"
+    | "equalrows"
+    | "frame"
+    | "framespacing"
+    | "rowalign"
+    | "rowlines"
+    | "rowspacing"
+    | "side"
+    | "width";
+  mtd: "columnalign" | "columnspan" | "rowalign" | "rowspan";
+  mtr: "columnalign" | "rowalign";
+  mover: "accent" | "align";
+  munder: "accentunder" | "align";
+  munderover: "accent" | "accentunder" | "align";
+};
+type MathMlSpecificAttributeKey<T extends MathMlTagName> =
+  T extends keyof MathMlAttributesByTag ? MathMlAttributesByTag[T] : never;
+
+export type AttributeKeyForTag<T extends MayaTagName> = T extends HtmlTagName
+  ? `data-${string}` | GlobalAttributeKey | TagSpecificAttributeKey<T>
+  : T extends MathMlTagName
+    ?
+        | `data-${string}`
+        | MathMlGlobalAttributeKey
+        | MathMlSpecificAttributeKey<T>
+    : never;
 
 export type AttributeKey =
   | `data-${string}`
   | GlobalAttributeKey
-  | HtmlAttributesByTag[keyof HtmlAttributesByTag];
+  | HtmlAttributesByTag[keyof HtmlAttributesByTag]
+  | MathMlGlobalAttributeKey
+  | MathMlAttributesByTag[keyof MathMlAttributesByTag]
+  | AriaAttributeKey;
 
-export type AttributePropsForTag<T extends HtmlTagName> = Partial<{
+export type AttributePropsForTag<T extends MayaTagName> = Partial<{
   [A in AttributeKeyForTag<T>]: MaybeSignal<AttributeValue>;
-}>;
+}> &
+  Partial<{ [A in AriaAttributeKey]: MaybeSignal<string | undefined> }>;
 
 /** DOM event handlers are globally attachable; the map keeps the API tag-centric. */
 export type HtmlEventKeysByTag = {
-  [T in HtmlTagName]: HtmlEventKey;
+  [T in MayaTagName]: HtmlEventKey;
 };
-export type EventKeyForTag<T extends HtmlTagName> =
+export type EventKeyForTag<T extends MayaTagName> =
   | HtmlEventKeysByTag[T]
   | CustomEventKey;
-export type EventPropsForTag<T extends HtmlTagName> = Partial<{
+export type EventPropsForTag<T extends MayaTagName> = Partial<{
   [E in EventKeyForTag<T>]: DomEventValue<E>;
 }>;
 
@@ -211,13 +534,14 @@ export type VoidHtmlTagName =
   | "track"
   | "wbr";
 
-type ChildrenPropForTag<T extends HtmlTagName> = T extends VoidHtmlTagName
+type ChildrenPropForTag<T extends MayaTagName> = T extends VoidHtmlTagName
   ? { children?: never }
   : ChildrenProp;
 
-export type PropsForTag<T extends HtmlTagName> =
-  EventPropsForTag<T> & AttributePropsForTag<T> & ChildrenPropForTag<T>;
-export type PropsOrChildrenForTag<T extends HtmlTagName> =
+export type PropsForTag<T extends MayaTagName> = EventPropsForTag<T> &
+  AttributePropsForTag<T> &
+  ChildrenPropForTag<T>;
+export type PropsOrChildrenForTag<T extends MayaTagName> =
   T extends VoidHtmlTagName ? PropsForTag<T> : PropsForTag<T> | Children;
 
 /**
