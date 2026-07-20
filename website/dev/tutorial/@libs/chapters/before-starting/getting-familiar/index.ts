@@ -66,7 +66,7 @@ export const GettingFamiliar = m.Div({
       nthChild: Link({
         colorCss: "theme-col",
         href: "/docs",
-        label: "documentation here",
+        label: "docs here",
       }),
       map: (para) => para,
     }),
