@@ -17,6 +17,7 @@ export const Page = component<PageProps>(
       lang: "en",
       children: [
         m.Head([
+          m.Meta({ charset: "UTF-8" }),
           m.Meta({
             name: "viewport",
             content: "width=device-width, initial-scale=1",
@@ -31,7 +32,7 @@ export const Page = component<PageProps>(
           ...restHeadElems,
         ]),
         m.Body({
-          class: "ph3",
+          class: "site-body ph3",
           children: [
             m.Script({ src: "main.js", defer: true }),
             Header(),

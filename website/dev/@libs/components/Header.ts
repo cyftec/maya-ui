@@ -1,106 +1,51 @@
-import { derive } from "@cyftec/maya/signal";
 import { m } from "@cyftec/maya/core";
 import { BASE_MAYA_VERSION } from "../constants";
-import { BrandLogo, GithubLink, Icon, Link, ViewFrame } from "../elements";
-import { path } from "../router";
+import { ViewFrame } from "../elements";
 
-type Link = {
-  isSelected: boolean;
-  colorCss: string;
-  href: string;
-  label: string;
-  target?: string;
-};
+const navLinks = [
+  { href: "/#architecture", label: "Architecture" },
+  { href: "/#signals", label: "Signals" },
+  { href: "/#toolchain", label: "Brahma" },
+  { href: "/#benchmark", label: "Benchmark" },
+  { href: "/docs/", label: "Docs" },
+  { href: "/tutorial/", label: "Tutorial" },
+];
 
-const links = derive<Link[]>(() => {
-  return [
-    {
-      isSelected: path.value.startsWith("/docs"),
-      colorCss: "theme-col",
-      href: "/docs/",
-      label: "Docs",
-    },
-    {
-      isSelected: path.value.startsWith("/tutorial"),
-      colorCss: "theme-col",
-      href: "/tutorial/",
-      label: "Tutorial",
-    },
-    {
-      isSelected: false,
-      colorCss: "theme-col",
-      href: "https://www.cyfer.tech/blogs?tags=maya",
-      label: "Blogs",
-      target: "_blank",
-    },
-  ];
-});
-
-export const Header = () => {
-  return ViewFrame({
-    children: m.Div({
-      class: "pv3 bg-pale flex items-center justify-between",
+export const Header = () =>
+  ViewFrame({
+    classNames: "site-header-frame",
+    contentClassNames: "site-header-shell",
+    children: m.Header({
+      class: "site-header",
       children: [
-        BrandLogo({
-          logoSize: 36,
-          logoSrc: `/assets/images/maya-logo.svg`,
-          logoHref: `/`,
-          labelComponent: m.A({
-            class: "ml3 link black no-underline",
-            href: "/",
-            children: [
-              m.Div({
-                class: `f4`,
-                children: "MAYA",
-              }),
-              Link({
-                classNames: `f7`,
-                colorCss: "black",
-                target: "_blank",
-                href: "https://github.com/cyftec/maya-ui",
-                label: BASE_MAYA_VERSION,
-              }),
-            ],
-          }),
-        }),
-        m.Div({
-          class: "flex items-center justify-end",
-          children: m.For({
-            subject: links,
-            itemKey: "label",
-            n: Infinity,
-            nthChild: m.Div({
-              class: "flex items-center",
-              children: [
-                m.Span({
-                  class: "db dn-ns",
-                  children: Icon({
-                    size: 32,
-                    name: "menu",
-                    onClick: () => {},
-                  }),
-                }),
-                GithubLink({
-                  size: 42,
-                  classNames: "ml3",
-                  url: "https://github.com/cyftec/maya-ui",
-                }),
-              ],
+        m.A({
+          class: "site-brand",
+          href: "/",
+          "aria-label": "Maya home",
+          children: [
+            m.Img({
+              src: "/assets/images/maya-logo.svg",
+              height: "34",
+              width: "34",
+              alt: "",
             }),
-            map: (link) => {
-              const dlink = link.props();
-              return Link({
-                classNames: "db-ns dn ml3 pv1 ph2",
-                isSelected: dlink.isSelected,
-                colorCss: dlink.colorCss,
-                target: dlink.target,
-                href: dlink.href,
-                label: dlink.label,
-              });
-            },
-          }),
+            m.Span({ children: [m.Strong("MAYA"), m.Small(BASE_MAYA_VERSION)] }),
+          ],
+        }),
+        m.Nav({
+          class: "site-nav",
+          "aria-label": "Primary navigation",
+          children: navLinks.map((link) =>
+            m.A({ href: link.href, children: link.label }),
+          ),
+        }),
+        m.A({
+          class: "header-github",
+          href: "https://github.com/cyftec/maya-ui",
+          target: "_blank",
+          rel: "noreferrer",
+          children: [m.Span("GitHub"), m.Span({ "aria-hidden": "true", children: "↗" })],
         }),
       ],
     }),
   });
-};
