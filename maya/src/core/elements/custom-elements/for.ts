@@ -10,7 +10,7 @@ import {
   type SignalifiedObject,
   type SourceSignal,
 } from "@cyftec/signal";
-import type { Child, MHtmlElement, MHtmlElementGetter } from "../../types";
+import type { Child, MayaNode, MayaNodeGetter } from "../../types";
 
 type PlainMapFn<Item> = (item: Item, index: number) => Child;
 
@@ -43,18 +43,18 @@ const getMappedChild = <Item extends Record<string, any>>(
     derive(() => indexSignal.value),
   );
   let mappedChild: Child;
-  let elem: MHtmlElement<HTMLElement>;
-  let computedMHtmlElementGetterOnce = false;
+  let mayaNode: MayaNode<HTMLElement>;
+  let computedMayaNodeGetterOnce = false;
 
-  if ((child as MHtmlElementGetter)?.isElementGetter) {
+  if ((child as MayaNodeGetter)?.isMayaNodeGetter) {
     mappedChild = (() => {
-      if (computedMHtmlElementGetterOnce && elem) return elem;
+      if (computedMayaNodeGetterOnce && mayaNode) return mayaNode;
 
-      elem = (child as MHtmlElementGetter)();
-      computedMHtmlElementGetterOnce = true;
-      return elem;
-    }) as MHtmlElementGetter;
-    mappedChild.isElementGetter = true;
+      mayaNode = (child as MayaNodeGetter)();
+      computedMayaNodeGetterOnce = true;
+      return mayaNode;
+    }) as MayaNodeGetter;
+    mappedChild.isMayaNodeGetter = true;
   } else if (!child || typeof child === "string") {
     mappedChild = child || "";
   } else {
@@ -163,9 +163,9 @@ export const forElement = <
   }
   let injectableChild: Child = nthChild;
   if (nthChild && typeof nthChild !== "string") {
-    const element = nthChild();
-    const injectable: MHtmlElementGetter = () => element;
-    injectable.isElementGetter = true;
+    const mayaNode = nthChild();
+    const injectable: MayaNodeGetter = () => mayaNode;
+    injectable.isMayaNodeGetter = true;
     injectableChild = injectable;
   }
 

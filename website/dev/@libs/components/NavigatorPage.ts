@@ -1,4 +1,4 @@
-import { fragment, Child, Children, m, MHtmlElement } from "@cyftec/maya/core";
+import { fragment, Child, Children, m, MayaNode } from "@cyftec/maya/core";
 import { effect, Signal, tmpl } from "@cyftec/maya/signal";
 import { Navbar } from "../elements";
 
@@ -26,10 +26,10 @@ export const NavigatorPage = fragment<NavigatorPageProps, Child[]>(
     contentComponent,
     scrollToTopCounterSignal,
   }) => {
-    let contentElement: MHtmlElement;
+    let contentContainerNode: MayaNode;
     effect(() => {
       if (scrollToTopCounterSignal?.value) {
-        contentElement.scrollTo({ top: 0 });
+        contentContainerNode.scrollTo({ top: 0 });
       }
     });
 
@@ -55,7 +55,7 @@ export const NavigatorPage = fragment<NavigatorPageProps, Child[]>(
             children: navbarComponent,
           }),
           m.Div({
-            onmount: (elem: MHtmlElement) => (contentElement = elem),
+            onmount: (node: MayaNode) => (contentContainerNode = node),
             class: tmpl`fg7 pb5 w-70-ns mw-100 w-auto-ns max-h-80 overflow-y-scroll
               dark-gray gray-ns lh-copy-ns lh-title ${contentClassNames}`,
             children: [

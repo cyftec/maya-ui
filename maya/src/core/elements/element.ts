@@ -1,13 +1,13 @@
 import {
   effect,
   value,
-  valueIsSignalifiedObject,
   valueIsNonSignalObject,
   valueIsSignal,
-  type SignalifiedObject,
+  valueIsSignalifiedObject,
   type MaybeSignal,
   type NonSignal,
   type Signal,
+  type SignalifiedObject,
 } from "@cyftec/signal";
 import type {
   AttributeKey,
@@ -15,17 +15,18 @@ import type {
   AttributeValue,
   Child,
   Children,
+  ChildrenArray,
   CustomEventKey,
   CustomEventValue,
   DomEventValue,
   EventProps,
+  HTML5TagName,
   HtmlEventValue,
-  MayaTagName,
-  MHtmlElement,
-  MHtmlElementGetter,
+  MayaElement,
+  MayaNode,
+  MayaNodeGetter,
   NonSignalChild,
   NonSignalChildren,
-  ChildrenArray,
   Props,
   PropsOrChildren,
   SignalAttributeProps,
@@ -38,6 +39,7 @@ import {
   mathMlTagNames,
   phase,
   sanitizeAttributeValue,
+  startUnmountObserver,
   validChild,
   validChildren,
   validChildrenProp,
@@ -46,24 +48,23 @@ import {
   validSignalChild,
   validSignalChildOrChildren,
   valueIsArray,
-  valueIsMHtmlElement,
-  startUnmountObserver,
+  valueIsMayaNode,
 } from "../utils";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
-const createElementForTag = (tagName: MayaTagName): MHtmlElement => {
+const createMayaNodeForTag = (tagName: HTML5TagName): MayaNode => {
   if (mathMlTagNames.includes(tagName as (typeof mathMlTagNames)[number]))
     return document.createElementNS(
       MATHML_NAMESPACE,
       tagName,
-    ) as unknown as MHtmlElement;
+    ) as unknown as MayaNode;
   if (tagName === "svg")
     return document.createElementNS(
       SVG_NAMESPACE,
       tagName,
-    ) as unknown as MHtmlElement;
-  return document.createElement(tagName) as unknown as MHtmlElement;
+    ) as unknown as MayaNode;
+  return document.createElement(tagName) as unknown as MayaNode;
 };
 
 const isEventPropKey = (propKey: string): boolean => propKey.startsWith("on");
@@ -86,16 +87,13 @@ const attributeIsEvent = (propKey: string, propValue: any): boolean =>
   attributeIsHtmlEvent(propKey, propValue) ||
   attributeIsCustomEvent(propKey, propValue);
 
-const handleEventProps = (
-  mHtmlElem: MHtmlElement,
-  eventProps: EventProps,
-): void => {
+const handleEventProps = (mayaNode: MayaNode, eventProps: EventProps): void => {
   Object.entries(eventProps).forEach(([eventName, listenerFn]) => {
     if (attributeIsUndefinedEvent(eventName, listenerFn)) {
       // ignore as eventlistener is undefined
     } else if (attributeIsHtmlEvent(eventName, listenerFn)) {
       const eventKey = eventName.slice(2);
-      mHtmlElem.addEventListener(eventKey, (e: Event) => {
+      mayaNode.addEventListener(eventKey, (e: Event) => {
         if (eventKey === "keypress") {
           e.preventDefault();
         }
@@ -104,27 +102,27 @@ const handleEventProps = (
     } else if (attributeIsCustomEvent(eventName, listenerFn)) {
       if (eventName === "onmount" && !phase.currentIs("build")) {
         const onMount = listenerFn as CustomEventValue;
-        setTimeout(() => onMount(mHtmlElem), 0);
+        setTimeout(() => onMount(mayaNode), 0);
       }
       if (eventName === "onunmount") {
         startUnmountObserver();
-        const topLevelUnmountListener = mHtmlElem.unmountListener;
-        mHtmlElem.unmountListener = (currentElement: MHtmlElement) => {
-          (listenerFn as CustomEventValue)(currentElement);
+        const topLevelUnmountListener = mayaNode.unmountListener;
+        mayaNode.unmountListener = (currentNode: MayaNode) => {
+          (listenerFn as CustomEventValue)(currentNode);
           if (typeof topLevelUnmountListener === "function")
-            topLevelUnmountListener(currentElement);
+            topLevelUnmountListener(currentNode);
         };
       }
     } else {
       console.error(
-        `Invalid event key: ${eventName} for element with tagName: ${mHtmlElem.tagName}`,
+        `Invalid event key: ${eventName} for element with tagName: ${mayaNode.tagName}`,
       );
     }
   });
 };
 
 const setAttribute = (
-  mHtmlElement: MHtmlElement,
+  mayaNode: MayaNode,
   attrKey: string,
   attributePropValue: MaybeSignal<AttributeValue>,
 ): void => {
@@ -134,17 +132,17 @@ const setAttribute = (
   const attrValue = sanitizeAttributeValue(attrKey, unsafeAttrValue);
 
   if (typeof attrValue === "boolean") {
-    if (attrValue) mHtmlElement.setAttribute(attrKey, "");
-    else mHtmlElement.removeAttribute(attrKey);
+    if (attrValue) mayaNode.setAttribute(attrKey, "");
+    else mayaNode.removeAttribute(attrKey);
   } else if (attrKey === "value") {
-    mHtmlElement.value = attrValue || "";
+    mayaNode.value = attrValue || "";
   } else {
-    mHtmlElement.setAttribute(attrKey, attrValue || "");
+    mayaNode.setAttribute(attrKey, attrValue || "");
   }
 };
 
 const handleAttributeProps = (
-  mHtmlElem: MHtmlElement,
+  mayaNode: MayaNode,
   attributeProps: AttributeProps,
 ): void => {
   const signalAttributeProps: SignalAttributeProps = {};
@@ -155,7 +153,7 @@ const handleAttributeProps = (
       signalAttributeProps[attrKey as AttributeKey] =
         attrVal as Signal<AttributeValue>;
     }
-    setAttribute(mHtmlElem, attrKey, attrVal);
+    setAttribute(mayaNode, attrKey, attrVal);
   });
 
   const attributesUpdator = effect(() => {
@@ -163,39 +161,37 @@ const handleAttributeProps = (
       const [attrKey, attrVal] = signalAttributeProp;
       const signalAttrVal = (attrVal as Signal<AttributeValue>).value;
       if (!phase.currentIs("run")) return;
-      setAttribute(mHtmlElem, attrKey, signalAttrVal);
+      setAttribute(mayaNode, attrKey, signalAttrVal);
     });
   });
-  mHtmlElem.effects.push(attributesUpdator);
+  mayaNode.effects.push(attributesUpdator);
 };
 
-const getElementFromChild = (child: Child): MHtmlElement | Text => {
+const getNodeFromChild = (child: Child): MayaNode | Text => {
   if (!child || typeof child === "string") {
     return document.createTextNode(decodeHTMLEntities(child || ""));
   }
 
   if (validChild(child)) {
-    // the valid child is only 'MHtmlElementGetter' now and not
+    // the valid child is only 'MayaNodeGetter' now and not
     // 'undefined' or 'string' as that case is handled above already
-    const elem = (child as MHtmlElementGetter)();
-    if (!valueIsMHtmlElement(elem)) {
-      throw new Error(
-        `Invalid MHtml element getter child. Type: ${typeof child}`,
-      );
+    const mayaNode = (child as MayaNodeGetter)();
+    if (!valueIsMayaNode(mayaNode)) {
+      throw new Error(`Invalid maya-node-getter child. Type: ${typeof child}`);
     }
-    return elem as MHtmlElement;
+    return mayaNode as MayaNode;
   }
 
   throw new Error(`Invalid child. Type of child: ${typeof child}`);
 };
 
 const setChild = (
-  parentNode: MHtmlElement,
+  parentNode: MayaNode,
   child: Child,
   childPositionIndex: number,
 ) => {
   const prevChildNode = parentNode.childNodes[childPositionIndex];
-  const newChildNode = getElementFromChild(child);
+  const newChildNode = getNodeFromChild(child);
   if (prevChildNode && newChildNode) {
     parentNode.replaceChild(newChildNode, prevChildNode);
   } else if (newChildNode) {
@@ -207,7 +203,7 @@ const setChild = (
   }
 };
 
-const handleChildrenProp = (parentNode: MHtmlElement, children?: Children) => {
+const handleChildrenProp = (parentNode: MayaNode, children?: Children) => {
   if (!children) return;
 
   if (validSignalChildOrChildren(children)) {
@@ -304,22 +300,22 @@ const getNodesEventsAndAttributes = (
   return { children, eventProps, attributeProps };
 };
 
-export const elementGetter = (
-  tagName: MayaTagName,
+const getMayaNodeGetter = (
+  tagName: HTML5TagName,
   propsOrChildren?: PropsOrChildren,
-): MHtmlElementGetter => {
-  const elemGetter: MHtmlElementGetter = () => {
-    const elementId = idGen.getNewId();
+): MayaNodeGetter => {
+  const mayaNodeGetter: MayaNodeGetter = () => {
+    const nodeID = idGen.getNewId();
 
-    const mHtmlElem = (
+    const mayaNode = (
       phase.currentIs("mount")
-        ? document.querySelector(`[data-elem-id="${elementId}"]`)
-        : createElementForTag(tagName)
-    ) as MHtmlElement;
-    mHtmlElem.elementId = elementId;
-    mHtmlElem.effects = [];
-    mHtmlElem.unmountListener = () => {
-      mHtmlElem.effects.forEach((eff) => eff.dispose());
+        ? document.querySelector(`[data-elem-id="${nodeID}"]`)
+        : createMayaNodeForTag(tagName)
+    ) as MayaNode;
+    mayaNode.nodeID = nodeID;
+    mayaNode.effects = [];
+    mayaNode.unmountListener = () => {
+      mayaNode.effects.forEach((eff) => eff.dispose());
     };
     const props: Props = validChildrenProp(propsOrChildren)
       ? { children: propsOrChildren as Children }
@@ -334,25 +330,31 @@ export const elementGetter = (
        * So this attribute "data-elem-id" is only required during 'build' and
        * 'mount' phases, not in the 'run' phase.
        */
-      props["data-elem-id"] = mHtmlElem.elementId.toString();
+      props["data-elem-id"] = mayaNode.nodeID.toString();
     }
 
-    const allProps = getNodesEventsAndAttributes(props, mHtmlElem.tagName);
-    handleEventProps(mHtmlElem, allProps.eventProps);
-    handleAttributeProps(mHtmlElem, allProps.attributeProps);
-    handleChildrenProp(mHtmlElem, allProps.children);
+    const allProps = getNodesEventsAndAttributes(props, mayaNode.tagName);
+    handleEventProps(mayaNode, allProps.eventProps);
+    handleAttributeProps(mayaNode, allProps.attributeProps);
+    handleChildrenProp(mayaNode, allProps.children);
 
     if (!phase.currentIs("build")) {
       /**
        * Keep removing attribute "data-elem-id" when mounting on
        * that html node is done.
        */
-      mHtmlElem.removeAttribute("data-elem-id");
+      mayaNode.removeAttribute("data-elem-id");
     }
 
-    return mHtmlElem;
+    return mayaNode;
   };
 
-  elemGetter.isElementGetter = true;
-  return elemGetter;
+  mayaNodeGetter.isMayaNodeGetter = true;
+  return mayaNodeGetter;
 };
+
+export const getMayaElement = <T extends HTML5TagName>(
+  html5TagName: T,
+): MayaElement<T> =>
+  ((propsOrChildren?: PropsOrChildren) =>
+    getMayaNodeGetter(html5TagName, propsOrChildren)) as MayaElement<T>;

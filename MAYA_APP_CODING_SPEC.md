@@ -7,7 +7,7 @@
 
 This file is designed to stand alone. A coding agent should be able to receive only this file and produce a conventional, maintainable, pixel-accurate Maya application that Brahma can compile. It also describes the observable framework contract in enough detail for an independent implementation of the same programming model.
 
-Maya is not React with different names. It has no JSX, virtual DOM, component rerender loop, or client-side hydration algorithm. A Maya page is a TypeScript program that declares a DOM tree with element getters. Brahma executes that program once in a build environment to emit static HTML, executes it again in the browser to attach behavior to that same HTML, and then lets signals update individual attributes or child positions directly.
+Maya is not React with different names. It has no JSX, virtual DOM, component rerender loop, or client-side hydration algorithm. A Maya page is a TypeScript program that declares a DOM tree with maya-node getters. Brahma executes that program once in a build environment to emit static HTML, executes it again in the browser to attach behavior to that same HTML, and then lets signals update individual attributes or child positions directly.
 
 ---
 
@@ -32,11 +32,11 @@ Read these before generating any Maya code.
 3. Declare component prop fields as their simple domain types. For example, write `label: string`, not `label: Signal<string> | string`, and `selected?: boolean`, not a hand-built union of every reactive form.
 4. Let `component()` and `fragment()` normalize ordinary props. Inside their definition, a plain prop and a signal-backed prop share a signalified interface, so current values are consistently available through `.value`.
 5. Keep state ownership explicit. Pass a plain value prop plus an intent callback such as `value: number` and `onChange(next: number)` instead of giving a component a caller-owned mutable signal.
-6. Functions, callbacks, and Maya element getters pass through prop normalization. Call callbacks normally; do not use `.value` on them.
+6. Functions, callbacks, and Maya node getters pass through prop normalization. Call callbacks normally; do not use `.value` on them.
 7. Use `component()` when the reusable unit returns one Maya child. Use `fragment()` when it can return multiple siblings or a broader `Children` value.
-8. A route entry file exports one default Maya root getter, normally an `m.Html(...)` getter or a component invocation that returns it.
+8. A route entry file exports one default Maya root node-getter, normally a node-getter returned by `m.Html(...)` element's invocation.
 9. Never use `innerHTML`. Express text as children and structure as `m.*` elements.
-10. Do not read `window`, `document`, element layout, random numbers, the current time, browser storage, or location while constructing the initial page tree. Build and browser mount must construct the same tree in the same element-getter order.
+10. Do not read `window`, `document`, element layout, random numbers, the current time, browser storage, or location while constructing the initial page tree. Build and browser mount must construct the same tree in the same node-getter order.
 11. Use `onmount`, events, or browser-only non-page scripts for browser APIs.
 12. Numbers and booleans are not text children. Convert them to strings, `tmpl` output, or another string-valued signal.
 13. Use `undefined`, `m.If`, or `m.Switch` for conditional UI. Do not use `null` as a child.
@@ -119,11 +119,11 @@ Maya has three relevant phases.
 
 ### 3.1 Build phase
 
-Brahma loads a page module in a DOM-capable build environment, resets Maya's element counter, sets the phase to build, invokes the default-exported root getter, serializes the root element's `outerHTML`, and prepends `<!DOCTYPE html>`.
+Brahma loads a page module in a DOM-capable build environment, resets Maya's element counter, sets the phase to build, invokes the default-exported root node-getter, serializes the root node's `outerHTML`, and prepends `<!DOCTYPE html>`.
 
 During this pass:
 
-- `m.*` getters create DOM nodes.
+- `m.*` maya-node-getters create DOM nodes.
 - stable `data-elem-id` markers are written into the generated HTML.
 - signal values provide initial text and attributes.
 - event handlers are not usefully interactive.
@@ -132,9 +132,9 @@ During this pass:
 
 ### 3.2 Mount phase
 
-The emitted page loads its matching JavaScript bundle. Maya resets the same element counter and calls the same root getter again. Each getter locates the already-rendered node with its matching `data-elem-id`, attaches listeners and effects, and removes the temporary marker after mounting.
+The emitted page loads its matching JavaScript bundle. Maya resets the same element counter and calls the same root node-getter again. Each node-getter locates the already-rendered node with its matching `data-elem-id`, attaches listeners and effects, and removes the temporary marker after mounting.
 
-This is deterministic attachment, not HTML reconciliation. Build and mount must invoke element getters in the same order.
+This is deterministic attachment, not HTML reconciliation. Build and mount must invoke node-getters in the same order.
 
 ### 3.3 Run phase
 
@@ -142,7 +142,7 @@ After mount, source-signal writes synchronously notify dependent effects. Maya m
 
 ### 3.4 The deterministic-tree invariant
 
-The initial build pass and browser mount pass **MUST** produce an equivalent element-getter call sequence.
+The initial build pass and browser mount pass **MUST** produce an equivalent node-getter call sequence.
 
 Never do this at module load or component construction time:
 
@@ -193,8 +193,8 @@ import {
   m,
   type Child,
   type Children,
-  type MHtmlElement,
-  type MHtmlElementGetter,
+  type MayaNode,
+  type MayaNodeGetter,
 } from "@cyftec/maya/core";
 
 import {
@@ -228,7 +228,7 @@ The conceptual types are:
 
 ```ts
 type RawChild = undefined | string;
-type Child = RawChild | MHtmlElementGetter;
+type Child = RawChild | MayaNodeGetter;
 
 // Conceptual, simplified form. The real type also accepts signalified variants.
 type Children = Child | Child[] | Signal<Child> | Signal<Child[]>;
@@ -236,11 +236,11 @@ type Children = Child | Child[] | Signal<Child> | Signal<Child[]>;
 type AttributeValue = string | boolean | undefined;
 ```
 
-An `MHtmlElementGetter` is a callable object:
+An `MayaNodeGetter` is a callable object:
 
 ```ts
-type MHtmlElementGetter = (() => MHtmlElement) & {
-  isElementGetter: true;
+type MayaNodeGetter = (() => MayaNode) & {
+  isNodeGetter: true;
 };
 ```
 
@@ -312,12 +312,12 @@ m.Input({ id: "email", name: "email", type: "email" });
 Capture the actual mounted node within a component-local closure:
 
 ```ts
-import { component, m, type MHtmlElement } from "@cyftec/maya/core";
+import { component, m, type MayaNode } from "@cyftec/maya/core";
 
 type SearchBoxProps = { label: string };
 
 export const SearchBox = component<SearchBoxProps>(({ label }) => {
-  let inputNode: MHtmlElement<HTMLInputElement> | undefined;
+  let inputNode: MayaNode<HTMLInputElement> | undefined;
 
   return m.Div({
     class: "search-box",
@@ -327,7 +327,7 @@ export const SearchBox = component<SearchBoxProps>(({ label }) => {
         id: "site-search",
         type: "search",
         onmount: (element) => {
-          inputNode = element as MHtmlElement<HTMLInputElement>;
+          inputNode = element as MayaNode<HTMLInputElement>;
         },
       }),
       m.Button({
@@ -431,7 +431,7 @@ Inside the component definition:
 - an incoming source or derived signal stays signal-backed;
 - both expose a current `.value`;
 - functions pass through unchanged;
-- Maya element getters pass through unchanged;
+- Maya node getters pass through unchanged;
 - child-shaped props receive child-compatible treatment;
 - an omitted optional property may be `undefined` at runtime, so use `optional?.value` when it can be absent.
 
@@ -549,7 +549,7 @@ export const Card = component<CardProps>(({ title, children }) =>
 );
 ```
 
-An element getter is a function, but it is specifically recognized as a child and must not be invoked manually when passing it through.
+An node getter is a function, but it is specifically recognized as a child and must not be invoked manually when passing it through.
 
 ### 6.7 Component design rules
 
@@ -1323,14 +1323,14 @@ let phase: Phase = "build";
 let elementCounter = 0;
 ```
 
-Reset `elementCounter` before invoking a page root in both build and mount. Each element getter captures or obtains the next deterministic identifier in call order.
+Reset `elementCounter` before invoking a page root in both build and mount. Each node getter captures or obtains the next deterministic identifier in call order.
 
 ### 13.2 Element factory
 
 Conceptual algorithm:
 
 ```ts
-function createElementGetter(tagName, props, namespace?) {
+function createNodeGetter(tagName, props, namespace?) {
   const getter = () => {
     const id = nextElementId();
     let element;
@@ -1363,7 +1363,7 @@ function createElementGetter(tagName, props, namespace?) {
     return element;
   };
 
-  getter.isElementGetter = true;
+  getter.isNodeGetter = true;
   return getter;
 }
 ```
@@ -1372,7 +1372,7 @@ The current runtime creates a new node if a getter is invoked in run phase; ther
 
 ### 13.3 Child attachment
 
-For a static string, create a text node. For an element getter, invoke it and append the result. For arrays, attach members in order. For signal children, create an effect that replaces the DOM node(s) at the same insertion position. When a reactive array shrinks, remove trailing nodes previously owned by that signal child.
+For a static string, create a text node. For a node getter, invoke it and append the result. For arrays, attach members in order. For signal children, create an effect that replaces the DOM node(s) at the same insertion position. When a reactive array shrinks, remove trailing nodes previously owned by that signal child.
 
 Do not use a virtual DOM. The signal-to-DOM effect owns the smallest relevant position.
 
@@ -1443,7 +1443,7 @@ For each page entry:
 3. set phase to build and reset IDs;
 4. load the page module;
 5. invoke its default export;
-6. invoke the returned root getter;
+6. invoke the returned root node-getter;
 7. serialize `<!DOCTYPE html>` plus root `outerHTML`;
 8. compile the same page into its browser bundle;
 9. ensure that bundle resets IDs, sets mount, invokes the page, and then enters run;
@@ -2600,7 +2600,7 @@ Browser code ran during build-time tree construction. Move it into `onmount`, an
 
 ### Mount cannot find a `data-elem-id`
 
-Build and mount invoked element getters in a different order. Remove nondeterminism and environment-dependent initial branching. Confirm both runs use identical initial state.
+Build and mount invoked node getters in a different order. Remove nondeterminism and environment-dependent initial branching. Confirm both runs use identical initial state.
 
 ### A signal prop shows its first value but never updates
 
@@ -2622,9 +2622,9 @@ The keyed item is a derived object signal. Use `item.get("field")` or `item.prop
 
 Passing `value: state` updates DOM from the signal; it does not automatically update the signal from DOM. Add `oninput` and write `event.currentTarget.value` back.
 
-### Calling an element getter returns the wrong node
+### Calling a node getter returns the wrong node
 
-Getters are construction/mount handles. Capture the mounted element with `onmount` or use `event.currentTarget`.
+Getters are construction/mount handles. Capture the mounted node with `onmount` or use `event.currentTarget`.
 
 ### An effect ignores a dependency that appears later
 
@@ -2636,7 +2636,7 @@ It was likely written as a plain function. Replace it with `component()` or `fra
 
 ### `null`, a number, or a boolean fails as a child
 
-Maya children are strings, `undefined`, element getters, their arrays, or signalified versions. Convert display values to strings and use `m.If`/`m.Switch` for conditions.
+Maya children are strings, `undefined`, node getters, their arrays, or signalified versions. Convert display values to strings and use `m.If`/`m.Switch` for conditions.
 
 ---
 

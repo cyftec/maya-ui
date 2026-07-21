@@ -6,7 +6,7 @@ import {
   type NonNullSignalValue,
   type Signal,
 } from "@cyftec/signal";
-import type { Children, MHtmlElementGetter } from "../../types";
+import type { Children, MayaNodeGetter } from "../../types";
 import { m } from "../m.ts";
 
 export const ifElement = <S, TC extends Children, FC extends Children>({
@@ -41,6 +41,6 @@ export const ifElement = <S, TC extends Children, FC extends Children>({
   return (
     valueIsSignal(subject) ? derive(() => compGetter(true)) : compGetter(false)
   ) as S extends Signal<any>
-    ? DerivedSignal<TC | FC | MHtmlElementGetter>
-    : TC | FC | MHtmlElementGetter;
+    ? DerivedSignal<TC | FC | MayaNodeGetter>
+    : TC | FC | MayaNodeGetter;
 };

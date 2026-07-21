@@ -2,18 +2,18 @@ import { valueIsNonSignalObject, valueIsSignal } from "@cyftec/signal";
 
 export const valueIsArray = (value: any): boolean => Array.isArray(value);
 
-export const valueIsMHtmlElement = (value: any): boolean =>
-  !isNaN(value?.elementId) && value?.elementId > 0;
+export const valueIsMayaNode = (value: any): boolean =>
+  !isNaN(value?.nodeID) && value?.nodeID > 0;
 
 export const validChild = (value: any): boolean =>
   /**
-   * if value is MHtmlElementGetter, never check with valueIsMHtmlElement(value())
+   * if value is MayaNodeGetter, never check with valueIsMayaNode(value())
    * becaue value() will trigger idGen.getNewId() and it will mess up
    * entire build and mount processes.
    */
   value === undefined ||
   typeof value === "string" ||
-  (typeof value === "function" && value.isElementGetter);
+  (typeof value === "function" && value.isMayaNodeGetter);
 
 export const validChildren = (value: any): boolean =>
   valueIsArray(value) && value.every((item: any) => validChild(item));

@@ -1,9 +1,9 @@
-import type { CustomEventValue, MHtmlElement } from "../types.ts";
+import type { CustomEventValue, MayaNode } from "../types.ts";
 import { phase } from "./phase-helpers.ts";
-import { valueIsMHtmlElement } from "./type-checkers.ts";
+import { valueIsMayaNode } from "./type-checkers.ts";
 
 type ListenerData = {
-  element: MHtmlElement;
+  mayaNode: MayaNode;
   unmountListener: CustomEventValue;
 };
 
@@ -16,23 +16,22 @@ const unmountObserver: MutationObserver = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.type === "childList") {
       mutation.addedNodes.forEach((node) => {
-        if (valueIsMHtmlElement(node)) {
-          const element = node as MHtmlElement;
-          const elementId = element.elementId;
-          if (removedNodesRecord[elementId])
-            delete removedNodesRecord[elementId];
-          else addedNodesRecord[elementId] = element.tagName;
+        if (valueIsMayaNode(node)) {
+          const mayaNode = node as MayaNode;
+          const nodeID = mayaNode.nodeID;
+          if (removedNodesRecord[nodeID]) delete removedNodesRecord[nodeID];
+          else addedNodesRecord[nodeID] = mayaNode.tagName;
         }
       });
 
       mutation.removedNodes.forEach((node) => {
-        if (valueIsMHtmlElement(node)) {
-          const element = node as MHtmlElement;
-          const elementId = element.elementId;
-          const unmountListener = element.unmountListener;
+        if (valueIsMayaNode(node)) {
+          const mayaNode = node as MayaNode;
+          const nodeID = mayaNode.nodeID;
+          const unmountListener = mayaNode.unmountListener;
           if (unmountListener)
-            removedNodesRecord[elementId] = {
-              element,
+            removedNodesRecord[nodeID] = {
+              mayaNode,
               unmountListener: unmountListener as CustomEventValue,
             };
         }
@@ -40,25 +39,25 @@ const unmountObserver: MutationObserver = new MutationObserver((mutations) => {
     }
   });
   Object.entries(removedNodesRecord).forEach(([_, listenerData]) => {
-    const { element, unmountListener } = listenerData;
-    execSubtreeUnmountListeners(element, unmountListener);
+    const { mayaNode, unmountListener } = listenerData;
+    execSubtreeUnmountListeners(mayaNode, unmountListener);
   });
 });
 
 const execSubtreeUnmountListeners = (
-  element: MHtmlElement,
+  mayaNode: MayaNode,
   elUnmountListener: CustomEventValue | undefined,
 ): void => {
-  if (!valueIsMHtmlElement(element)) return;
+  if (!valueIsMayaNode(mayaNode)) return;
 
-  const elChildren = element.children;
+  const elChildren = mayaNode.children;
   for (let i = 0; i < elChildren.length; i++) {
-    const elChild = elChildren[i] as MHtmlElement;
+    const elChild = elChildren[i] as MayaNode;
     execSubtreeUnmountListeners(elChild, elChild.unmountListener);
   }
-  elUnmountListener && elUnmountListener(element);
-  if (removedNodesRecord[element.elementId])
-    delete removedNodesRecord[element.elementId];
+  elUnmountListener && elUnmountListener(mayaNode);
+  if (removedNodesRecord[mayaNode.nodeID])
+    delete removedNodesRecord[mayaNode.nodeID];
 };
 
 export const startUnmountObserver = (): void => {

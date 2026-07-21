@@ -8,6 +8,11 @@ import type { htmlTagNames, mathMlTagNames } from "./utils/index.ts";
 
 export type MaybeArray<T> = T | T[];
 
+export type PascalCase<T extends string> =
+  T extends `${infer Head}-${infer Tail}`
+    ? `${Capitalize<Head>}${PascalCase<Tail>}`
+    : Capitalize<T>;
+
 /**
  * Event type-defs
  */
@@ -20,7 +25,7 @@ type HtmlEventName<K extends HtmlEventKey> = K extends `on${infer Name}`
 export type HtmlEventValue<K extends HtmlEventKey = HtmlEventKey> = (
   event: GlobalEventHandlersEventMap[HtmlEventName<K>],
 ) => void;
-export type CustomEventValue = (currentElement: MHtmlElement) => void;
+export type CustomEventValue = (currentNode: MayaNode) => void;
 export type DomEventValue<K extends DomEventKey = DomEventKey> =
   | (K extends HtmlEventKey
       ? HtmlEventValue<K>
@@ -35,23 +40,25 @@ export type DomEventValue<K extends DomEventKey = DomEventKey> =
 export type AttributeValue = string | boolean | undefined;
 
 /**
- * Maya Html Element and Children type-defs
+ * Maya Node and Children type-defs
  */
 export type HtmlTagName = (typeof htmlTagNames)[number];
 export type MathMlTagName = (typeof mathMlTagNames)[number];
-export type MayaTagName = HtmlTagName | MathMlTagName;
-export type MHtmlElement<H extends Element = HTMLElement> = H & {
-  elementId: number;
+export type HTML5TagName = HtmlTagName | MathMlTagName;
+export type MayaTagName = PascalCase<HTML5TagName>;
+export type MayaNode<H extends Element = HTMLElement> = H & {
+  nodeID: number;
   effects: SignalsEffect[];
   unmountListener: CustomEventValue | undefined;
   value?: string; // for HTMLInputElement
 };
-export type MHtmlElementGetter = {
-  (): MHtmlElement;
-  isElementGetter: true;
+
+export type MayaNodeGetter = {
+  (): MayaNode;
+  isMayaNodeGetter: true;
 };
 export type RawChild = undefined | string;
-export type Child = RawChild | MHtmlElementGetter;
+export type Child = RawChild | MayaNodeGetter;
 
 export type NonSignalChild = NonSignal<Child>;
 export type NonSignalChildren = NonSignal<Child[]>;
@@ -82,6 +89,13 @@ export type ChildrenProp = { children?: Children };
 
 export type Props = EventProps & AttributeProps & ChildrenProp;
 export type PropsOrChildren = Props | Children;
+
+export type MayaElement<T extends HTML5TagName> = T extends VoidHtmlTagName
+  ? (props?: PropsForTag<T>) => MayaNodeGetter
+  : {
+      (props?: PropsForTag<T>): MayaNodeGetter;
+      (children: Children): MayaNodeGetter;
+    };
 
 /**
  * Attribute keys are deliberately modelled as HTML attributes rather than DOM
@@ -482,7 +496,7 @@ export type MathMlAttributesByTag = {
 type MathMlSpecificAttributeKey<T extends MathMlTagName> =
   T extends keyof MathMlAttributesByTag ? MathMlAttributesByTag[T] : never;
 
-export type AttributeKeyForTag<T extends MayaTagName> = T extends HtmlTagName
+export type AttributeKeyForTag<T extends HTML5TagName> = T extends HtmlTagName
   ? `data-${string}` | GlobalAttributeKey | TagSpecificAttributeKey<T>
   : T extends MathMlTagName
     ?
@@ -698,24 +712,26 @@ type AttributeValueByKey<A extends string> = A extends BooleanAttributeKey
                       ? TableScope | undefined
                       : A extends "kind"
                         ? TrackKind | undefined
-                : A extends "wrap"
-                  ? TextareaWrap | undefined
-                  : A extends "target"
-                    ? Target | undefined
-                    : A extends "autocomplete"
-                      ? AutoComplete | undefined
-                      : A extends "enterkeyhint"
-                        ? EnterKeyHint | undefined
-                        : A extends "fetchpriority"
-                          ? FetchPriority | undefined
-                          : A extends "inputmode"
-                            ? InputMode | undefined
-                            : A extends "rel"
-                              ? LegacyLinkRelationSuggestions | undefined
-                              : StringAttributeValue;
+                        : A extends "wrap"
+                          ? TextareaWrap | undefined
+                          : A extends "target"
+                            ? Target | undefined
+                            : A extends "autocomplete"
+                              ? AutoComplete | undefined
+                              : A extends "enterkeyhint"
+                                ? EnterKeyHint | undefined
+                                : A extends "fetchpriority"
+                                  ? FetchPriority | undefined
+                                  : A extends "inputmode"
+                                    ? InputMode | undefined
+                                    : A extends "rel"
+                                      ?
+                                          | LegacyLinkRelationSuggestions
+                                          | undefined
+                                      : StringAttributeValue;
 
 export type AttributeValueForTag<
-  T extends MayaTagName,
+  T extends HTML5TagName,
   A extends string,
 > = A extends "type"
   ? T extends "input"
@@ -731,25 +747,25 @@ export type AttributeValueForTag<
       : T extends "link"
         ? LinkRelation | undefined
         : never
-  : A extends "display"
-    ? T extends "math"
-      ? MathDisplay | undefined
-      : never
-    : AttributeValueByKey<A>;
+    : A extends "display"
+      ? T extends "math"
+        ? MathDisplay | undefined
+        : never
+      : AttributeValueByKey<A>;
 
-export type AttributePropsForTag<T extends MayaTagName> = Partial<{
+export type AttributePropsForTag<T extends HTML5TagName> = Partial<{
   [A in AttributeKeyForTag<T>]: MaybeSignal<AttributeValueForTag<T, A>>;
 }> &
   Partial<{ [A in AriaAttributeKey]: MaybeSignal<StringAttributeValue> }>;
 
 /** DOM event handlers are globally attachable; the map keeps the API tag-centric. */
 export type HtmlEventKeysByTag = {
-  [T in MayaTagName]: HtmlEventKey;
+  [T in HTML5TagName]: HtmlEventKey;
 };
-export type EventKeyForTag<T extends MayaTagName> =
+export type EventKeyForTag<T extends HTML5TagName> =
   | HtmlEventKeysByTag[T]
   | CustomEventKey;
-export type EventPropsForTag<T extends MayaTagName> = Partial<{
+export type EventPropsForTag<T extends HTML5TagName> = Partial<{
   [E in EventKeyForTag<T>]: DomEventValue<E>;
 }>;
 
@@ -772,14 +788,14 @@ export type VoidHtmlTagName =
   | "track"
   | "wbr";
 
-type ChildrenPropForTag<T extends MayaTagName> = T extends VoidHtmlTagName
+type ChildrenPropForTag<T extends HTML5TagName> = T extends VoidHtmlTagName
   ? { children?: never }
   : ChildrenProp;
 
-export type PropsForTag<T extends MayaTagName> = EventPropsForTag<T> &
+export type PropsForTag<T extends HTML5TagName> = EventPropsForTag<T> &
   AttributePropsForTag<T> &
   ChildrenPropForTag<T>;
-export type PropsOrChildrenForTag<T extends MayaTagName> =
+export type PropsOrChildrenForTag<T extends HTML5TagName> =
   T extends VoidHtmlTagName ? PropsForTag<T> : PropsForTag<T> | Children;
 
 /**
