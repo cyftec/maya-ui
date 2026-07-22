@@ -1,19 +1,35 @@
 import type {
-  HTML5TagName,
+  HtmlTagName,
+  MathMlTagName,
   MayaElement,
   MayaTagName,
   PascalCase,
+  SvgMayaElement,
+  SvgTagAliasName,
+  UnaliasedSvgTagName,
 } from "../types.ts";
-import { htmlTagNames, mathMlTagNames } from "../utils/index.ts";
+import {
+  htmlTagNames,
+  mathMlTagNames,
+  svgTagAliases,
+  svgTagNames,
+} from "../utils/index.ts";
 import {
   forElement,
   ifElement,
   switchElement,
 } from "./custom-elements/index.ts";
-import { getMayaElement } from "./element.ts";
+import { getMayaElement, getSvgMayaElement } from "./element.ts";
 
 type IntrinsicElementsMap = {
-  [T in HTML5TagName as PascalCase<T>]: MayaElement<T>;
+  [T in
+    | HtmlTagName
+    | UnaliasedSvgTagName
+    | MathMlTagName as PascalCase<T>]: MayaElement<T>;
+};
+
+type SvgAliasedElementsMap = {
+  [T in SvgTagAliasName]: SvgMayaElement<(typeof svgTagAliases)[T]>;
 };
 
 type CustomElementsMap = {
@@ -22,9 +38,15 @@ type CustomElementsMap = {
   Switch: typeof switchElement;
 };
 
-type MayaElementsMap = IntrinsicElementsMap & CustomElementsMap;
+type MayaElementsMap = IntrinsicElementsMap &
+  SvgAliasedElementsMap &
+  CustomElementsMap;
 
-const intrinsicElementsMap = [...htmlTagNames, ...mathMlTagNames].reduce<
+const intrinsicElementsMap = [
+  ...htmlTagNames,
+  ...svgTagNames,
+  ...mathMlTagNames,
+].reduce<
   Record<string, unknown>
 >((map, html5TagName) => {
   const mayaElement = getMayaElement(html5TagName);
@@ -36,6 +58,13 @@ const intrinsicElementsMap = [...htmlTagNames, ...mathMlTagNames].reduce<
   return map;
 }, {}) as IntrinsicElementsMap;
 
+const svgAliasedElementsMap = Object.entries(svgTagAliases).reduce<
+  Record<string, unknown>
+>((map, [mayaTagName, svgTagName]) => {
+  map[mayaTagName] = getSvgMayaElement(svgTagName);
+  return map;
+}, {}) as SvgAliasedElementsMap;
+
 const customElementsMap: CustomElementsMap = {
   For: forElement,
   If: ifElement,
@@ -44,5 +73,6 @@ const customElementsMap: CustomElementsMap = {
 
 export const m: MayaElementsMap = {
   ...intrinsicElementsMap,
+  ...svgAliasedElementsMap,
   ...customElementsMap,
 };

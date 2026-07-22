@@ -32,6 +32,8 @@ import type {
   SignalAttributeProps,
   SignalChild,
   SignalChildOrChildren,
+  SvgMayaElement,
+  SvgTagName,
 } from "../types";
 import {
   decodeHTMLEntities,
@@ -40,6 +42,7 @@ import {
   phase,
   sanitizeAttributeValue,
   startUnmountObserver,
+  svgTagNames,
   validChild,
   validChildren,
   validChildrenProp,
@@ -53,13 +56,22 @@ import {
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
-const createMayaNodeForTag = (tagName: HTML5TagName): MayaNode => {
+const createMayaNodeForTag = (
+  tagName: HTML5TagName,
+  namespaceURI?: string,
+): MayaNode => {
+  if (namespaceURI === SVG_NAMESPACE)
+    return document.createElementNS(
+      SVG_NAMESPACE,
+      tagName,
+    ) as unknown as MayaNode;
   if (mathMlTagNames.includes(tagName as (typeof mathMlTagNames)[number]))
     return document.createElementNS(
       MATHML_NAMESPACE,
       tagName,
     ) as unknown as MayaNode;
-  if (tagName === "svg")
+
+  if (svgTagNames.includes(tagName as (typeof svgTagNames)[number]))
     return document.createElementNS(
       SVG_NAMESPACE,
       tagName,
@@ -303,6 +315,7 @@ const getNodesEventsAndAttributes = (
 const getMayaNodeGetter = (
   tagName: HTML5TagName,
   propsOrChildren?: PropsOrChildren,
+  namespaceURI?: string,
 ): MayaNodeGetter => {
   const mayaNodeGetter: MayaNodeGetter = () => {
     const nodeID = idGen.getNewId();
@@ -310,7 +323,7 @@ const getMayaNodeGetter = (
     const mayaNode = (
       phase.currentIs("mount")
         ? document.querySelector(`[data-elem-id="${nodeID}"]`)
-        : createMayaNodeForTag(tagName)
+        : createMayaNodeForTag(tagName, namespaceURI)
     ) as MayaNode;
     mayaNode.nodeID = nodeID;
     mayaNode.effects = [];
@@ -358,3 +371,13 @@ export const getMayaElement = <T extends HTML5TagName>(
 ): MayaElement<T> =>
   ((propsOrChildren?: PropsOrChildren) =>
     getMayaNodeGetter(html5TagName, propsOrChildren)) as MayaElement<T>;
+
+export const getSvgMayaElement = <T extends SvgTagName>(
+  svgTagName: T,
+): SvgMayaElement<T> =>
+  ((propsOrChildren?: PropsOrChildren) =>
+    getMayaNodeGetter(
+      svgTagName,
+      propsOrChildren,
+      SVG_NAMESPACE,
+    )) as SvgMayaElement<T>;
