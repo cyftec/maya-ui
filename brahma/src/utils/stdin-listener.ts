@@ -1,8 +1,13 @@
-export const startStdinListener = async (onQuit: () => void) => {
-  process.stdin.resume();
-  process.stdin.setEncoding("utf8");
+type StdinControl = Pick<NodeJS.ReadStream, "resume" | "setEncoding" | "on">;
 
-  process.stdin.on("data", (input: string) => {
+export const startStdinListener = async (
+  onQuit: () => void,
+  stdin: StdinControl = process.stdin,
+) => {
+  stdin.resume();
+  stdin.setEncoding("utf8");
+
+  stdin.on("data", (input: string) => {
     if (input.trim() === "q") {
       onQuit();
     }

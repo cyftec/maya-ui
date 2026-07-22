@@ -1,8 +1,11 @@
-import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters";
 import type { Karma } from "../probe/karma-probe/karma-types";
 import { getCWD } from "../utils/common";
+import {
+  runShellCommand,
+  type CommandRunner,
+} from "../utils/command-runner";
 
 export const removeInstalledFiles = async (
   appRootPath: string,
@@ -27,23 +30,28 @@ const uninstallAllConfigsAndPackages = async (
   await removeInstalledFiles(appRootPath, karma);
 };
 
-const uninstallSpecificPackage = async (bunRemovePackageArgs: string[]) => {
+const uninstallSpecificPackage = async (
+  bunRemovePackageArgs: string[],
+  appRootPath: string,
+  runCommand: CommandRunner,
+) => {
   const bunPackageAlias = bunRemovePackageArgs.join(" ").trim();
   if (!bunPackageAlias)
     throw `Package name is incorrect. Provided - '${bunPackageAlias}'`;
   console.log(`Uninstalling '${bunPackageAlias}' package...\n`);
-  await $`${{ raw: `bun remove ${bunPackageAlias}`.trim() }} `;
+  await runCommand(`bun remove ${bunPackageAlias}`, appRootPath);
 };
 
 export const uninstallPackageOrEverything = async (
   packageArgs: string[],
   karma: Karma,
+  runCommand: CommandRunner = runShellCommand,
 ) => {
   const cwd = getCWD();
 
   if (!packageArgs.length) await uninstallAllConfigsAndPackages(cwd, karma);
   else {
-    await uninstallSpecificPackage(packageArgs);
+    await uninstallSpecificPackage(packageArgs, cwd, runCommand);
     await syncPackageJsonToKarma(cwd);
   }
 

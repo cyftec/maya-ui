@@ -15,11 +15,14 @@
     "@cyftec/signal": "0.2.4"
   },
   "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "jsdom": "^24.1.0",
     "typescript": "^5.6.2"
   },
   "scripts": {
+    "test": "bun run test:types && bun run test:runtime",
     "test:types": "tsc -p tsconfig.type-tests.json",
-    "test:runtime": "bun test tests/namespace-runtime.test.js"
+    "test:runtime": "bun test --preload ./tests/setup.ts --coverage --coverage-skip-test-files tests"
   },
   "publishConfig": {
     "access": "public"

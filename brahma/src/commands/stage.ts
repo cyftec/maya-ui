@@ -10,6 +10,26 @@ const DEBOUNCE_TIME_IN_MS = 500;
 let lastTimestamp: number = 0;
 let busyBuildingApp = false;
 
+type StageDependencies = {
+  buildApp: typeof buildApp;
+  watchFileChange: typeof watchFileChange;
+  runLocalServer: typeof runLocalServer;
+  startStdinListener: typeof startStdinListener;
+  getCWD: typeof getCWD;
+  getKarma: typeof getKarma;
+  exit: typeof process.exit;
+};
+
+const defaultDependencies: StageDependencies = {
+  buildApp,
+  watchFileChange,
+  runLocalServer,
+  startStdinListener,
+  getCWD,
+  getKarma,
+  exit: process.exit,
+};
+
 const onFileModification = (callback: () => Promise<void>) => {
   lastTimestamp = new Date().getTime();
   setTimeout(async () => {
@@ -21,40 +41,50 @@ const onFileModification = (callback: () => Promise<void>) => {
   }, DEBOUNCE_TIME_IN_MS);
 };
 
-const buildAppWithPerf = async (appRootDir: string, karma: Karma) => {
+const buildAppWithPerf = async (
+  appRootDir: string,
+  karma: Karma,
+  build: typeof buildApp,
+) => {
   const start = performance.now();
-  await buildApp(appRootDir, karma, false);
+  await build(appRootDir, karma, false);
   const finish = performance.now();
   console.log(`Build done in ${(finish - start).toFixed(0)} ms.\n`);
 };
 
-export const stageApp = async () => {
-  const cwd = getCWD();
+export const stageApp = async (
+  dependencies: StageDependencies = defaultDependencies,
+) => {
+  const cwd = dependencies.getCWD();
   console.log(`Staging app files and starting dev server...\n`);
-  const karma = await getKarma(cwd);
+  const karma = await dependencies.getKarma(cwd);
   if (!karma) return false;
   const watchDirPath = `${cwd}/${karma.brahma.serve.watchDir}`;
   const serveDirPath = `${cwd}/${karma.brahma.serve.serveDir}`;
   const watchIgnorePaths = [DS_STORE_REGEX];
   const serverPort = karma.brahma.serve.port;
 
-  await buildAppWithPerf(cwd, karma);
-  watchFileChange(watchDirPath, watchIgnorePaths, (path) => {
+  await buildAppWithPerf(cwd, karma, dependencies.buildApp);
+  dependencies.watchFileChange(watchDirPath, watchIgnorePaths, (path) => {
     if (busyBuildingApp) return;
     onFileModification(async () => {
       busyBuildingApp = true;
       console.log(`Change detected: ${path}`);
-      await buildAppWithPerf(cwd, karma);
+      await buildAppWithPerf(cwd, karma, dependencies.buildApp);
       busyBuildingApp = false;
     });
   });
-  runLocalServer(serverPort, serveDirPath, karma.brahma.serve.redirectOnStart);
+  dependencies.runLocalServer(
+    serverPort,
+    serveDirPath,
+    karma.brahma.serve.redirectOnStart,
+  );
 
   setTimeout(() => {
     console.log(`Press 'q' and then Enter to quit.`);
-    startStdinListener(async () => {
+    dependencies.startStdinListener(async () => {
       console.log(`Quitting on user input.`);
-      process.exit();
+      dependencies.exit();
     });
   }, 0);
 };

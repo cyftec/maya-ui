@@ -23,21 +23,19 @@ export const getBrahmaRootPath = () => path.resolve(__dirname, "../");
 export const getBrahmaPackageJsonPath = () =>
   path.resolve(getBrahmaRootPath(), "package.json");
 
-export const getCurrentBrahmaVersion = async () => {
-  const brahmaPackageJsonPath = getBrahmaPackageJsonPath();
+export const getCurrentBrahmaVersion = async (
+  brahmaPackageJsonPath = getBrahmaPackageJsonPath(),
+) => {
   const brahmaPackageJsonExist = await exists(brahmaPackageJsonPath);
   if (!brahmaPackageJsonExist) {
     console.error(`'package.json' file is missing in brahma project.`);
     process.exit(1);
   }
-  const packageJsonText = await Bun.file(brahmaPackageJsonPath).text();
-  const currentBrahmaVersion = packageJsonText
-    .split(`"version"`)[1]
-    .split(",")[0]
-    .trim()
-    .slice(1)
-    .trim()
-    .replaceAll(`"`, "");
+  const packageJson = (await Bun.file(brahmaPackageJsonPath).json()) as {
+    version?: unknown;
+  };
+  const currentBrahmaVersion =
+    typeof packageJson.version === "string" ? packageJson.version : "";
 
   if (!currentBrahmaVersion) {
     console.error(

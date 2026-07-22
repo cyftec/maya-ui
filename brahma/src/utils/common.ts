@@ -1,4 +1,5 @@
 import { exists, mkdir } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import type {
   Karma,
   KarmaConfigObject,
@@ -7,7 +8,7 @@ import { getKarmaPaths } from "./file-path-getters";
 import { ValidateAndExitIf } from "./file-validations";
 
 export const nonCachedImport = async (modulePath: string) => {
-  const mpWithParam = `${modulePath}?imported=${Date.now()}`;
+  const mpWithParam = `${pathToFileURL(modulePath).href}?imported=${Date.now()}`;
   return await import(mpWithParam);
 };
 
@@ -31,7 +32,7 @@ export const getFileNameFromPath = (path: string): string => {
 };
 
 export const getKarma = async (appRootPath: string): Promise<Karma> => {
-  ValidateAndExitIf.karmaFileMissing(appRootPath);
+  await ValidateAndExitIf.karmaFileMissing(appRootPath);
   const [karmaPath] = getKarmaPaths(appRootPath);
   const { karma } = (await nonCachedImport(karmaPath)) as KarmaConfigObject;
   ValidateAndExitIf.exportedKarmaMissing(karma);

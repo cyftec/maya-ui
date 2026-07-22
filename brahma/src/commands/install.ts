@@ -1,7 +1,10 @@
-import { $ } from "bun";
 import { exists, mkdir } from "node:fs/promises";
 import type { Karma } from "../probe/karma-probe/karma-types.ts";
 import { getCWD } from "../utils/common.ts";
+import {
+  runShellCommand,
+  type CommandRunner,
+} from "../utils/command-runner.ts";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
 
@@ -21,7 +24,11 @@ const installGitIgnore = async (appRootPath: string, karma: Karma) => {
   await Bun.write(gitIgnorePath, gitIgnoreText);
 };
 
-const installPackages = async (appRootPath: string, karma: Karma) => {
+const installPackages = async (
+  appRootPath: string,
+  karma: Karma,
+  runCommand: CommandRunner,
+) => {
   const packageJsonPath = `${appRootPath}/package.json`;
   const packageJsonObject = karma.maya;
 
@@ -35,41 +42,47 @@ const installPackages = async (appRootPath: string, karma: Karma) => {
     packageJsonPath,
     JSON.stringify(packageJsonObject, null, "\t"),
   );
-  await $`bun i`;
+  await runCommand("bun i", appRootPath);
 };
 
 const installAllConfigsAndPackages = async (
   appRootPath: string,
   karma: Karma,
+  runCommand: CommandRunner,
 ) => {
   console.log(`Removing previously installed files...`);
   await removeInstalledFiles(appRootPath, karma);
   console.log(`\nInstalling latest config and packages...`);
-  await installPackages(appRootPath, karma);
+  await installPackages(appRootPath, karma, runCommand);
   await installDotVsCodeDir(appRootPath, karma);
   await installGitIgnore(appRootPath, karma);
 };
 
-const installSpecificPackage = async (bunAddPackageArgs: string[]) => {
+const installSpecificPackage = async (
+  bunAddPackageArgs: string[],
+  appRootPath: string,
+  runCommand: CommandRunner,
+) => {
   const bunPackageAlias = bunAddPackageArgs.join(" ").trim();
   if (!bunPackageAlias) throw `Package name is empty.`;
   console.log(`Installing '${bunPackageAlias}' package...\n`);
-  await $`${{ raw: `bun add ${bunPackageAlias}`.trim() }} `;
+  await runCommand(`bun add ${bunPackageAlias}`, appRootPath);
 };
 
 export const installPackageOrEverything = async (
   packageArgs: string[],
   karma: Karma,
+  runCommand: CommandRunner = runShellCommand,
 ) => {
   const cwd = getCWD();
   const packageJsonExist = await exists(`${cwd}/package.json`);
 
   if (!packageArgs.length || !packageJsonExist) {
-    await installAllConfigsAndPackages(cwd, karma);
+    await installAllConfigsAndPackages(cwd, karma, runCommand);
   }
 
   if (packageArgs.length) {
-    await installSpecificPackage(packageArgs);
+    await installSpecificPackage(packageArgs, cwd, runCommand);
     await syncPackageJsonToKarma(cwd);
   }
 

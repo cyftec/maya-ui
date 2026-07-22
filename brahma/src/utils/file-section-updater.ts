@@ -10,7 +10,7 @@ export const splitText = (
   splittersPathArray.reduce(
     ([preSplitter, postSplitter], splitterMilestone) => {
       if (!postSplitter.includes(splitterMilestone))
-        throw `splitter path milestone '${splitterMilestone}' does exist in the text.`;
+        throw `splitter path milestone '${splitterMilestone}' does not exist in the text.`;
       const [preText, postText] = postSplitter.split(splitterMilestone);
       return [preSplitter + preText + splitterMilestone, postText];
     },

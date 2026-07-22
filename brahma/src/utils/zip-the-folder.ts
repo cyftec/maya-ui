@@ -8,13 +8,13 @@ export const zipTheFolder = (
   const archive = archiver("zip", { zlib: { level: 9 } });
   const stream = fs.createWriteStream(buildZipFilePath);
 
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     archive
       .directory(srcDirPath, false)
       .on("error", (err) => reject(err))
       .pipe(stream);
 
-    stream.on("close", resolve);
+    stream.on("close", () => resolve());
     archive.finalize();
   });
 };

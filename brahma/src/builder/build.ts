@@ -32,10 +32,25 @@ const buildData: BuildData = {} as BuildData;
 
 const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
   try {
-    const { default: page, buildPageHtml } = await nonCachedImport(destJsPath);
-    const pageHtml = buildPageHtml(page);
+    const buildJs = await Bun.file(destJsPath).text();
+    const buildJsWithoutExports = buildJs.split("export {")[0];
+    const appMethodName = getBuiltJsMethodName(
+      getFileNameFromPath(destJsPath),
+      buildData.karma,
+    );
+    const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor as new (
+      body: string,
+    ) => () => Promise<string | undefined>;
+    const buildPageHtml = new AsyncFunction(`
+      ${buildJsWithoutExports}
+      phase.start("build");
+      idGen.resetIdCounter();
+      const htmlPageNode = ${appMethodName}();
+      return htmlPageNode?.outerHTML;
+    `);
+    const pageHtml = await buildPageHtml();
+    if (!pageHtml) throw new Error(NO_HTML_ERROR);
     const html = `<!DOCTYPE html>\n${pageHtml}`;
-    if (!html) throw new Error(NO_HTML_ERROR);
     await Bun.write(destHtmlPath, html);
   } catch (error) {
     console.log(

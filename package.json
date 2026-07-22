@@ -8,6 +8,9 @@
     "website"
   ],
   "scripts": {
+    "test": "bun run test:maya && bun run test:brahma",
+    "test:maya": "bun run --cwd maya test",
+    "test:brahma": "bun run --cwd brahma test",
     "dev": "bun ./src/dev/run-dev.ts && bun run clean && bun i",
     "dev:exit": "bun ./src/dev/exit-dev.ts",
     "dev:modecheck": "bun ./src/dev/mode-check.ts",

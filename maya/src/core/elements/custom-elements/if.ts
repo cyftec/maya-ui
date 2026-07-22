@@ -20,22 +20,18 @@ export const ifElement = <S, TC extends Children, FC extends Children>({
 }) => {
   const deadComponent = m.Span({ style: "display: none;" });
   const compGetter = (unwrap: boolean) => {
-    const truthyComp: TC =
-      isTruthy &&
-      (unwrap
-        ? value(isTruthy(subject as NonNullSignalValue<typeof subject>) as any)
-        : isTruthy(subject as NonNullSignalValue<typeof subject>));
+    const subjectValue = value(subject);
+    if (subjectValue) {
+      if (!isTruthy) return deadComponent;
+      const truthyComp = isTruthy(
+        subject as NonNullSignalValue<typeof subject>,
+      );
+      return unwrap ? value(truthyComp as any) : truthyComp;
+    }
 
-    const falsyComp: FC =
-      isFalsy && (unwrap ? value(isFalsy(subject) as any) : isFalsy(subject));
-
-    return !!value(subject)
-      ? isTruthy
-        ? truthyComp
-        : deadComponent
-      : isFalsy
-        ? falsyComp
-        : deadComponent;
+    if (!isFalsy) return deadComponent;
+    const falsyComp = isFalsy(subject);
+    return unwrap ? value(falsyComp as any) : falsyComp;
   };
 
   return (

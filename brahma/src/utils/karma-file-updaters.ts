@@ -6,8 +6,8 @@ import { ValidateAndExitIf } from "./file-validations";
 const karmaPackageJsonPathArray = ["karma:", "maya:"];
 
 export const syncPackageJsonToKarma = async (appRootPath: string) => {
-  ValidateAndExitIf.karmaFileMissing(appRootPath);
-  ValidateAndExitIf.packageJsonMissing(appRootPath);
+  await ValidateAndExitIf.karmaFileMissing(appRootPath);
+  await ValidateAndExitIf.packageJsonMissing(appRootPath);
 
   const [karmaPath] = getKarmaPaths(appRootPath);
   const packageJsonPath = getPackageJsonPath(appRootPath);

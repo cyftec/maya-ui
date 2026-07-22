@@ -8,8 +8,11 @@ import {
 } from "../utils/constants";
 import { zipTheFolder } from "../utils/zip-the-folder";
 
-export const isSrcPageFile = (srcPagePath: string, karma: Karma) =>
-  srcPagePath.endsWith(karma.brahma.build.buildablePageFileName);
+export const isSrcPageFile = (srcPagePath: string, karma: Karma) => {
+  const fileName = srcPagePath.split("/").pop();
+  const pageFileName = karma.brahma.build.buildablePageFileName;
+  return fileName === pageFileName || fileName?.endsWith(`.${pageFileName}`);
+};
 
 export const getBuiltJsMethodName = (filename: string, karma: Karma) => {
   const words = filename.replace("-", ".").split(".");

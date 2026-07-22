@@ -24,6 +24,11 @@
   "bin": {
     "brahma": "./src/index.ts"
   },
+  "scripts": {
+    "test": "bun run test:types && bun run test:runtime",
+    "test:types": "tsc -p tsconfig.json",
+    "test:runtime": "bun test --max-concurrency 1 --coverage --coverage-skip-test-files tests"
+  },
   "publishConfig": {
     "access": "public"
   }

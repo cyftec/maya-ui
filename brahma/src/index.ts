@@ -14,14 +14,19 @@ import { getParsedCommands } from "./utils/command-parser.ts";
 import { getCWD, getKarma } from "./utils/common.ts";
 import { ValidateAndExitIf } from "./utils/file-validations.ts";
 
-const execCli = async () => {
+export const execCli = async (argsv: string[] = Bun.argv) => {
   const cwd = getCWD();
-  const commands = getParsedCommands(Bun.argv);
+  const commands = getParsedCommands(argsv);
 
   if (commands.help || commands.nocmd) showHelp();
   if (commands.create) await createApp(commands.create.args);
   if (commands.version) await showVersion(commands.version.args);
   if (commands.reset) await resetApp(commands.reset.args);
+
+  if (commands.error) {
+    console.log(`ERROR: bad input.\nCheck usage guide below.`);
+    showHelp();
+  }
 
   // 4 commands can run without (or corrupted) karma file - help, create, version and reset
   // karma is required for below commands
@@ -34,17 +39,13 @@ const execCli = async () => {
   if (commands.install)
     await installPackageOrEverything(commands.install.args, karma);
 
-  ValidateAndExitIf.appSrcDirMissing(cwd, karma);
-  ValidateAndExitIf.appViewDirMissing(cwd, karma);
-  ValidateAndExitIf.packageJsonMissing(cwd);
+  await ValidateAndExitIf.appSrcDirMissing(cwd, karma);
+  await ValidateAndExitIf.appViewDirMissing(cwd, karma);
+  await ValidateAndExitIf.packageJsonMissing(cwd);
 
   if (commands.stage) await stageApp();
   if (commands.publish) await publishApp();
 
-  if (commands.error) {
-    console.log(`ERROR: bad input.\nCheck usage guide below.`);
-    showHelp();
-  }
 };
 
-execCli();
+if (import.meta.main) await execCli();

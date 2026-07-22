@@ -3,12 +3,17 @@ import { onProcessSigInt } from "./process-helpers";
 
 const server = browserSync.create();
 
+type LocalServer = Pick<typeof server, "init" | "exit">;
+type ProcessControl = Pick<NodeJS.Process, "on" | "exit">;
+
 export const runLocalServer = (
   port: number,
   serveDir: string,
-  openOnStart: boolean
+  openOnStart: boolean,
+  localServer: LocalServer = server,
+  controlledProcess: ProcessControl = process,
 ) => {
-  server.init({
+  localServer.init({
     port: port,
     server: serveDir,
     open: openOnStart,
@@ -18,9 +23,9 @@ export const runLocalServer = (
 
   const onExit = () => {
     console.log(`Closing local server at port: ${port}...`);
-    server.exit();
+    localServer.exit();
   };
 
-  process.on("exit", onExit);
-  onProcessSigInt();
+  controlledProcess.on("exit", onExit);
+  onProcessSigInt(controlledProcess);
 };

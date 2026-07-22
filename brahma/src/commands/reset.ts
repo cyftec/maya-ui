@@ -1,13 +1,16 @@
-import { $ } from "bun";
 import { exists, rm } from "node:fs/promises";
 import type {
   AppMode,
   KarmaResetMode,
 } from "../probe/karma-probe/karma-types.ts";
 import { getCWD, getKarma } from "../utils/common.ts";
+import {
+  runShellCommand,
+  type CommandRunner,
+} from "../utils/command-runner.ts";
 import { getKarmaPaths } from "../utils/file-path-getters.ts";
 
-const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
+export const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
   const resetModeSpecifier = cmdArgs.length ? cmdArgs[0] : "--soft";
   const resetMode = resetModeSpecifier.slice(2) as KarmaResetMode;
   if (
@@ -22,7 +25,10 @@ const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
   return resetMode;
 };
 
-export const resetApp = async (cmdArgs: string[]) => {
+export const resetApp = async (
+  cmdArgs: string[],
+  runCommand: CommandRunner = runShellCommand,
+) => {
   const resetMode = getResetMode(cmdArgs);
   const appRootPath = getCWD();
   let appMode: AppMode = "web";
@@ -39,7 +45,10 @@ export const resetApp = async (cmdArgs: string[]) => {
   if (await exists(karmaTypesPath)) {
     await rm(karmaTypesPath);
   }
-  await $`sample-maya karma ${appMode || "web"} ${appRootPath}`;
+  await runCommand(
+    `sample-maya karma ${appMode || "web"} ${appRootPath}`,
+    appRootPath,
+  );
 
   process.exit();
 };

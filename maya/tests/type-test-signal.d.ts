@@ -1,6 +1,10 @@
 export type SignalsEffect = { dispose: () => void };
 export type Signal<T> = { value: T };
-export type SourceSignal<T> = Signal<T>;
+export type SourceSignal<T> = Signal<T> & {
+  props: () => T extends Record<string, any>
+    ? { [K in keyof T]: DerivedSignal<T[K]> }
+    : never;
+};
 export type DerivedSignal<T> = Signal<T>;
 export type SignalifiedObject<T> = Signal<T>;
 export type NonSignal<T> = { value: T };

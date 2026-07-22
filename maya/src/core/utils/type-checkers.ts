@@ -13,7 +13,7 @@ export const validChild = (value: any): boolean =>
    */
   value === undefined ||
   typeof value === "string" ||
-  (typeof value === "function" && value.isMayaNodeGetter);
+  (typeof value === "function" && value.isMayaNodeGetter === true);
 
 export const validChildren = (value: any): boolean =>
   valueIsArray(value) && value.every((item: any) => validChild(item));

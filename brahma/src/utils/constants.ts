@@ -6,7 +6,7 @@ export const DEST_JS_FILE_EXT = ".js";
 export const NO_HTML_ERROR = "no html";
 export const NO_JS_ERROR = "no js";
 
-export const DS_STORE_REGEX = /.DS_Store/;
+export const DS_STORE_REGEX = /\.DS_Store$/;
 
 // canHaveArgs usage not implemnted, args should be present only when canHaveArgs is true
 export const ACCEPTED_COMMANDS = [
