@@ -240,7 +240,7 @@ An `MayaNodeGetter` is a callable object:
 
 ```ts
 type MayaNodeGetter = (() => MayaNode) & {
-  isNodeGetter: true;
+  isMayaNodeGetter: true;
 };
 ```
 
@@ -267,7 +267,7 @@ m.P({ children: null }); // ❌ Use undefined or conditional elements.
 
 ### 5.2 Element factory naming
 
-HTML and supported MathML tag names are exposed as PascalCase members of `m`:
+Supported HTML, SVG, and MathML tag names are exposed as PascalCase members of `m`. SVG names that collide with HTML or Maya custom elements use the `Svg` prefix described in Section 22:
 
 ```ts
 m.Html(...);
@@ -279,6 +279,9 @@ m.H1(...);
 m.Button(...);
 m.Input(...);
 m.Svg(...);
+m.Path(...);
+m.Circle(...);
+m.SvgTitle(...);
 m.Math(...);
 m.Mfrac(...);
 ```
@@ -1352,23 +1355,25 @@ function createNodeGetter(tagName, props, namespace?) {
     attachChildren(element, props.children);
     attachEvents(element, props);
 
-    if (phase === "build" || phase === "mount") {
+    if (phase === "build") {
       element.setAttribute("data-elem-id", String(id));
     }
 
     if (phase === "mount") {
-      scheduleRemovalOfMarker(element);
+      element.removeAttribute("data-elem-id");
     }
 
     return element;
   };
 
-  getter.isNodeGetter = true;
+  getter.isMayaNodeGetter = true;
   return getter;
 }
 ```
 
 The current runtime creates a new node if a getter is invoked in run phase; therefore getters are construction handles, not stable element references.
+
+The factory supplies the SVG namespace for every supported SVG member, including the `Svg*` collision aliases, and selects the MathML namespace for every supported MathML member. Namespace selection does not depend on the parent node already being attached.
 
 ### 13.3 Child attachment
 
@@ -2644,15 +2649,21 @@ Maya children are strings, `undefined`, node getters, their arrays, or signalifi
 
 Maya's exact HTML tag map is:
 
-`a`, `abbr`, `acronym`, `address`, `applet`, `area`, `article`, `aside`, `audio`, `b`, `base`, `basefont`, `bdi`, `bdo`, `big`, `blockquote`, `body`, `br`, `button`, `canvas`, `caption`, `center`, `cite`, `code`, `col`, `colgroup`, `data`, `datalist`, `dd`, `del`, `details`, `dfn`, `dialog`, `dir`, `div`, `dl`, `dt`, `em`, `embed`, `fieldset`, `figcaption`, `figure`, `font`, `footer`, `form`, `frame`, `frameset`, `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `head`, `header`, `hgroup`, `hr`, `html`, `i`, `iframe`, `img`, `input`, `ins`, `kbd`, `label`, `legend`, `li`, `link`, `main`, `map`, `mark`, `menu`, `meta`, `meter`, `nav`, `noframes`, `noscript`, `object`, `ol`, `optgroup`, `option`, `output`, `p`, `param`, `picture`, `pre`, `progress`, `q`, `rp`, `rt`, `ruby`, `s`, `samp`, `script`, `search`, `section`, `select`, `slot`, `small`, `source`, `span`, `strike`, `strong`, `style`, `sub`, `summary`, `sup`, `svg`, `table`, `tbody`, `td`, `template`, `textarea`, `tfoot`, `th`, `thead`, `time`, `title`, `tr`, `track`, `tt`, `u`, `ul`, `var`, `video`, and `wbr`.
+`a`, `abbr`, `acronym`, `address`, `applet`, `area`, `article`, `aside`, `audio`, `b`, `base`, `basefont`, `bdi`, `bdo`, `big`, `blockquote`, `body`, `br`, `button`, `canvas`, `caption`, `center`, `cite`, `code`, `col`, `colgroup`, `data`, `datalist`, `dd`, `del`, `details`, `dfn`, `dialog`, `dir`, `div`, `dl`, `dt`, `em`, `embed`, `fieldset`, `figcaption`, `figure`, `font`, `footer`, `form`, `frame`, `frameset`, `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `head`, `header`, `hgroup`, `hr`, `html`, `i`, `iframe`, `img`, `input`, `ins`, `kbd`, `label`, `legend`, `li`, `link`, `main`, `map`, `mark`, `menu`, `meta`, `meter`, `nav`, `noframes`, `noscript`, `object`, `ol`, `optgroup`, `option`, `output`, `p`, `param`, `picture`, `pre`, `progress`, `q`, `rp`, `rt`, `ruby`, `s`, `samp`, `script`, `search`, `section`, `select`, `slot`, `small`, `source`, `span`, `strike`, `strong`, `style`, `sub`, `summary`, `sup`, `table`, `tbody`, `td`, `template`, `textarea`, `tfoot`, `th`, `thead`, `time`, `title`, `tr`, `track`, `tt`, `u`, `ul`, `var`, `video`, and `wbr`.
+
+The SVG map is:
+
+`animate`, `animateMotion`, `animateTransform`, `circle`, `clipPath`, `defs`, `desc`, `ellipse`, `feBlend`, `feColorMatrix`, `feComponentTransfer`, `feComposite`, `feConvolveMatrix`, `feDiffuseLighting`, `feDisplacementMap`, `feDistantLight`, `feDropShadow`, `feFlood`, `feFuncA`, `feFuncB`, `feFuncG`, `feFuncR`, `feGaussianBlur`, `feImage`, `feMerge`, `feMergeNode`, `feMorphology`, `feOffset`, `fePointLight`, `feSpecularLighting`, `feSpotLight`, `feTile`, `feTurbulence`, `filter`, `foreignObject`, `g`, `image`, `line`, `linearGradient`, `marker`, `mask`, `metadata`, `mpath`, `path`, `pattern`, `polygon`, `polyline`, `radialGradient`, `rect`, `set`, `stop`, `svg`, `symbol`, `text`, `textPath`, `tspan`, `use`, and `view`.
+
+Use the normal PascalCase factory name for these elements, such as `m.Svg`, `m.Path`, `m.LinearGradient`, and `m.FeGaussianBlur`. Five SVG names collide with an HTML factory or Maya's `m.Switch`; use `m.SvgA`, `m.SvgScript`, `m.SvgStyle`, `m.SvgSwitch`, and `m.SvgTitle` for those SVG elements. These factories create SVG-namespace nodes even when constructed outside an `m.Svg` parent. An HTML factory such as `m.Div` inside `m.ForeignObject` remains in the HTML namespace.
 
 The MathML map is:
 
-`annotation`, `annotation-xml`, `maction`, `math`, `menclose`, `merror`, `mfenced`, `mfrac`, `mi`, `mmultiscripts`, `mn`, `mo`, `mover`, `mpadded`, `mphantom`, `mprescripts`, `mroot`, `mrow`, `ms`, `mspace`, `msqrt`, `mstyle`, `msub`, `msubsup`, `msup`, `mtable`, `mtd`, `mtext`, `mtr`, `munder`, `munderover`, and `semantics`.
+`annotation`, `annotation-xml`, `maction`, `math`, `merror`, `mfrac`, `mi`, `mmultiscripts`, `mn`, `mo`, `mover`, `mpadded`, `mphantom`, `mprescripts`, `mroot`, `mrow`, `ms`, `mspace`, `msqrt`, `mstyle`, `msub`, `msubsup`, `msup`, `mtable`, `mtd`, `mtext`, `mtr`, `munder`, `munderover`, and `semantics`.
 
-MathML tags are namespace-aware. `m.Svg` creates an SVG-namespace root, but the current `m` map does not provide a complete SVG child-element DSL. For complex SVG, prefer trusted external `.svg` assets referenced by `img`, CSS, or another standards-compliant asset technique rather than inventing nonexistent `m.Path`/`m.Circle` APIs.
+SVG and MathML tags are namespace-aware. SVG attributes use their serialized, case-sensitive names—for example `viewBox`, `gradientUnits`, and `stroke-width`. MathML support follows the current MathML Core map; removed legacy elements such as `menclose` and `mfenced` and legacy attributes such as `mfrac.bevel` are intentionally rejected by the types.
 
-HTML attributes are typed per tag where the package can constrain them. Use valid HTML values for `input.type`, `button.type`, `rel`, boolean attributes, and tag-specific fields. Arbitrary `data-*` and `aria-*` attributes are supported. Treat TypeScript errors as specification feedback; do not silence them with broad casts unless interoperating with a real platform gap that has been documented.
+HTML, SVG, and MathML attributes are typed per tag where the package can constrain them. Use valid values for `input.type`, `button.type`, `rel`, boolean attributes, SVG tag-specific fields, and MathML Core fields. Arbitrary `data-*` attributes are supported; ARIA is restricted to the known `aria-*` attribute map so misspellings such as `aria-labl` fail compilation. Treat TypeScript errors as specification feedback; do not silence them with broad casts unless interoperating with a real platform gap that has been documented.
 
 ---
 
