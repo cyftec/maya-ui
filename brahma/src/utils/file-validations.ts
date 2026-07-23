@@ -1,5 +1,5 @@
 import { exists, readdir } from "node:fs/promises";
-import type { Karma } from "../probe/karma-probe/karma-types";
+import type { Karma } from "../probe/karma-probe/types";
 import {
   getAppSrcPath,
   getAppViewPath,
@@ -11,9 +11,11 @@ export const ValidateAndExitIf = {
   karmaFileMissing: async (appRootDirPath: string) => {
     const [karmaFilePath] = getKarmaPaths(appRootDirPath);
     if (!(await exists(karmaFilePath))) {
-      console.log(`No karma.ts found in directory - '${appRootDirPath}'`);
       console.log(
-        `If this is a valid Maya app directory and karma.ts file is MISSING, run 'brahma init' for initializing new 'karma.ts' file.`,
+        `No _karma/karma.ts found in directory - '${appRootDirPath}'`,
+      );
+      console.log(
+        `If this is a valid Maya app directory and _karma/karma.ts file is MISSING, run 'brahma reset' for initializing new '_karma/karma.ts' file.`,
       );
       process.exit(1);
     }
@@ -21,10 +23,10 @@ export const ValidateAndExitIf = {
   exportedKarmaMissing: (karma: Karma) => {
     if (!karma) {
       console.log(
-        `Corrupt 'karma.ts' file. No exported 'karma' variable found in 'karma.ts'.`,
+        `Corrupt '_karma/karma.ts' file. No exported 'karma' variable found in '_karma/karma.ts'.`,
       );
       console.log(
-        `If this is a valid Maya app directory and karma.ts file is CORRUPTED, run 'brahma init' for initializing new 'karma.ts' file.`,
+        `If this is a valid Maya app directory and _karma/karma.ts file is CORRUPTED, run 'brahma reset' for initializing new '_karma/karma.ts' file.`,
       );
       process.exit(1);
     }
@@ -47,7 +49,9 @@ export const ValidateAndExitIf = {
       console.log(
         `ERROR: Buildable app view source directory '${karma.brahma.build.appViewDir}' is either missing or have a different path or name.`,
       );
-      console.log(`Check 'karma.brahma.build.appViewDir' in 'karma.ts' file.`);
+      console.log(
+        `Check 'karma.brahma.build.appViewDir' in '_karma/karma.ts' file.`,
+      );
       process.exit(1);
     }
   },

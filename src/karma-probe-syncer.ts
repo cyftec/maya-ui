@@ -18,7 +18,7 @@ async function copyFile(source: string, target: string) {
 
 async function updateKarmaFile(appType: keyof typeof APP_CONFIGS) {
   const appTypeDeps = APP_CONFIGS[appType];
-  const targetKarmaPath = `${TARGET_BASE_DIR}/${appType}/karma.ts`;
+  const targetKarmaPath = `${TARGET_BASE_DIR}/${appType}/_karma/karma.ts`;
   let content = await Bun.file(targetKarmaPath).text();
 
   // Replace appType with "ext" | "pwa" | "web"
@@ -49,29 +49,29 @@ async function updateKarmaFile(appType: keyof typeof APP_CONFIGS) {
     JSON.stringify(deps),
   );
 
-  console.log(`Updated karma.ts for ${appType}`);
+  console.log(`Updated _karma/karma.ts for ${appType}`);
 }
 
 export async function syncKarmaFilesToSampleApps() {
   console.log("Starting karma file synchronization...");
 
-  // Copy karma-types.ts to all three directories
+  // Copy types.ts to all three directories
   for (const appType of ["ext", "pwa", "web"] as const) {
     await copyFile(
-      `${SOURCE_DIR}/karma-types.ts`,
-      `${TARGET_BASE_DIR}/${appType}/karma-types.ts`,
+      `${SOURCE_DIR}/types.ts`,
+      `${TARGET_BASE_DIR}/${appType}/_karma/types.ts`,
     );
   }
 
-  // Copy karma.ts to all three directories first
+  // Copy karma.ts to _karma/karma.ts in all three directories first
   for (const appType of ["ext", "pwa", "web"] as const) {
     await copyFile(
       `${SOURCE_DIR}/karma.ts`,
-      `${TARGET_BASE_DIR}/${appType}/karma.ts`,
+      `${TARGET_BASE_DIR}/${appType}/_karma/karma.ts`,
     );
   }
 
-  // Update karma.ts files with app-specific configurations
+  // Update _karma/karma.ts files with app-specific configurations
   for (const appType of ["ext", "pwa", "web"] as const) {
     await updateKarmaFile(appType);
   }

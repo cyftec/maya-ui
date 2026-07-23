@@ -4,7 +4,7 @@ import { watchFileChange } from "../utils/file-change-watcher.ts";
 import { runLocalServer } from "../utils/local-server.ts";
 import { startStdinListener } from "../utils/stdin-listener.ts";
 import { getCWD, getKarma } from "../utils/common.ts";
-import type { Karma } from "../probe/karma-probe/karma-types.ts";
+import type { Karma } from "../probe/karma-probe/types.ts";
 
 const DEBOUNCE_TIME_IN_MS = 500;
 let lastTimestamp: number = 0;

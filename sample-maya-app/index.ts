@@ -58,18 +58,11 @@ program
       process.exit(1);
     }
 
-    const sourceDir = path.join(__dirname, "apps", type);
-    const targetDir = targetPath;
+    const sourceDir = path.join(__dirname, "apps", type, "_karma");
+    const targetDir = path.join(targetPath, "_karma");
 
     try {
-      await fs.copy(
-        path.join(sourceDir, "karma.ts"),
-        path.join(targetDir, "karma.ts"),
-      );
-      await fs.copy(
-        path.join(sourceDir, "karma-types.ts"),
-        path.join(targetDir, "karma-types.ts"),
-      );
+      await fs.copy(sourceDir, targetDir);
       console.log(
         `Successfully copied karma files from '${type}' app to ${targetDir}.`,
       );

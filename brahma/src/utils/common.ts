@@ -1,9 +1,6 @@
 import { exists, mkdir } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import type {
-  Karma,
-  KarmaConfigObject,
-} from "../probe/karma-probe/karma-types";
+import type { Karma, KarmaConfigObject } from "../probe/karma-probe/types";
 import { getKarmaPaths } from "./file-path-getters";
 import { ValidateAndExitIf } from "./file-validations";
 

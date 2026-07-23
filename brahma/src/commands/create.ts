@@ -1,9 +1,6 @@
 import { exists, mkdir } from "node:fs/promises";
-import type { AppMode } from "../probe/karma-probe/karma-types";
-import {
-  runShellCommand,
-  type CommandRunner,
-} from "../utils/command-runner";
+import type { AppMode } from "../probe/karma-probe/types";
+import { runShellCommand, type CommandRunner } from "../utils/command-runner";
 import { getCWD } from "../utils/common";
 
 export const createAppRootDir = async (appRootPath: string) => {
@@ -62,10 +59,7 @@ export const createApp = async (
   const appRootPath = `${cwd}/${appRootDirName}`;
 
   await createAppRootDir(appRootPath);
-  await runCommand(
-    `sample-maya app ${appMode || "web"} ${appRootPath}`,
-    cwd,
-  );
+  await runCommand(`sample-maya app ${appMode || "web"} ${appRootPath}`, cwd);
 
   console.log(`'${appRootDirName}' directory created.`);
   console.log(`

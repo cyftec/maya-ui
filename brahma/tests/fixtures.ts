@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { Karma } from "../src/probe/karma-probe/karma-types.ts";
+import type { Karma } from "../src/probe/karma-probe/types.ts";
 
 export class ProcessExit extends Error {
   constructor(public readonly code: number) {
@@ -9,8 +9,7 @@ export class ProcessExit extends Error {
   }
 }
 
-export const makeTempDir = () =>
-  mkdtemp(path.join(tmpdir(), "brahma-test-"));
+export const makeTempDir = () => mkdtemp(path.join(tmpdir(), "brahma-test-"));
 
 export const writeText = async (filePath: string, text: string) => {
   await mkdir(path.dirname(filePath), { recursive: true });
@@ -35,7 +34,13 @@ export const makeKarma = (
       buildableManifestFileName: "manifest.ts",
       stagingDir: "stage",
       publishDir: "prod",
-      disposable: ["stage", ".vscode", "node_modules", "bun.lock", "package.json"],
+      disposable: [
+        "stage",
+        ".vscode",
+        "node_modules",
+        "bun.lock",
+        "package.json",
+      ],
     },
     serve: {
       port: 0,

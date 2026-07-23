@@ -1484,19 +1484,19 @@ Modes are `--web` (default), `--pwa`, and `--ext`.
 
 The core commands and aliases are:
 
-| Command                                      | Alias      | Purpose                                                                 |
-| -------------------------------------------- | ---------- | ----------------------------------------------------------------------- |
-| `brahma help`                                | `brahma h` | Show CLI help.                                                          |
-| `brahma create <name> [--web\|--pwa\|--ext]` | `brahma c` | Create a scaffold.                                                      |
-| `brahma install`                             | `brahma i` | Recreate generated config and install dependencies from `karma.ts`.     |
-| `brahma install <package>`                   | `brahma i` | Add one package and synchronize it into `karma.ts`.                     |
-| `brahma uninstall`                           | `brahma u` | Remove generated install artifacts.                                     |
-| `brahma uninstall <package>`                 | `brahma u` | Remove one package and synchronize config.                              |
-| `brahma stage`                               | `brahma s` | Build the staging directory, serve it, and watch source files.          |
-| `brahma publish`                             | `brahma p` | Build the production output and minify page JavaScript.                 |
-| `brahma reset [--soft\|--hard]`              | `brahma r` | Restore base Karma config; soft preserves app mode, hard resets to web. |
-| `brahma version`                             | `brahma v` | Show Brahma and configured Maya versions.                               |
-| `brahma version --v=<version>`               | `brahma v` | Change the globally installed Brahma version.                           |
+| Command                                      | Alias      | Purpose                                                                    |
+| -------------------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| `brahma help`                                | `brahma h` | Show CLI help.                                                             |
+| `brahma create <name> [--web\|--pwa\|--ext]` | `brahma c` | Create a scaffold.                                                         |
+| `brahma install`                             | `brahma i` | Recreate generated config and install dependencies from `_karma/karma.ts`. |
+| `brahma install <package>`                   | `brahma i` | Add one package and synchronize it into `_karma/karma.ts`.                 |
+| `brahma uninstall`                           | `brahma u` | Remove generated install artifacts.                                        |
+| `brahma uninstall <package>`                 | `brahma u` | Remove one package and synchronize config.                                 |
+| `brahma stage`                               | `brahma s` | Build the staging directory, serve it, and watch source files.             |
+| `brahma publish`                             | `brahma p` | Build the production output and minify page JavaScript.                    |
+| `brahma reset [--soft\|--hard]`              | `brahma r` | Restore base Karma config; soft preserves app mode, hard resets to web.    |
+| `brahma version`                             | `brahma v` | Show Brahma and configured Maya versions.                                  |
+| `brahma version --v=<version>`               | `brahma v` | Change the globally installed Brahma version.                              |
 
 `brahma install` without a package removes configured disposable install artifacts, generates `package.json` from `karma.maya`, runs Bun installation, and writes editor/git configuration. Keep authored source outside the disposable list.
 
@@ -1504,8 +1504,9 @@ The core commands and aliases are:
 
 ```text
 my-app/
-├── karma.ts
-├── karma-types.ts
+├── _karma/
+│   ├── karma.ts
+│   └── types.ts
 └── dev/
     ├── controllers.ts
     ├── models.ts
@@ -1567,7 +1568,7 @@ import { FeatureCard } from "../components/FeatureCard.js";
 import { loadDashboard } from "../../controllers.js";
 ```
 
-### 14.3 A self-contained `karma-types.ts`
+### 14.3 A self-contained `_karma/types.ts`
 
 A foreign project can use this exact type contract without importing from the Brahma repository:
 
@@ -1587,7 +1588,7 @@ export type ProjectFileNames = {
   static: {
     publishDir: string;
     dsStoreDir: ".DS_Store";
-    karmaTypesFile: "karma-types.ts";
+    karmaTypesFile: "_karma/types.ts";
   } & FileNamesMap;
   disposable: {
     stagingDir: string;
@@ -1638,12 +1639,12 @@ export type Karma = {
 };
 ```
 
-### 14.4 Canonical `karma.ts`
+### 14.4 Canonical `_karma/karma.ts`
 
 The named export **MUST** be called `karma`.
 
 ```ts
-import type { Karma, ProjectFileNames } from "./karma-types.ts";
+import type { Karma, ProjectFileNames } from "./types.ts";
 
 const files = {
   buildable: {
@@ -1655,7 +1656,7 @@ const files = {
   static: {
     publishDir: "prod",
     dsStoreDir: ".DS_Store",
-    karmaTypesFile: "karma-types.ts",
+    karmaTypesFile: "_karma/types.ts",
     gitIgnoreFile: ".gitignore",
   },
   disposable: {
@@ -1708,7 +1709,6 @@ export const karma: Karma = {
     settings: {
       "deno.enable": false,
       "files.exclude": {
-        [files.static.karmaTypesFile]: true,
         [files.static.gitIgnoreFile]: true,
         [files.static.publishDir]: false,
         [files.disposable.stagingDir]: false,
@@ -1723,7 +1723,6 @@ export const karma: Karma = {
   git: {
     ignore: [
       files.static.dsStoreDir,
-      files.static.karmaTypesFile,
       files.disposable.bunLockFile,
       files.disposable.bunLockBFile,
       files.disposable.dotVscodeDir,

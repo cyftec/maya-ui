@@ -32,7 +32,10 @@ import {
   getKarmaPaths,
   getPackageJsonPath,
 } from "../src/utils/file-path-getters.ts";
-import { splitText, updateSectionInFile } from "../src/utils/file-section-updater.ts";
+import {
+  splitText,
+  updateSectionInFile,
+} from "../src/utils/file-section-updater.ts";
 import { ValidateAndExitIf } from "../src/utils/file-validations.ts";
 import { syncPackageJsonToKarma } from "../src/utils/karma-file-updaters.ts";
 import { onProcessSigInt } from "../src/utils/process-helpers.ts";
@@ -50,11 +53,11 @@ const originalInitCwd = process.env.INIT_CWD;
 let exitSpy: ReturnType<typeof spyOn> | undefined;
 
 const mockExit = () => {
-  exitSpy = spyOn(process, "exit").mockImplementation(
-    ((code?: number | string | null): never => {
-      throw new ProcessExit(Number(code || 0));
-    }) as typeof process.exit,
-  );
+  exitSpy = spyOn(process, "exit").mockImplementation(((
+    code?: number | string | null,
+  ): never => {
+    throw new ProcessExit(Number(code || 0));
+  }) as typeof process.exit);
 };
 
 beforeEach(() => {
@@ -102,13 +105,15 @@ describe("path and common helpers", () => {
     expect(getAppViewPath("/tmp/app", karma)).toBe("/tmp/app/dev/view");
     expect(getPackageJsonPath("/tmp/app")).toBe("/tmp/app/package.json");
     expect(getKarmaPaths("/tmp/app")).toEqual([
-      "/tmp/app/karma.ts",
-      "/tmp/app/karma-types.ts",
+      "/tmp/app/_karma/karma.ts",
+      "/tmp/app/_karma/types.ts",
     ]);
-    expect(getBuildDirPath("/tmp/app", "/tmp/app/dev/view", karma, false))
-      .toBe("/tmp/app/stage");
-    expect(getBuildDirPath("/tmp/app", "/tmp/app/dev/view/about", karma, true))
-      .toBe("/tmp/app/prod/about");
+    expect(getBuildDirPath("/tmp/app", "/tmp/app/dev/view", karma, false)).toBe(
+      "/tmp/app/stage",
+    );
+    expect(
+      getBuildDirPath("/tmp/app", "/tmp/app/dev/view/about", karma, true),
+    ).toBe("/tmp/app/prod/about");
   });
 
   test("creates missing directories and tolerates existing directories", async () => {
@@ -154,7 +159,8 @@ describe("path and common helpers", () => {
     await writeText(modulePath, "export const value = 1;");
     expect((await nonCachedImport(modulePath)).value).toBe(1);
     const karma = makeKarma({ appType: "pwa" });
-    await writeText(path.join(root, "karma.ts"), karmaModuleText(karma));
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    await writeText(path.join(root, "_karma/karma.ts"), karmaModuleText(karma));
     expect((await getKarma(root)).maya.appType).toBe("pwa");
     await rm(root, { recursive: true });
   });
@@ -162,11 +168,10 @@ describe("path and common helpers", () => {
 
 describe("structured file updates", () => {
   test("splits through ordered milestones and reports missing ones", () => {
-    expect(splitText("before alpha middle beta after", ["alpha", "beta"]))
-      .toEqual(["before alpha middle beta", " after"]);
-    expect(() => splitText("alpha", ["missing"])).toThrow(
-      "does not exist",
-    );
+    expect(
+      splitText("before alpha middle beta after", ["alpha", "beta"]),
+    ).toEqual(["before alpha middle beta", " after"]);
+    expect(() => splitText("alpha", ["missing"])).toThrow("does not exist");
   });
 
   test("updates nested object and array sections without disturbing surrounding text", async () => {
@@ -182,7 +187,10 @@ describe("structured file updates", () => {
     );
 
     const arrayFile = path.join(root, "array.ts");
-    await writeText(arrayFile, "const config = { list: [1, [2, 3], 4], end: 1 };");
+    await writeText(
+      arrayFile,
+      "const config = { list: [1, [2, 3], 4], end: 1 };",
+    );
     await updateSectionInFile(arrayFile, ["list:"], "[9, 8]", "array");
     expect(await Bun.file(arrayFile).text()).toBe(
       "const config = { list:[9, 8], end: 1 };",
@@ -193,13 +201,14 @@ describe("structured file updates", () => {
   test("syncs package.json into karma after awaiting file validation", async () => {
     const root = await makeTempDir();
     const karma = makeKarma();
-    await writeText(path.join(root, "karma.ts"), karmaModuleText(karma));
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    await writeText(path.join(root, "_karma/karma.ts"), karmaModuleText(karma));
     await writeText(
       path.join(root, "package.json"),
       JSON.stringify({ name: "updated", dependencies: { x: "1.0.0" } }),
     );
     await syncPackageJsonToKarma(root);
-    const updated = await Bun.file(path.join(root, "karma.ts")).text();
+    const updated = await Bun.file(path.join(root, "_karma/karma.ts")).text();
     expect(updated).toContain('"name":"updated"');
     expect(updated).toContain('"x":"1.0.0"');
     await rm(root, { recursive: true });
@@ -210,14 +219,23 @@ describe("validations", () => {
   test("accepts a complete app layout", async () => {
     const root = await makeTempDir();
     const karma = makeKarma();
-    await writeText(path.join(root, "karma.ts"), karmaModuleText(karma));
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    await writeText(path.join(root, "_karma/karma.ts"), karmaModuleText(karma));
     await mkdir(path.join(root, "dev/view"), { recursive: true });
     await writeText(path.join(root, "package.json"), "{}");
-    await expect(ValidateAndExitIf.karmaFileMissing(root)).resolves.toBeUndefined();
+    await expect(
+      ValidateAndExitIf.karmaFileMissing(root),
+    ).resolves.toBeUndefined();
     expect(ValidateAndExitIf.exportedKarmaMissing(karma)).toBeUndefined();
-    await expect(ValidateAndExitIf.appSrcDirMissing(root, karma)).resolves.toBeUndefined();
-    await expect(ValidateAndExitIf.appViewDirMissing(root, karma)).resolves.toBeUndefined();
-    await expect(ValidateAndExitIf.packageJsonMissing(root)).resolves.toBeUndefined();
+    await expect(
+      ValidateAndExitIf.appSrcDirMissing(root, karma),
+    ).resolves.toBeUndefined();
+    await expect(
+      ValidateAndExitIf.appViewDirMissing(root, karma),
+    ).resolves.toBeUndefined();
+    await expect(
+      ValidateAndExitIf.packageJsonMissing(root),
+    ).resolves.toBeUndefined();
     await rm(root, { recursive: true });
   });
 
@@ -225,13 +243,22 @@ describe("validations", () => {
     const root = await makeTempDir();
     const karma = makeKarma();
     const log = spyOn(console, "log").mockImplementation(() => {});
-    await expect(ValidateAndExitIf.karmaFileMissing(root)).rejects.toBeInstanceOf(ProcessExit);
-    expect(() => ValidateAndExitIf.exportedKarmaMissing(undefined as never))
-      .toThrow(ProcessExit);
-    await expect(ValidateAndExitIf.appSrcDirMissing(root, karma)).rejects.toBeInstanceOf(ProcessExit);
+    await expect(
+      ValidateAndExitIf.karmaFileMissing(root),
+    ).rejects.toBeInstanceOf(ProcessExit);
+    expect(() =>
+      ValidateAndExitIf.exportedKarmaMissing(undefined as never),
+    ).toThrow(ProcessExit);
+    await expect(
+      ValidateAndExitIf.appSrcDirMissing(root, karma),
+    ).rejects.toBeInstanceOf(ProcessExit);
     await mkdir(path.join(root, "dev"));
-    await expect(ValidateAndExitIf.appViewDirMissing(root, karma)).rejects.toBeInstanceOf(ProcessExit);
-    await expect(ValidateAndExitIf.packageJsonMissing(root)).rejects.toBeInstanceOf(ProcessExit);
+    await expect(
+      ValidateAndExitIf.appViewDirMissing(root, karma),
+    ).rejects.toBeInstanceOf(ProcessExit);
+    await expect(
+      ValidateAndExitIf.packageJsonMissing(root),
+    ).rejects.toBeInstanceOf(ProcessExit);
     expect(log).toHaveBeenCalled();
     log.mockRestore();
     await rm(root, { recursive: true });
@@ -241,15 +268,18 @@ describe("validations", () => {
 describe("version and process utilities", () => {
   test("resolves and reads the Brahma package version", async () => {
     expect(getBrahmaRootPath()).toBe(path.resolve(import.meta.dir, ".."));
-    expect(getBrahmaPackageJsonPath()).toBe(path.join(getBrahmaRootPath(), "package.json"));
+    expect(getBrahmaPackageJsonPath()).toBe(
+      path.join(getBrahmaRootPath(), "package.json"),
+    );
     expect(await getCurrentBrahmaVersion()).toBe("0.0.14");
   });
 
   test("exits for missing or versionless package metadata", async () => {
     const root = await makeTempDir();
     const error = spyOn(console, "error").mockImplementation(() => {});
-    await expect(getCurrentBrahmaVersion(path.join(root, "missing.json")))
-      .rejects.toBeInstanceOf(ProcessExit);
+    await expect(
+      getCurrentBrahmaVersion(path.join(root, "missing.json")),
+    ).rejects.toBeInstanceOf(ProcessExit);
     const packagePath = path.join(root, "package.json");
     await writeText(packagePath, '{"name":"brahma"}');
     await expect(getCurrentBrahmaVersion(packagePath)).rejects.toBeInstanceOf(
@@ -262,15 +292,14 @@ describe("version and process utilities", () => {
 
   test("updates a supplied karma probe and verifies the result", async () => {
     const root = await makeTempDir();
-    const probe = path.join(root, "karma.ts");
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    const probe = path.join(root, "_karma/karma.ts");
     await writeText(
       probe,
       "type Karma = any; export const karma: Karma = { maya: { dependencies: { old: true } }, tail: true };",
     );
     await updateKarmaProbeMayaVersion("1.2.3", probe);
-    expect(await Bun.file(probe).text()).toContain(
-      '{"@cyftec/maya": "1.2.3"}',
-    );
+    expect(await Bun.file(probe).text()).toContain('{"@cyftec/maya": "1.2.3"}');
     await rm(root, { recursive: true });
   });
 

@@ -1,12 +1,9 @@
 import { exists } from "node:fs/promises";
 import { getCWD, nonCachedImport } from "../utils/common";
-import {
-  runShellCommand,
-  type CommandRunner,
-} from "../utils/command-runner";
+import { runShellCommand, type CommandRunner } from "../utils/command-runner";
 import { getKarmaPaths } from "../utils/file-path-getters";
 import { getCurrentBrahmaVersion } from "../brahma-version-getter";
-import type { KarmaConfigObject } from "../probe/karma-probe/karma-types";
+import type { KarmaConfigObject } from "../probe/karma-probe/types";
 
 export const showVersionOnly = async () => {
   const brahmaV = await getCurrentBrahmaVersion();

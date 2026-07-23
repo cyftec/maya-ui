@@ -1,11 +1,8 @@
 import { exists, rm } from "node:fs/promises";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters";
-import type { Karma } from "../probe/karma-probe/karma-types";
+import type { Karma } from "../probe/karma-probe/types";
 import { getCWD } from "../utils/common";
-import {
-  runShellCommand,
-  type CommandRunner,
-} from "../utils/command-runner";
+import { runShellCommand, type CommandRunner } from "../utils/command-runner";
 
 export const removeInstalledFiles = async (
   appRootPath: string,

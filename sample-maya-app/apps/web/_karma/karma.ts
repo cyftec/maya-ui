@@ -1,16 +1,16 @@
-import type { Karma, ProjectFileNames } from "./karma-types.ts";
+import type { Karma, ProjectFileNames } from "./types.js";
 
 const files = {
   buildable: {
     appSrcDir: "dev",
-    appViewDir: "dev",
+    appViewDir: "dev/view",
     pageFile: "page.ts",
     manifestFile: "manifest.ts",
   },
   static: {
-    publishDir: "prod",
+    publishDir: "docs",
     dsStoreDir: ".DS_Store",
-    karmaTypesFile: "karma-types.ts",
+    karmaTypesFile: "_karma/types.ts",
     gitIgnoreFile: ".gitignore",
   },
   disposable: {
@@ -47,8 +47,8 @@ export const karma: Karma = {
   },
   maya: {
     name: "sample-app",
-    appType: "pwa",
-    dependencies:{"@cyftec/maya":"workspace:*","@types/web-app-manifest":"1.0.8"},
+    appType: "web",
+    dependencies: { "@cyftec/maya": "workspace:*" },
   },
   vscode: {
     settings: {

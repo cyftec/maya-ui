@@ -1,5 +1,5 @@
 import { exists, mkdir } from "node:fs/promises";
-import type { Karma } from "../probe/karma-probe/karma-types.ts";
+import type { Karma } from "../probe/karma-probe/types.ts";
 import { getCWD } from "../utils/common.ts";
 import {
   runShellCommand,

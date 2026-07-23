@@ -18,7 +18,7 @@ import {
   zipAndDeleteDir,
 } from "./build-helpers.ts";
 import type { BunFile } from "bun";
-import type { Karma } from "../probe/karma-probe/karma-types.ts";
+import type { Karma } from "../probe/karma-probe/types.ts";
 import { setupBuild } from "./build-setup.ts";
 import { getAppViewPath, getBuildDirPath } from "../utils/file-path-getters.ts";
 
@@ -38,9 +38,8 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
       getFileNameFromPath(destJsPath),
       buildData.karma,
     );
-    const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor as new (
-      body: string,
-    ) => () => Promise<string | undefined>;
+    const AsyncFunction = Object.getPrototypeOf(async () => {})
+      .constructor as new (body: string) => () => Promise<string | undefined>;
     const buildPageHtml = new AsyncFunction(`
       ${buildJsWithoutExports}
       phase.start("build");

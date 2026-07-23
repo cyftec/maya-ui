@@ -1,4 +1,4 @@
-import type { Karma } from "../probe/karma-probe/karma-types";
+import type { Karma } from "../probe/karma-probe/types";
 import path from "node:path";
 
 export const getAppSrcPath = (appRootPath: string, karma: Karma): string => {
@@ -14,7 +14,7 @@ export const getPackageJsonPath = (appRootPath: string): string => {
 };
 
 export const getKarmaPaths = (appRootPath: string): [string, string] => {
-  return [`${appRootPath}/karma.ts`, `${appRootPath}/karma-types.ts`];
+  return [`${appRootPath}/_karma/karma.ts`, `${appRootPath}/_karma/types.ts`];
 };
 
 export const getBuildDirPath = (

@@ -1,11 +1,4 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  spyOn,
-  test,
-} from "bun:test";
+import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { exists, mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -43,11 +36,11 @@ const expectProcessExit = async (
   operation: () => unknown | Promise<unknown>,
   expectedCode = 0,
 ) => {
-  const exit = spyOn(process, "exit").mockImplementation(
-    ((code?: number | string | null): never => {
-      throw new ProcessExit(Number(code || 0));
-    }) as typeof process.exit,
-  );
+  const exit = spyOn(process, "exit").mockImplementation(((
+    code?: number | string | null,
+  ): never => {
+    throw new ProcessExit(Number(code || 0));
+  }) as typeof process.exit);
   try {
     await operation();
     throw new Error("Expected process.exit");
@@ -144,7 +137,8 @@ describe("version and reset commands", () => {
 
     const karma = makeKarma();
     karma.maya.dependencies["@cyftec/maya"] = "9.8.7";
-    await writeText(path.join(root, "karma.ts"), karmaModuleText(karma));
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    await writeText(path.join(root, "_karma/karma.ts"), karmaModuleText(karma));
     await showVersionOnly();
     expect(log.mock.calls.flat().join("\n")).toContain("maya   - 9.8.7");
     log.mockRestore();
@@ -176,8 +170,9 @@ describe("version and reset commands", () => {
 
   test("soft reset preserves app mode and hard reset returns to web", async () => {
     const karma = makeKarma({ appType: "ext" });
-    const karmaPath = path.join(root, "karma.ts");
-    const typesPath = path.join(root, "karma-types.ts");
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    const karmaPath = path.join(root, "_karma/karma.ts");
+    const typesPath = path.join(root, "_karma/types.ts");
     await writeText(karmaPath, karmaModuleText(karma));
     await writeText(typesPath, "export {};");
     await expectProcessExit(() => resetApp(["--soft"], runCommand));
@@ -189,6 +184,7 @@ describe("version and reset commands", () => {
     });
 
     commands = [];
+    await mkdir(path.join(root, "_karma"), { recursive: true });
     await writeText(karmaPath, karmaModuleText(karma));
     await expectProcessExit(() => resetApp(["--hard"], runCommand));
     expect(commands).toContainEqual({
@@ -211,8 +207,9 @@ describe("install and uninstall commands", () => {
     expect(await Bun.file(path.join(root, "package.json")).json()).toEqual(
       karma.maya,
     );
-    expect(await Bun.file(path.join(root, ".vscode/settings.json")).json())
-      .toEqual(karma.vscode.settings);
+    expect(
+      await Bun.file(path.join(root, ".vscode/settings.json")).json(),
+    ).toEqual(karma.vscode.settings);
     expect(await Bun.file(path.join(root, ".gitignore")).text()).toBe(
       karma.git.ignore.join("\n"),
     );
@@ -236,7 +233,8 @@ describe("install and uninstall commands", () => {
 
   test("installs a specific package and synchronizes package metadata", async () => {
     const karma = makeKarma();
-    await writeText(path.join(root, "karma.ts"), karmaModuleText(karma));
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    await writeText(path.join(root, "_karma/karma.ts"), karmaModuleText(karma));
     await writeText(
       path.join(root, "package.json"),
       JSON.stringify({ name: "custom", dependencies: { lodash: "4.17.21" } }),
@@ -253,7 +251,7 @@ describe("install and uninstall commands", () => {
       command: "bun add lodash@4.17.21 --dev",
       cwd: root,
     });
-    expect(await Bun.file(path.join(root, "karma.ts")).text()).toContain(
+    expect(await Bun.file(path.join(root, "_karma/karma.ts")).text()).toContain(
       '"name":"custom"',
     );
     log.mockRestore();
@@ -279,7 +277,8 @@ describe("install and uninstall commands", () => {
     );
     expect(await exists(path.join(root, "stage"))).toBe(false);
 
-    await writeText(path.join(root, "karma.ts"), karmaModuleText(karma));
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    await writeText(path.join(root, "_karma/karma.ts"), karmaModuleText(karma));
     await writeText(path.join(root, "package.json"), '{"name":"after-remove"}');
     await expectProcessExit(() =>
       uninstallPackageOrEverything(["lodash"], karma, runCommand),
@@ -288,7 +287,7 @@ describe("install and uninstall commands", () => {
       command: "bun remove lodash",
       cwd: root,
     });
-    expect(await Bun.file(path.join(root, "karma.ts")).text()).toContain(
+    expect(await Bun.file(path.join(root, "_karma/karma.ts")).text()).toContain(
       '"name":"after-remove"',
     );
     log.mockRestore();
@@ -298,9 +297,13 @@ describe("install and uninstall commands", () => {
 describe("publish and CLI entrypoint", () => {
   test("publishes the app through the real entrypoint", async () => {
     const karma = makeKarma({ appViewDir: "dev" });
-    await writeText(path.join(root, "karma.ts"), karmaModuleText(karma));
+    await mkdir(path.join(root, "_karma"), { recursive: true });
+    await writeText(path.join(root, "_karma/karma.ts"), karmaModuleText(karma));
     await writeText(path.join(root, "package.json"), "{}");
-    const mayaCore = path.resolve(import.meta.dir, "../../maya/src/core/index.ts");
+    const mayaCore = path.resolve(
+      import.meta.dir,
+      "../../maya/src/core/index.ts",
+    );
     await writeText(
       path.join(root, "dev/page.ts"),
       `import { m } from ${JSON.stringify(mayaCore)}; export default m.Html(m.Body("Published"));`,
@@ -338,7 +341,7 @@ describe("publish and CLI entrypoint", () => {
     const invalid = await run("unknown");
     expect(invalid.exitCode).toBe(0);
     expect(invalid.stdout).toContain("ERROR: bad input");
-    expect(invalid.stdout).not.toContain("No karma.ts found");
+    expect(invalid.stdout).not.toContain("No _karma/karma.ts found");
     expect(invalid.stderr).toBe("");
   });
 });

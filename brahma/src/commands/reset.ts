@@ -1,8 +1,5 @@
 import { exists, rm } from "node:fs/promises";
-import type {
-  AppMode,
-  KarmaResetMode,
-} from "../probe/karma-probe/karma-types.ts";
+import type { AppMode, KarmaResetMode } from "../probe/karma-probe/types.ts";
 import { getCWD, getKarma } from "../utils/common.ts";
 import {
   runShellCommand,

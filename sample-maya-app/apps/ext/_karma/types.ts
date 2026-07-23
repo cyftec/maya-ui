@@ -12,7 +12,7 @@ export type ProjectFileNames = {
   static: {
     publishDir: string;
     dsStoreDir: ".DS_Store";
-    karmaTypesFile: "karma-types.ts";
+    karmaTypesFile: "_karma/types.ts";
   } & FileNamesMap;
   disposable: {
     stagingDir: string;
