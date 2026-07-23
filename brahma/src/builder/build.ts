@@ -69,10 +69,19 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
   }
 };
 
-const buildJsFile = async (destJsPath: string, srcPagePath: string) => {
+const buildSourceTsFile = async (srcPath: string): Promise<Bun.BuildOutput> => {
+  const tsConfigFilePath = `${buildData.appRootPath}/tsconfig.json`;
+  const tsconfigExists = await Bun.file(tsConfigFilePath).exists();
   const jsBuild = await Bun.build({
-    entrypoints: [srcPagePath],
+    entrypoints: [srcPath],
+    tsconfig: tsconfigExists ? tsConfigFilePath : undefined,
   });
+
+  return jsBuild;
+};
+
+const buildJsFile = async (destJsPath: string, srcPagePath: string) => {
+  const jsBuild = await buildSourceTsFile(srcPagePath);
   const js = await jsBuild.outputs.map(async (o) => await o.text())[0];
   if (!js) {
     console.log(jsBuild);
@@ -111,7 +120,7 @@ const sanitizeJsFile = async (destJsPath: string) => {
 
 const minifyJsFile = async (destJsPath: string) => {
   const jsBuild = await Bun.build({
-    entrypoints: [destJsPath],
+    entrypoints: [destJsPath], // already built (unminified) js file
     minify: true,
   });
   const minifiedJsCode = await jsBuild.outputs.map(
@@ -159,7 +168,7 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
   } else if (srcFilePath.endsWith(".ts")) {
     const fileName = getFileNameFromPath(srcFilePath);
     filePath = `${buildDirPath}/${fileName.slice(0, -3)}.js`;
-    const jsBuild = await Bun.build({ entrypoints: [srcFilePath] });
+    const jsBuild = await buildSourceTsFile(srcFilePath);
     fileData = await jsBuild.outputs.map(async (o) => await o.text())[0];
   } else {
     const fileName = getFileNameFromPath(srcFilePath);
