@@ -1573,6 +1573,8 @@ import { loadDashboard } from "../../controllers.js";
 A foreign project can use this exact type contract without importing from the Brahma repository:
 
 ```ts
+import type { CompilerOptions } from "typescript";
+
 export type AppMode = "web" | "ext" | "pwa";
 export type KarmaResetMode = "soft" | "hard";
 
@@ -1592,7 +1594,16 @@ export type ProjectFileNames = {
   } & FileNamesMap;
   disposable: {
     stagingDir: string;
+    tsConfigFile?: string;
   } & FileNamesMap;
+};
+
+export type TsConfig = {
+  compilerOptions?: CompilerOptions;
+  include?: string[];
+  exclude?: string[];
+  extends?: string;
+  [key: string]: unknown;
 };
 
 export type Karma = {
@@ -1636,6 +1647,7 @@ export type Karma = {
       "files.exclude": Record<string, boolean>;
     };
   };
+  tsconfig?: TsConfig;
 };
 ```
 
@@ -1666,6 +1678,7 @@ const files = {
     bunLockFile: "bun.lock",
     bunLockBFile: "bun.lockb",
     packageJsonFile: "package.json",
+    tsConfigFile: "tsconfig.json",
   },
 } as const satisfies ProjectFileNames;
 
@@ -1701,8 +1714,8 @@ export const karma: Karma = {
       "@cyftec/maya": "0.0.14",
     },
     devDependencies: {
-      "@types/bun": "latest",
-      typescript: "latest",
+      "@types/bun": "^1.3.14",
+      typescript: "^5.0.0",
     },
   },
   vscode: {
@@ -1717,6 +1730,7 @@ export const karma: Karma = {
         [files.disposable.dotVscodeDir]: true,
         [files.disposable.nodeModulesDir]: true,
         [files.disposable.packageJsonFile]: true,
+        [files.disposable.tsConfigFile]: true,
       },
     },
   },
@@ -1729,7 +1743,20 @@ export const karma: Karma = {
       files.disposable.nodeModulesDir,
       files.disposable.packageJsonFile,
       files.disposable.stagingDir,
+      files.disposable.tsConfigFile,
     ],
+  },
+  tsconfig: {
+    compilerOptions: {
+      target: "ES2022",
+      module: "ESNext",
+      lib: ["ES2022", "DOM", "DOM.Iterable"],
+      moduleResolution: "bundler",
+      esModuleInterop: true,
+      skipLibCheck: true,
+      strict: true,
+    },
+    include: ["dev/**/*"],
   },
 };
 ```

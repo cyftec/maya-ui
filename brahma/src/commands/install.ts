@@ -24,6 +24,13 @@ const installGitIgnore = async (appRootPath: string, karma: Karma) => {
   await Bun.write(gitIgnorePath, gitIgnoreText);
 };
 
+const installTsConfig = async (appRootPath: string, karma: Karma) => {
+  if (karma.tsconfig) {
+    const tsConfigPath = `${appRootPath}/tsconfig.json`;
+    await Bun.write(tsConfigPath, JSON.stringify(karma.tsconfig, null, "\t"));
+  }
+};
+
 const installPackages = async (
   appRootPath: string,
   karma: Karma,
@@ -56,6 +63,7 @@ const installAllConfigsAndPackages = async (
   await installPackages(appRootPath, karma, runCommand);
   await installDotVsCodeDir(appRootPath, karma);
   await installGitIgnore(appRootPath, karma);
+  await installTsConfig(appRootPath, karma);
 };
 
 const installSpecificPackage = async (
