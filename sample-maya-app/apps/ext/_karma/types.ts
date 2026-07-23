@@ -1,3 +1,5 @@
+import type { CompilerOptions } from "typescript";
+
 export type AppMode = "web" | "ext" | "pwa";
 export type KarmaResetMode = "soft" | "hard";
 
@@ -16,7 +18,16 @@ export type ProjectFileNames = {
   } & FileNamesMap;
   disposable: {
     stagingDir: string;
+    tsConfigFile?: string;
   } & FileNamesMap;
+};
+
+export type TsConfig = {
+  compilerOptions?: CompilerOptions;
+  include?: string[];
+  exclude?: string[];
+  extends?: string;
+  [key: string]: unknown;
 };
 
 export type Karma = {
@@ -75,6 +86,7 @@ export type Karma = {
       };
     };
   };
+  tsconfig?: TsConfig;
 };
 
 export type KarmaConfigObject = { karma: Karma };

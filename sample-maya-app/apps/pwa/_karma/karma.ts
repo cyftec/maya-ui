@@ -20,6 +20,7 @@ const files = {
     bunLockFile: "bun.lock",
     bunLockBFile: "bun.lockb",
     packageJsonFile: "package.json",
+    tsConfigFile: "tsconfig.json",
   },
 } as const satisfies ProjectFileNames;
 
@@ -49,6 +50,10 @@ export const karma: Karma = {
     name: "sample-app",
     appType: "pwa",
     dependencies:{"@cyftec/maya":"workspace:*","@types/web-app-manifest":"1.0.8"},
+    devDependencies: {
+      "@types/bun": "^1.3.14",
+      typescript: "^5.0.0",
+    },
   },
   vscode: {
     settings: {
@@ -62,6 +67,7 @@ export const karma: Karma = {
         [files.disposable.dotVscodeDir]: true,
         [files.disposable.nodeModulesDir]: true,
         [files.disposable.packageJsonFile]: true,
+        [files.disposable.tsConfigFile]: true,
       },
     },
   },
@@ -74,6 +80,19 @@ export const karma: Karma = {
       files.disposable.nodeModulesDir,
       files.disposable.packageJsonFile,
       files.disposable.stagingDir,
+      files.disposable.tsConfigFile,
     ],
+  },
+  tsconfig: {
+    compilerOptions: {
+      target: 9,
+      module: 99,
+      lib: ["ES2022", "DOM", "DOM.Iterable"],
+      moduleResolution: 100,
+      esModuleInterop: true,
+      skipLibCheck: true,
+      strict: true,
+    },
+    include: ["dev/**/*"],
   },
 };
