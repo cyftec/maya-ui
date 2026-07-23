@@ -1,8 +1,8 @@
 .DS_Store
-_karma/types.ts
 bun.lock
 bun.lockb
 .vscode
 node_modules
 package.json
 stage
+tsconfig.json

@@ -1,6 +1,6 @@
 import { m } from "@cyftec/maya/core";
-import { ChaptersPage } from "../@libs/components/ChaptersPage";
-import { TUTORIAL_CHAPTERS } from "./@libs/constants";
+import { ChaptersPage } from "@root-libs/components";
+import { TUTORIAL_CHAPTERS } from "@tutorial-libs/constants";
 
 export default ChaptersPage({
   htmlTitle: "Tutorial - Maya",

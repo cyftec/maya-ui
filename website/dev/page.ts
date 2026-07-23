@@ -1,6 +1,6 @@
 import { m } from "@cyftec/maya/core";
 import { derive, signal } from "@cyftec/maya/signal";
-import { Page } from "./@libs/components/Page";
+import { Page } from "@root-libs/components/Page";
 
 const signalValue = signal(12);
 const sourceValue = derive(() => String(signalValue.value));

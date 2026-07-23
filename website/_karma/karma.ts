@@ -1,4 +1,4 @@
-import type { Karma, ProjectFileNames } from "./types.js";
+import type { Karma, ProjectFileNames } from "./types.ts";
 
 const files = {
   buildable: {
@@ -20,6 +20,7 @@ const files = {
     bunLockFile: "bun.lock",
     bunLockBFile: "bun.lockb",
     packageJsonFile: "package.json",
+    tsConfigFile: "tsconfig.json",
   },
 } as const satisfies ProjectFileNames;
 
@@ -49,33 +50,47 @@ export const karma: Karma = {
     name: "website",
     appType: "web",
     dependencies: { "@cyftec/maya": "workspace:*" },
+    devDependencies: {
+      "@types/bun": "^1.3.14",
+      typescript: "^5.0.0",
+    },
   },
   vscode: {
     settings: {
       "deno.enable": false,
       "files.exclude": {
-        [files.static.karmaTypesFile]: true,
         [files.static.gitIgnoreFile]: true,
         [files.static.publishDir]: false,
         [files.disposable.stagingDir]: false,
         [files.disposable.bunLockFile]: true,
         [files.disposable.bunLockBFile]: true,
         [files.disposable.dotVscodeDir]: true,
-        [files.disposable.nodeModulesDir]: false,
-        [files.disposable.packageJsonFile]: false,
+        [files.disposable.nodeModulesDir]: true,
+        [files.disposable.packageJsonFile]: true,
+        [files.disposable.tsConfigFile]: true,
       },
     },
   },
   git: {
     ignore: [
       files.static.dsStoreDir,
-      files.static.karmaTypesFile,
       files.disposable.bunLockFile,
       files.disposable.bunLockBFile,
       files.disposable.dotVscodeDir,
       files.disposable.nodeModulesDir,
       files.disposable.packageJsonFile,
       files.disposable.stagingDir,
+      files.disposable.tsConfigFile,
     ],
+  },
+  tsconfig: {
+    compilerOptions: {
+      paths: {
+        "@root-libs/*": ["./dev/@libs/*"],
+        "@docs-libs/*": ["./dev/docs/@libs/*"],
+        "@tutorial-libs/*": ["./dev/tutorial/@libs/*"],
+      },
+    },
+    include: ["dev/**/*"],
   },
 };

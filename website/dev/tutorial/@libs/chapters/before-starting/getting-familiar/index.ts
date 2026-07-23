@@ -1,6 +1,6 @@
 import { m } from "@cyftec/maya/core";
-import { Link } from "../../../../../@libs/elements";
-import { runHighlightJsScriptOnMount } from "../../../../../@libs/utils";
+import { Link } from "@root-libs/elements";
+import { runHighlightJsScriptOnMount } from "@root-libs/utils";
 import {
   CODE_EXAMPLES,
   CONCLUSION_PARAS,

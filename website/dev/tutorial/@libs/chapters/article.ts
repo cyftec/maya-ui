@@ -1,6 +1,6 @@
 import { m, type Child } from "@cyftec/maya/core";
-import { runHighlightJsScriptOnMount } from "../../../@libs/utils";
-import { Icon } from "../../../@libs/elements";
+import { runHighlightJsScriptOnMount } from "@root-libs/utils";
+import { Icon } from "@root-libs/elements";
 import { signal } from "@cyftec/maya/signal";
 
 export const Code = (code: string) => {

@@ -1,9 +1,9 @@
 import { m } from "@cyftec/maya/core";
-import { ChaptersPage } from "../@libs/components/ChaptersPage";
+import { ChaptersPage } from "@root-libs/components/ChaptersPage";
 import {
   GettingFamiliar,
   Prerequisites,
-} from "../tutorial/@libs/chapters/before-starting";
+} from "@tutorial-libs/chapters/before-starting";
 import {
   Component,
   Element,
@@ -11,18 +11,18 @@ import {
   Page,
   Props,
   Syntax,
-} from "../tutorial/@libs/chapters/learning";
+} from "@tutorial-libs/chapters/learning";
 import {
   AppStructure,
   InstallationAndSetup,
   Karma,
-} from "../tutorial/@libs/chapters/project-setup";
+} from "@tutorial-libs/chapters/project-setup";
 import {
   DerivedSignals,
   Effect,
   SignalForReactivity,
   WhatIsSignal,
-} from "../tutorial/@libs/chapters/reactivity";
+} from "@tutorial-libs/chapters/reactivity";
 import {
   BrahmaKarmaMaya,
   Create,
@@ -35,7 +35,7 @@ import {
   UiToolkit,
   Uninstall,
   WhyCli,
-} from "./@libs/articles";
+} from "@docs-libs/articles";
 
 const DOCS_CHAPTERS = [
   {

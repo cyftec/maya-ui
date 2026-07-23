@@ -1,5 +1,5 @@
 import { m } from "@cyftec/maya/core";
-import { TextWithLinks } from "../../../../../@libs/elements";
+import { TextWithLinks } from "@root-libs/elements";
 import { Code, Note } from "../../article";
 import { TASKS } from "./constants";
 

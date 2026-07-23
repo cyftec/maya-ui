@@ -6,7 +6,7 @@ import {
   Note,
   Paragraphs,
   Section,
-} from "../../tutorial/@libs/chapters/article";
+} from "@tutorial-libs/chapters/article";
 
 export const BrahmaKarmaMaya = Article(
   m.H3({ class: "black", children: "Three pieces, one workflow" }),

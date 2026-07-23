@@ -1,5 +1,5 @@
 import { m } from "@cyftec/maya/core";
-import { Link } from "../../../../../@libs/elements";
+import { Link } from "@root-libs/elements";
 import { PRE_REQ_OVERVIEW, PRE_REQS } from "./constants";
 
 export const Prerequisites = m.Div([
