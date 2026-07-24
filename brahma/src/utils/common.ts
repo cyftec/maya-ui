@@ -10,7 +10,11 @@ export const nonCachedImport = async (modulePath: string) => {
 };
 
 export const createDirIfNotExist = async (dirPath: string) => {
-  if (await exists(dirPath)) return;
+  const dirAlreadyExists = await exists(dirPath);
+  if (dirAlreadyExists) {
+    console.log(`Directory '${dirPath}' already exists.`);
+    return;
+  }
 
   const dirName = dirPath.split("/").pop();
   if (!dirName) throw `Incorrect path for creating app.`;

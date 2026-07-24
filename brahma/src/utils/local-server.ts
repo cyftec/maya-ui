@@ -18,7 +18,7 @@ export const runLocalServer = (
     server: serveDir,
     open: openOnStart,
     ui: false,
-    logLevel: "silent",
+    logLevel: "info",
   });
 
   const onExit = () => {

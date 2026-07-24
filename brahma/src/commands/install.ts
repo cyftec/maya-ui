@@ -52,7 +52,7 @@ const installPackages = async (
   await runCommand("bun i", appRootPath);
 };
 
-const installAllConfigsAndPackages = async (
+export const installAllConfigsAndPackages = async (
   appRootPath: string,
   karma: Karma,
   runCommand: CommandRunner,

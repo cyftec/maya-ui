@@ -1476,7 +1476,6 @@ Create and run an app:
 ```sh
 brahma create my-app --web
 cd my-app
-brahma install
 brahma stage
 ```
 

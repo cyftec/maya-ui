@@ -1,9 +1,13 @@
-type StdinControl = Pick<NodeJS.ReadStream, "resume" | "setEncoding" | "on">;
+type StdinControl = Pick<
+  NodeJS.ReadStream,
+  "resume" | "setEncoding" | "on" | "setRawMode"
+>;
 
 export const startStdinListener = async (
   onQuit: () => void,
   stdin: StdinControl = process.stdin,
 ) => {
+  stdin.setRawMode?.(true);
   stdin.resume();
   stdin.setEncoding("utf8");
 
