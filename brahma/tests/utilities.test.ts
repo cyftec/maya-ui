@@ -271,15 +271,15 @@ describe("zip utility", () => {
     const root = await makeTempDir();
     const sourceDir = path.join(root, "source");
     const zipPath = path.join(root, "output.zip");
-    
+
     await mkdir(sourceDir, { recursive: true });
     await writeText(path.join(sourceDir, "file.txt"), "content");
-    
+
     await zipTheFolder(sourceDir, zipPath as `${string}.zip`);
-    
+
     expect(await exists(zipPath)).toBe(true);
     expect(await exists(sourceDir)).toBe(true);
-    
+
     await rm(root, { recursive: true });
   });
 
@@ -288,18 +288,18 @@ describe("zip utility", () => {
     const root = await makeTempDir();
     const sourceDir = path.join(root, "source");
     const zipPath = path.join(root, "output.zip");
-    
+
     await mkdir(sourceDir, { recursive: true });
     await writeText(path.join(sourceDir, "file1.txt"), "content1");
     await writeText(path.join(sourceDir, "file2.txt"), "content2");
     await mkdir(path.join(sourceDir, "subdir"), { recursive: true });
     await writeText(path.join(sourceDir, "subdir", "file3.txt"), "content3");
-    
+
     await zipTheFolder(sourceDir, zipPath as `${string}.zip`);
-    
+
     expect(await exists(zipPath)).toBe(true);
     expect(Bun.file(zipPath).size).toBeGreaterThan(100);
-    
+
     await rm(root, { recursive: true });
   });
 });
@@ -312,12 +312,12 @@ describe("debouncer utility", () => {
       new Promise((resolve) => setTimeout(resolve, milliseconds));
 
     const debouncedFn = debouncer(callback, 100, false);
-    
+
     debouncedFn("first");
-    
+
     await delay(50);
     expect(callback).toHaveBeenCalledTimes(0);
-    
+
     await delay(60);
     expect(callback).toHaveBeenCalledTimes(1);
     expect(callback).toHaveBeenCalledWith("first");
@@ -330,13 +330,13 @@ describe("debouncer utility", () => {
       new Promise((resolve) => setTimeout(resolve, milliseconds));
 
     const debouncedFn = debouncer(callback, 100, false);
-    
+
     debouncedFn("first");
     debouncedFn("second");
     debouncedFn("third");
-    
+
     await delay(150);
-    
+
     expect(callback).toHaveBeenCalledTimes(3);
     expect(callback).toHaveBeenNthCalledWith(1, "first");
     expect(callback).toHaveBeenNthCalledWith(2, "second");
@@ -351,11 +351,11 @@ describe("debouncer utility", () => {
       new Promise((resolve) => setTimeout(resolve, milliseconds));
 
     const debouncedFn = debouncer(callback, 100, true);
-    
+
     debouncedFn("test");
-    
+
     await delay(150);
-    
+
     expect(callback).toHaveBeenCalledTimes(1);
     expect(log).toHaveBeenCalledWith(expect.stringContaining("Done in"));
     log.mockRestore();
@@ -368,7 +368,7 @@ describe("version and process utilities", () => {
     expect(getBrahmaPackageJsonPath()).toBe(
       path.join(getBrahmaRootPath(), "package.json"),
     );
-    expect(await getCurrentBrahmaVersion()).toBe("0.0.14");
+    expect(await getCurrentBrahmaVersion()).toBe("0.0.15");
   });
 
   test("exits for missing or versionless package metadata", async () => {
