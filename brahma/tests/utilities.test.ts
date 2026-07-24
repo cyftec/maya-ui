@@ -265,6 +265,103 @@ describe("validations", () => {
   });
 });
 
+describe("zip utility", () => {
+  test("zips a directory and creates a zip file", async () => {
+    const { zipTheFolder } = await import("../src/utils/zip-the-folder.ts");
+    const root = await makeTempDir();
+    const sourceDir = path.join(root, "source");
+    const zipPath = path.join(root, "output.zip");
+    
+    await mkdir(sourceDir, { recursive: true });
+    await writeText(path.join(sourceDir, "file.txt"), "content");
+    
+    await zipTheFolder(sourceDir, zipPath as `${string}.zip`);
+    
+    expect(await exists(zipPath)).toBe(true);
+    expect(await exists(sourceDir)).toBe(true);
+    
+    await rm(root, { recursive: true });
+  });
+
+  test("zips a directory with multiple files", async () => {
+    const { zipTheFolder } = await import("../src/utils/zip-the-folder.ts");
+    const root = await makeTempDir();
+    const sourceDir = path.join(root, "source");
+    const zipPath = path.join(root, "output.zip");
+    
+    await mkdir(sourceDir, { recursive: true });
+    await writeText(path.join(sourceDir, "file1.txt"), "content1");
+    await writeText(path.join(sourceDir, "file2.txt"), "content2");
+    await mkdir(path.join(sourceDir, "subdir"), { recursive: true });
+    await writeText(path.join(sourceDir, "subdir", "file3.txt"), "content3");
+    
+    await zipTheFolder(sourceDir, zipPath as `${string}.zip`);
+    
+    expect(await exists(zipPath)).toBe(true);
+    expect(Bun.file(zipPath).size).toBeGreaterThan(100);
+    
+    await rm(root, { recursive: true });
+  });
+});
+
+describe("debouncer utility", () => {
+  test("delays function execution by specified delay period", async () => {
+    const { debouncer } = await import("../src/utils/debouncer.ts");
+    const callback = mock(async (_value: string) => {});
+    const delay = (milliseconds: number) =>
+      new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+    const debouncedFn = debouncer(callback, 100, false);
+    
+    debouncedFn("first");
+    
+    await delay(50);
+    expect(callback).toHaveBeenCalledTimes(0);
+    
+    await delay(60);
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith("first");
+  });
+
+  test("executes each delayed call after delay period", async () => {
+    const { debouncer } = await import("../src/utils/debouncer.ts");
+    const callback = mock(async (_value: string) => {});
+    const delay = (milliseconds: number) =>
+      new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+    const debouncedFn = debouncer(callback, 100, false);
+    
+    debouncedFn("first");
+    debouncedFn("second");
+    debouncedFn("third");
+    
+    await delay(150);
+    
+    expect(callback).toHaveBeenCalledTimes(3);
+    expect(callback).toHaveBeenNthCalledWith(1, "first");
+    expect(callback).toHaveBeenNthCalledWith(2, "second");
+    expect(callback).toHaveBeenNthCalledWith(3, "third");
+  });
+
+  test("logs performance timing when withPerf is enabled", async () => {
+    const { debouncer } = await import("../src/utils/debouncer.ts");
+    const callback = mock(async () => {});
+    const log = spyOn(console, "log").mockImplementation(() => {});
+    const delay = (milliseconds: number) =>
+      new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+    const debouncedFn = debouncer(callback, 100, true);
+    
+    debouncedFn("test");
+    
+    await delay(150);
+    
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("Done in"));
+    log.mockRestore();
+  });
+});
+
 describe("version and process utilities", () => {
   test("resolves and reads the Brahma package version", async () => {
     expect(getBrahmaRootPath()).toBe(path.resolve(import.meta.dir, ".."));
@@ -314,16 +411,20 @@ describe("version and process utilities", () => {
     expect(exit).toHaveBeenCalledTimes(1);
 
     const stdinEvents = new EventEmitter();
+    const setRawMode = mock(() => stdinEvents) as never;
     const resume = mock(() => stdinEvents) as never;
     const setEncoding = mock(() => stdinEvents) as never;
     const quit = mock(() => {});
     await startStdinListener(quit, {
+      setRawMode,
       resume,
       setEncoding,
       on: stdinEvents.on.bind(stdinEvents) as NodeJS.ReadStream["on"],
     });
     stdinEvents.emit("data", "keep going\n");
-    stdinEvents.emit("data", " q \n");
+    stdinEvents.emit("data", "q");
+    expect(setRawMode).toHaveBeenCalledTimes(1);
+    expect(setRawMode).toHaveBeenCalledWith(true);
     expect(resume).toHaveBeenCalledTimes(1);
     expect(setEncoding).toHaveBeenCalledWith("utf8");
     expect(quit).toHaveBeenCalledTimes(1);

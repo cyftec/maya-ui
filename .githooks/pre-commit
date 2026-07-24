@@ -6,4 +6,3 @@ import { $ } from "bun";
 await $`bun run test`;
 await exitProcessIfDevMode("commit");
 await syncKarmaFilesToSampleApps();
-// await $`git add .`;

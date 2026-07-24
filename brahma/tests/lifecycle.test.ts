@@ -28,6 +28,7 @@ describe("stage lifecycle", () => {
     let onQuit: (() => void) | undefined;
     const build = mock(async () => {});
     const serve = mock(() => {});
+    const install = mock(async () => {});
     const exit = mock(() => undefined) as unknown as typeof process.exit;
     const log = spyOn(console, "log").mockImplementation(() => {});
 
@@ -35,7 +36,11 @@ describe("stage lifecycle", () => {
       getCWD: () => root,
       getKarma: async () => karma,
       buildApp: build as never,
-      watchFileChange: ((watchPath: string, ignored: unknown, callback: (path: string) => void) => {
+      watchFileChange: ((
+        watchPath: string,
+        ignored: unknown,
+        callback: (path: string) => void,
+      ) => {
         expect(watchPath).toBe(path.join(root, "dev"));
         expect(ignored).toEqual([expect.any(RegExp)]);
         onChange = callback;
@@ -45,6 +50,7 @@ describe("stage lifecycle", () => {
       startStdinListener: (async (callback: () => void) => {
         onQuit = callback;
       }) as never,
+      installAllConfigsAndPackages: install as never,
       exit,
     });
 
@@ -55,10 +61,10 @@ describe("stage lifecycle", () => {
     expect(onQuit).toBeDefined();
 
     onChange?.("dev/page.ts");
-    await delay(550);
+    await delay(1050);
     expect(build).toHaveBeenCalledTimes(2);
     expect(log.mock.calls.flat().join("\n")).toContain(
-      "Change detected: dev/page.ts",
+      "Change detected in: dev/page.ts",
     );
     onQuit?.();
     expect(exit).toHaveBeenCalledTimes(1);
@@ -74,6 +80,7 @@ describe("stage lifecycle", () => {
       watchFileChange: mock(() => ({})) as never,
       runLocalServer: mock(() => {}) as never,
       startStdinListener: mock(async () => {}) as never,
+      installAllConfigsAndPackages: mock(async () => {}) as never,
       exit: mock(() => undefined) as never,
     });
     expect(result).toBe(false);
@@ -88,15 +95,22 @@ describe("watcher, server, shell, and entrypoint lifecycle", () => {
     const watchedFile = path.join(root, "watched.txt");
     await writeText(watchedFile, "before");
     const processEvents = new EventEmitter();
-    const processExit = mock(() => undefined) as unknown as NodeJS.Process["exit"];
+    const processExit = mock(
+      () => undefined,
+    ) as unknown as NodeJS.Process["exit"];
     let watcher: ReturnType<typeof watchFileChange>;
     const changed = new Promise<string>((resolve) => {
-      watcher = watchFileChange(root, undefined, (changedPath) => {
-        resolve(changedPath);
-      }, {
-        on: processEvents.on.bind(processEvents) as NodeJS.Process["on"],
-        exit: processExit,
-      });
+      watcher = watchFileChange(
+        root,
+        undefined,
+        (changedPath) => {
+          resolve(changedPath);
+        },
+        {
+          on: processEvents.on.bind(processEvents) as NodeJS.Process["on"],
+          exit: processExit,
+        },
+      );
       watcher.once("ready", async () => {
         await Bun.write(watchedFile, "after");
       });
@@ -110,7 +124,9 @@ describe("watcher, server, shell, and entrypoint lifecycle", () => {
     const events = new EventEmitter();
     const init = mock(() => undefined);
     const serverExit = mock(() => undefined);
-    const processExit = mock(() => undefined) as unknown as NodeJS.Process["exit"];
+    const processExit = mock(
+      () => undefined,
+    ) as unknown as NodeJS.Process["exit"];
     const log = spyOn(console, "log").mockImplementation(() => {});
     runLocalServer(
       4321,
@@ -127,7 +143,7 @@ describe("watcher, server, shell, and entrypoint lifecycle", () => {
       server: "/tmp/site",
       open: true,
       ui: false,
-      logLevel: "silent",
+      logLevel: "info",
     });
     events.emit("exit");
     expect(serverExit).toHaveBeenCalledTimes(1);
@@ -144,11 +160,11 @@ describe("watcher, server, shell, and entrypoint lifecycle", () => {
 
   test("executes help, version, and invalid entrypoint routes without importing side effects", async () => {
     const log = spyOn(console, "log").mockImplementation(() => {});
-    const exit = spyOn(process, "exit").mockImplementation(
-      ((code?: number | string | null): never => {
-        throw new ProcessExit(Number(code || 0));
-      }) as typeof process.exit,
-    );
+    const exit = spyOn(process, "exit").mockImplementation(((
+      code?: number | string | null,
+    ): never => {
+      throw new ProcessExit(Number(code || 0));
+    }) as typeof process.exit);
     await expect(execCli(["bun", "brahma", "help"])).rejects.toMatchObject({
       code: 0,
     });

@@ -15,6 +15,7 @@ type StageDependencies = {
   startStdinListener: typeof startStdinListener;
   getCWD: typeof getCWD;
   getKarma: typeof getKarma;
+  installAllConfigsAndPackages: typeof installAllConfigsAndPackages;
   exit: typeof process.exit;
 };
 
@@ -25,6 +26,7 @@ const defaultDependencies: StageDependencies = {
   startStdinListener,
   getCWD,
   getKarma,
+  installAllConfigsAndPackages,
   exit: process.exit,
 };
 
@@ -38,7 +40,7 @@ export const stageApp = async (
     return false;
   }
   console.log(`Installing the configs and dependencies...\n`);
-  await installAllConfigsAndPackages(cwd, karma, runShellCommand);
+  await dependencies.installAllConfigsAndPackages(cwd, karma, runShellCommand);
   console.log(`Staging app files and starting dev server...\n`);
   const watchDirPath = `${cwd}/${karma.brahma.serve.watchDir}`;
   const serveDirPath = `${cwd}/${karma.brahma.serve.serveDir}`;
