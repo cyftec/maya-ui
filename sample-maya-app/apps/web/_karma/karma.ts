@@ -41,7 +41,7 @@ export const karma: Karma = {
     serve: {
       port: 3000,
       redirectOnStart: true,
-      reloadPageOnFocus: false,
+      reloadPageOnFocus: true,
       watchDir: files.buildable.appSrcDir,
       serveDir: files.disposable.stagingDir,
     },
@@ -49,7 +49,7 @@ export const karma: Karma = {
   maya: {
     name: "sample-app",
     appType: "web",
-    dependencies:{"@cyftec/maya":"workspace:*"},
+    dependencies: { "@cyftec/maya": "workspace:*" },
     devDependencies: {
       "@types/bun": "^1.3.14",
       typescript: "^5.0.0",
