@@ -49,7 +49,7 @@ export const karma: Karma = {
   maya: {
     name: "sample-app",
     appType: "web",
-    dependencies:{"@cyftec/maya": "workspace:*"},
+    dependencies: { "@cyftec/maya": "workspace:*" },
     devDependencies: {
       "@types/bun": "^1.3.14",
       typescript: "^5.0.0",
@@ -85,13 +85,7 @@ export const karma: Karma = {
   },
   tsconfig: {
     compilerOptions: {
-      target: 9,
-      module: 99,
-      lib: ["ES2022", "DOM", "DOM.Iterable"],
-      moduleResolution: 100,
-      esModuleInterop: true,
-      skipLibCheck: true,
-      strict: true,
+      paths: {},
     },
     include: ["dev/**/*"],
   },

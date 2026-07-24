@@ -56,7 +56,7 @@ export async function syncKarmaFilesToSampleApps() {
   console.log("Starting karma file synchronization...");
 
   // Copy types.ts to all three directories
-  for (const appType of ["ext", "pwa", "web"] as const) {
+  for await (const appType of ["ext", "pwa", "web"] as const) {
     await copyFile(
       `${SOURCE_DIR}/types.ts`,
       `${TARGET_BASE_DIR}/${appType}/_karma/types.ts`,
@@ -64,7 +64,7 @@ export async function syncKarmaFilesToSampleApps() {
   }
 
   // Copy karma.ts to _karma/karma.ts in all three directories first
-  for (const appType of ["ext", "pwa", "web"] as const) {
+  for await (const appType of ["ext", "pwa", "web"] as const) {
     await copyFile(
       `${SOURCE_DIR}/karma.ts`,
       `${TARGET_BASE_DIR}/${appType}/_karma/karma.ts`,
@@ -72,7 +72,7 @@ export async function syncKarmaFilesToSampleApps() {
   }
 
   // Update _karma/karma.ts files with app-specific configurations
-  for (const appType of ["ext", "pwa", "web"] as const) {
+  for await (const appType of ["ext", "pwa", "web"] as const) {
     await updateKarmaFile(appType);
   }
 
