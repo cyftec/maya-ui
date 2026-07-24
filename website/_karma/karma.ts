@@ -40,8 +40,8 @@ export const karma: Karma = {
     },
     serve: {
       port: 3000,
-      redirectOnStart: true,
-      reloadPageOnFocus: false,
+      redirectOnStart: false,
+      reloadPageOnFocus: true,
       watchDir: files.buildable.appSrcDir,
       serveDir: files.disposable.stagingDir,
     },

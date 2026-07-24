@@ -22,7 +22,7 @@ export const FirstApp = Article(
     ),
   ),
   Note(
-    "The 'brahma create' command creates the app scaffold in the mode you choose. The command 'brahma install' then creates the local package/config files from karma.ts and installs dependencies.",
+    "The 'brahma create' command creates the app scaffold in the mode you choose. The command 'brahma install' then creates the local package/config files from karma.ts and installs dependencies. However 'brahma stage' again installs all the configs and dependencies internally.",
   ),
   Code("brahma create hello-pwa --pwa\nbrahma create hello-extension --ext"),
 );
