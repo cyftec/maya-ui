@@ -85,13 +85,7 @@ export const karma: Karma = {
   },
   tsconfig: {
     compilerOptions: {
-      target: 9,
-      module: 99,
-      lib: ["ES2022", "DOM", "DOM.Iterable"],
-      moduleResolution: 100,
-      esModuleInterop: true,
-      skipLibCheck: true,
-      strict: true,
+      paths: {},
     },
     include: ["dev/**/*"],
   },
