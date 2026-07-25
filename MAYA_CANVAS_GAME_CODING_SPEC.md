@@ -72,19 +72,47 @@ The boundaries are deliberate:
 Do not put `requestAnimationFrame` in a global module initializer. Do not make
 each sprite a Maya component. Do not let the renderer mutate simulation state.
 
-### 2.2 Current scaffold-friendly layout
+### 2.2 Scaffold-friendly game layout
 
 With the repository's current web scaffold,
 `appViewDir: "dev/view/pages"` and `ignoreDelimiter: "@"`:
 
 ```text
-dev/view/pages/
-├── @game/
-│   ├── canvas-game.ts
+dev/
+├── game/
 │   ├── core.ts
 │   ├── input.ts
 │   ├── renderer.ts
-│   └── assets.ts
+│   ├── assets.ts
+│   └── session.ts
+└── view/
+    ├── components/
+    │   └── GameCanvas.ts
+    ├── elements/
+    └── pages/
+        ├── assets/
+        │   ├── images/
+        │   └── audio/
+        ├── page.ts
+        └── styles.css
+```
+
+In this layout `dev/view/pages` is the emitted route tree. The reusable
+`GameCanvas` component and the game implementation live inside `appSrcDir`
+but outside `appViewDir`, so Brahma bundles them when the page imports them
+without scanning or emitting them as standalone route output.
+
+Colocation inside the route tree is also valid for small route-local games:
+
+```text
+dev/view/pages/
+├── @game/
+│   ├── GameCanvas.ts
+│   ├── core.ts
+│   ├── input.ts
+│   ├── renderer.ts
+│   ├── assets.ts
+│   └── session.ts
 ├── assets/
 │   ├── images/
 │   └── audio/
@@ -92,13 +120,17 @@ dev/view/pages/
 └── styles.css
 ```
 
-`@game` is private bundled source inside the emitted route tree: Brahma skips
-it as direct output, but Bun bundles imports from it into the page. `assets` is
-public copied output and MUST NOT use the ignore prefix.
+In the colocated layout, `@game` is private bundled source inside the emitted
+route tree: Brahma skips it as direct output, but Bun bundles imports from it
+into the page. `assets` is public copied output and MUST NOT use the ignore
+prefix.
 
 For PWA and extension scaffolds, Karma is transformed to use
-`appViewDir: "dev"`, so place the same private/public directories relative to
-that configured app-view root.
+`appViewDir: "dev"` because the current probe apps are simpler and emit
+mode-specific files from `dev`. That scaffold detail is not a canvas-game
+architecture rule. For larger PWA, extension, or web games, prefer a focused
+view root when the project can support it; otherwise use `ignoreDelimiter` for
+private modules that must sit inside the configured app-view root.
 
 Tests can live outside `appViewDir` when the project setup supports that, or in
 an ignored private directory. Never place tests where Brahma will emit them as
@@ -191,7 +223,7 @@ status outside the bitmap:
 ```ts
 import { m } from "@cyftec/maya/core";
 import { signal, tmpl } from "@cyftec/maya/signal";
-import { GameCanvas } from "./@game/canvas-game.js";
+import { GameCanvas } from "../components/GameCanvas.js";
 
 const score = signal(0);
 const error = signal("");
@@ -1159,6 +1191,8 @@ phase/score/status, and an appropriate alternative interaction strategy.
 
 - [ ] Shared Maya application specification also followed.
 - [ ] UI profile followed for DOM menus/HUD/settings.
+- [ ] Game engine/source modules live outside emitted route output, or under an
+      ignored route-local directory by deliberate choice.
 - [ ] Canvas/context creation happens after mount.
 - [ ] One plain `GameSession` owns loop, input, observers, assets, and audio.
 - [ ] `dispose()` is complete and idempotent.

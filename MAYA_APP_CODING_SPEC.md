@@ -511,7 +511,7 @@ Supported application modes are `web` (default), `pwa`, and `ext`.
 `brahma stage` installs generated config and dependencies before building, so
 a separate initial `brahma install` is not required by the current workflow.
 
-### 9.2 Current scaffold layout
+### 9.2 App source and view-root layout
 
 The shipped web scaffold is copied from
 `brahma/src/probe-helpers/probe/apps/web`, with shared Karma files copied from
@@ -555,9 +555,41 @@ PWA and extension scaffolds start from the same base Karma file and are
 transformed during create/reset to use their mode-specific app type,
 dependencies, `publishDir: "prod"`, and `appViewDir: "dev"`.
 
-Do not silently change `appViewDir` to a different invented “canonical”
-layout. A project may deliberately configure another subtree, but agents MUST
-read `_karma/karma.ts` and follow that project.
+This structure is a build-boundary choice, not a rule that web, PWA,
+extension, or canvas-game apps require different architecture. `appViewDir` is
+the directory Brahma recursively treats as buildable view output. If that root
+also contains controllers, models, game engines, API clients, parsers, or other
+business modules, Brahma must inspect more files and will emit ordinary
+non-page TypeScript as standalone JavaScript unless those files are ignored.
+
+There are two valid ways to keep private source from becoming public output:
+
+1. Put private modules inside `appViewDir` with a basename that starts with
+   `ignoreDelimiter`, such as `@components`, `@elements`, `@game`, or
+   `@models`. This is useful for route-local helpers and colocated modules, but
+   heavy use can make the route tree noisy.
+2. Keep `appViewDir` focused on route pages only, such as
+   `appViewDir: "dev/view/pages"`, and place reusable view modules in sibling
+   source directories like `dev/view/components` and `dev/view/elements`.
+   Place business logic in sibling source directories such as
+   `dev/controllers`, `dev/models`, `dev/services`, or `dev/game`. These files
+   are bundled when imported by a page, but they are not scanned as route
+   output.
+
+The web scaffold uses the second pattern because `brahma create` is most often
+used for web apps and the sample is intended to show an MVC-friendly layout
+that avoids both view-folder bloat and widespread ignore-prefix noise.
+
+The current PWA and extension scaffolds are intentionally simpler probe apps,
+so their transformed Karma uses `appViewDir: "dev"`. That difference reflects
+the current sample complexity and mode-specific emitted files such as
+manifests, service workers, content scripts, and popup pages. It does not mean
+PWA or extension apps cannot use a more explicit MVC-style source layout when a
+project needs one.
+
+Do not silently change `appViewDir` to a different invented canonical layout.
+A project may deliberately configure another subtree, but agents MUST read
+`_karma/karma.ts` and follow that project.
 
 Within `appViewDir`:
 
@@ -831,6 +863,8 @@ root-relative public path and verify direct route loading.
 
 - [ ] Read this file and every applicable profile.
 - [ ] Read the target project's `_karma/karma.ts`; do not assume its paths.
+- [ ] Keep `appViewDir` focused on intended public view output, or use
+      `ignoreDelimiter` deliberately for private modules inside it.
 - [ ] Use `@cyftec/maya/core` and `@cyftec/maya/signal`.
 - [ ] Default-export a deterministic complete HTML page getter.
 - [ ] Use `component()` / `fragment()` only for Maya UI composition.
