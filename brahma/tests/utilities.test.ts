@@ -224,7 +224,9 @@ describe("probe helpers", () => {
     const root = await makeTempDir();
     await expect(
       transformWebKarmaToNonWebKarma("pwa", path.join(root, "missing.ts")),
-    ).rejects.toBe(`Invalid karma path provided - '${path.join(root, "missing.ts")}'`);
+    ).rejects.toBe(
+      `Invalid karma path provided - '${path.join(root, "missing.ts")}'`,
+    );
     await rm(root, { recursive: true });
   });
 
@@ -234,9 +236,9 @@ describe("probe helpers", () => {
     await writeText(blockingFile, "not a directory");
     const error = spyOn(console, "error").mockImplementation(() => {});
 
-    await expect(copyApp("web", path.join(blockingFile, "app"))).rejects.toBeInstanceOf(
-      ProcessExit,
-    );
+    await expect(
+      copyApp("web", path.join(blockingFile, "app")),
+    ).rejects.toBeInstanceOf(ProcessExit);
     await expect(
       copyBaseKarmaFiles("web", path.join(blockingFile, "app")),
     ).rejects.toBeInstanceOf(ProcessExit);
@@ -400,7 +402,7 @@ describe("version and process utilities", () => {
     expect(getBrahmaPackageJsonPath()).toBe(
       path.join(getBrahmaRootPath(), "package.json"),
     );
-    expect(await getCurrentBrahmaVersion()).toBe("0.0.16");
+    expect(await getCurrentBrahmaVersion()).toBe("0.0.17");
   });
 
   test("exits for missing or versionless package metadata", async () => {
