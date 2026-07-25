@@ -204,7 +204,7 @@ describe("root publish orchestration", () => {
       "/repo/brahma/package.json",
       "1.2.3",
     );
-    expect(updateKarmaProbe).toHaveBeenCalledTimes(2);
+    expect(updateKarmaProbe).toHaveBeenCalledTimes(1);
     expect(updateKarmaProbe).toHaveBeenCalledWith("1.2.3");
   });
 

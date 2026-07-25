@@ -35,10 +35,10 @@ export async function prePublishCleanup(
   }
 
   console.log("Replacing workspace:* dependencies with actual versions...\n");
+  await updateKarmaProbe(targetVersion);
   for (const pkgDirName of packageDirs) {
     const pkgPath = path.join(repoRoot, pkgDirName, "package.json");
     await updatePackageJson(pkgPath, targetVersion);
-    await updateKarmaProbe(targetVersion);
   }
 
   console.log(
