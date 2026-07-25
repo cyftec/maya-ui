@@ -15,8 +15,8 @@
  *
  */
 
-import { exists } from "node:fs/promises";
 import path from "node:path";
+import { fileOrDirExists } from "./utils/node-methods";
 
 export const getBrahmaRootPath = () => path.resolve(__dirname, "../");
 
@@ -26,7 +26,7 @@ export const getBrahmaPackageJsonPath = () =>
 export const getCurrentBrahmaVersion = async (
   brahmaPackageJsonPath = getBrahmaPackageJsonPath(),
 ) => {
-  const brahmaPackageJsonExist = await exists(brahmaPackageJsonPath);
+  const brahmaPackageJsonExist = await fileOrDirExists(brahmaPackageJsonPath);
   if (!brahmaPackageJsonExist) {
     console.error(`'package.json' file is missing in brahma project.`);
     process.exit(1);

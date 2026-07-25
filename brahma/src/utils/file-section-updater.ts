@@ -17,7 +17,7 @@ export const splitText = (
     ["", text],
   );
 
-export const updateSectionInFile = async (
+export const getFileContentWithUpdatedSection = async (
   filePath: string,
   sectionSplittersPathArray: string[],
   updatedSectionText: string,
@@ -56,5 +56,20 @@ export const updateSectionInFile = async (
 
   const postSectionText = restOfText.slice(postSectionTextStartIndex);
   const updatedFileText = `${preSectionText}${updatedSectionText}${postSectionText}`;
+  return updatedFileText;
+};
+
+export const updateSectionInFile = async (
+  filePath: string,
+  sectionSplittersPathArray: string[],
+  updatedSectionText: string,
+  sectionType: keyof typeof SectionEnclosers = "object",
+) => {
+  const updatedFileText = await getFileContentWithUpdatedSection(
+    filePath,
+    sectionSplittersPathArray,
+    updatedSectionText,
+    sectionType,
+  );
   await Bun.write(filePath, updatedFileText);
 };

@@ -1,8 +1,8 @@
-import { exists, mkdir } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import type { Karma, KarmaConfigObject } from "../probe/karma-probe/types";
+import type { Karma, KarmaConfigObject } from "../probe-helpers";
 import { getKarmaPaths } from "./file-path-getters";
 import { ValidateAndExitIf } from "./file-validations";
+import { createDir, fileOrDirExists } from "./node-methods";
 
 export const nonCachedImport = async (modulePath: string) => {
   const mpWithParam = `${pathToFileURL(modulePath).href}?imported=${Date.now()}`;
@@ -10,7 +10,7 @@ export const nonCachedImport = async (modulePath: string) => {
 };
 
 export const createDirIfNotExist = async (dirPath: string) => {
-  const dirAlreadyExists = await exists(dirPath);
+  const dirAlreadyExists = await fileOrDirExists(dirPath);
   if (dirAlreadyExists) {
     console.log(`Directory '${dirPath}' already exists.`);
     return;
@@ -20,7 +20,7 @@ export const createDirIfNotExist = async (dirPath: string) => {
   if (!dirName) throw `Incorrect path for creating app.`;
 
   try {
-    await mkdir(dirPath);
+    await createDir(dirPath);
   } catch (error) {
     console.log(dirPath);
     throw error;

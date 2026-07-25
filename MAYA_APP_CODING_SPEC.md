@@ -4,7 +4,7 @@
 
 **Audience:** coding agents and engineers building Maya applications
 
-**Verified against:** `@cyftec/maya` 0.0.14 and `@cyftec/brahma` 0.0.14 in this repository
+**Verified against:** `@cyftec/maya` 0.0.15 and `@cyftec/brahma` 0.0.15 in this repository
 
 **Required companion:** choose one profile below
 
@@ -499,12 +499,12 @@ Supported application modes are `web` (default), `pwa`, and `ext`.
 
 | Command | Alias | Purpose |
 | --- | --- | --- |
-| `brahma create <name> [--web\|--pwa\|--ext]` | `brahma c` | Create a scaffold. |
+| `brahma create <name> [--web\|--pwa\|--ext]` | `brahma c` | Copy an embedded scaffold and Karma files. |
 | `brahma install [package]` | `brahma i` | Generate config/install all dependencies, or add one package. |
 | `brahma uninstall [package]` | `brahma u` | Remove generated install artifacts, or one package. |
 | `brahma stage` | `brahma s` | Rebuild staging output, serve it, and watch source. |
 | `brahma publish` | `brahma p` | Build production output and minify page bundles. |
-| `brahma reset [--soft\|--hard]` | `brahma r` | Restore scaffold Karma; hard resets mode to web. |
+| `brahma reset [--soft\|--hard]` | `brahma r` | Regenerate Karma files; hard resets mode to web. |
 | `brahma version` | `brahma v` | Show the installed Brahma and configured Maya versions. |
 | `brahma version --v=<version\|latest>` | `brahma v` | Change the global CLI version. |
 
@@ -513,7 +513,9 @@ a separate initial `brahma install` is not required by the current workflow.
 
 ### 9.2 Current scaffold layout
 
-The shipped web scaffold uses:
+The shipped web scaffold is copied from
+`brahma/src/probe-helpers/probe/apps/web`, with shared Karma files copied from
+`brahma/src/probe-helpers/probe/base-karma`. It uses:
 
 ```text
 my-app/
@@ -521,31 +523,37 @@ my-app/
 │   ├── karma.ts
 │   └── types.ts
 └── dev/
+    ├── controllers/
+    ├── models/
     └── view/
-        ├── @elements/
+        ├── elements/
         │   └── reusable-ui.ts
-        ├── @game/
-        │   ├── core.ts
-        │   └── canvas.ts
-        ├── assets/
-        │   ├── images/
-        │   └── audio/
-        ├── about/
-        │   └── page.ts
-        ├── page.ts
-        └── styles.css
+        └── pages/
+            ├── about/
+            │   └── page.ts
+            ├── living-room/
+            │   ├── @components/
+            │   ├── sample-assets/
+            │   └── page.ts
+            ├── contacts.page.ts
+            ├── examples.page.ts
+            └── page.ts
 ```
 
 The checked-in scaffold config has:
 
 ```ts
 appSrcDir: "dev";
-appViewDir: "dev/view";
+appViewDir: "dev/view/pages";
 buildablePageFileName: "page.ts";
 buildableManifestFileName: "manifest.ts";
 ignoreDelimiter: "@";
 stagingDir: "stage";
 ```
+
+PWA and extension scaffolds start from the same base Karma file and are
+transformed during create/reset to use their mode-specific app type,
+dependencies, `publishDir: "prod"`, and `appViewDir: "dev"`.
 
 Do not silently change `appViewDir` to a different invented “canonical”
 layout. A project may deliberately configure another subtree, but agents MUST
@@ -562,9 +570,12 @@ Within `appViewDir`:
 - empty output directories are removed;
 - staging/production output is recreated, so never edit it as source.
 
-The `@game`, `@components`, or `@elements` convention is therefore useful for
-private bundled modules inside the current `dev/view` boundary. Public assets
-must not be placed under an ignored directory.
+Reusable modules may also live outside `appViewDir` but inside `appSrcDir`,
+such as the generated web scaffold's `dev/view/elements`; they are bundled
+when imported by a page, but they are not emitted as route outputs. The
+`@game`, `@components`, or `@elements` convention remains useful for private
+bundled modules inside the emitted route tree. Public assets must not be placed
+under an ignored directory.
 
 ### 9.3 Karma rules
 
@@ -616,9 +627,9 @@ With `page.ts` as the configured filename:
 
 | Source | HTML | JavaScript | URL |
 | --- | --- | --- | --- |
-| `dev/view/page.ts` | `stage/index.html` | `stage/main.js` | `/` |
-| `dev/view/about/page.ts` | `stage/about/index.html` | `stage/about/main.js` | `/about/` |
-| `dev/view/help.page.ts` | `stage/help.html` | `stage/help.main.js` | `/help.html` |
+| `dev/view/pages/page.ts` | `stage/index.html` | `stage/main.js` | `/` |
+| `dev/view/pages/about/page.ts` | `stage/about/index.html` | `stage/about/main.js` | `/about/` |
+| `dev/view/pages/help.page.ts` | `stage/help.html` | `stage/help.main.js` | `/help.html` |
 
 `homepage.ts` is not a page. It is emitted as `homepage.js` unless ignored.
 

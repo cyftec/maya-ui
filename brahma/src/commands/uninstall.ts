@@ -1,8 +1,8 @@
-import { exists, rm } from "node:fs/promises";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters";
-import type { Karma } from "../probe/karma-probe/types";
+import type { Karma } from "../probe-helpers";
 import { getCWD } from "../utils/common";
 import { runShellCommand, type CommandRunner } from "../utils/command-runner";
+import { fileOrDirExists, removeFileOrDir } from "../utils/node-methods";
 
 export const removeInstalledFiles = async (
   appRootPath: string,
@@ -11,9 +11,9 @@ export const removeInstalledFiles = async (
   const files = Object.values(karma.brahma.build.disposable);
   for (const file of files) {
     const filePath = `${appRootPath}/${file}`;
-    if (await exists(filePath)) {
+    if (await fileOrDirExists(filePath)) {
       console.log(`deleting: ${filePath}`);
-      await rm(filePath, { recursive: true });
+      await removeFileOrDir(filePath);
     }
   }
 };

@@ -1,8 +1,3 @@
 #!/usr/bin/env bun
-import { exitProcessIfDevMode } from "./utils/dev-mode-check";
-import { syncKarmaFilesToSampleApps } from "../src/karma-probe-syncer";
 import { $ } from "bun";
-
 await $`bun run test`;
-await exitProcessIfDevMode("commit");
-await syncKarmaFilesToSampleApps();

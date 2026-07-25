@@ -1,18 +1,19 @@
-import { exists, mkdir } from "node:fs/promises";
-import type { AppMode } from "../probe/karma-probe/types";
-import { runShellCommand, type CommandRunner } from "../utils/command-runner";
+import { copyApp, copyBaseKarmaFiles, type AppMode } from "../probe-helpers";
 import { getCWD } from "../utils/common";
+import { transformWebKarmaToNonWebKarma } from "../probe-helpers/karma-transformer";
+import path from "node:path";
+import { createDir, fileOrDirExists } from "../utils/node-methods";
 
 export const createAppRootDir = async (appRootPath: string) => {
   console.log(`Creating app in '${appRootPath}' directory.`);
-  if (await exists(appRootPath)) {
+  if (await fileOrDirExists(appRootPath)) {
     console.log(`Directory '${appRootPath}' already exists.`);
     process.exit(1);
   }
 
   const appRootDirName = appRootPath.split("/").pop();
   if (!appRootDirName) throw `Incorrect path for creating app.`;
-  await mkdir(appRootPath);
+  await createDir(appRootPath);
 };
 
 export const getCreateAppCommandArgs = (
@@ -49,17 +50,19 @@ export const getCreateAppCommandArgs = (
   return [appRootDirName];
 };
 
-export const createApp = async (
-  cmdArgs: string[],
-  runCommand: CommandRunner = runShellCommand,
-) => {
+export const createApp = async (cmdArgs: string[]) => {
   const [appRootDirName, appMode] = getCreateAppCommandArgs(cmdArgs);
-
+  const appType: AppMode = appMode || "web";
   const cwd = getCWD();
   const appRootPath = `${cwd}/${appRootDirName}`;
 
   await createAppRootDir(appRootPath);
-  await runCommand(`sample-maya app ${appMode || "web"} ${appRootPath}`, cwd);
+  await copyApp(appType, appRootPath);
+  await copyBaseKarmaFiles(appType, appRootPath);
+  if (appType !== "web") {
+    const targetKarmaPath = path.join(appRootPath, "_karma", "karma.ts");
+    await transformWebKarmaToNonWebKarma(appType, targetKarmaPath);
+  }
 
   console.log(`'${appRootDirName}' directory created.`);
   console.log(`

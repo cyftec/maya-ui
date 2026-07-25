@@ -1,3 +1,11 @@
+import type { AppMode } from "../probe-helpers";
+
+export const APP_MODE_DEPENDENCIES_MAP = {
+  ext: { "@types/chrome": "0.0.297" },
+  pwa: { "@types/web-app-manifest": "1.0.8" },
+  web: {},
+} as const satisfies Record<AppMode, Record<string, string>>;
+
 export const DEST_HTML_DEFAULT_FILE_NAME = "index";
 export const DEST_JS_DEFAULT_FILE_NAME = "main";
 export const DEST_HTML_FILE_EXT = ".html";

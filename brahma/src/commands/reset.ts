@@ -1,11 +1,13 @@
-import { exists, rm } from "node:fs/promises";
-import type { AppMode, KarmaResetMode } from "../probe/karma-probe/types.ts";
-import { getCWD, getKarma } from "../utils/common.ts";
+import path from "node:path";
 import {
-  runShellCommand,
-  type CommandRunner,
-} from "../utils/command-runner.ts";
+  transformWebKarmaToNonWebKarma,
+  copyBaseKarmaFiles,
+  type AppMode,
+  type KarmaResetMode,
+} from "../probe-helpers";
+import { getCWD, getKarma } from "../utils/common.ts";
 import { getKarmaPaths } from "../utils/file-path-getters.ts";
+import { fileOrDirExists, removeFileOrDir } from "../utils/node-methods.ts";
 
 export const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
   const resetModeSpecifier = cmdArgs.length ? cmdArgs[0] : "--soft";
@@ -22,10 +24,7 @@ export const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
   return resetMode;
 };
 
-export const resetApp = async (
-  cmdArgs: string[],
-  runCommand: CommandRunner = runShellCommand,
-) => {
+export const resetApp = async (cmdArgs: string[]) => {
   const resetMode = getResetMode(cmdArgs);
   const appRootPath = getCWD();
   let appMode: AppMode = "web";
@@ -34,18 +33,21 @@ export const resetApp = async (
 
   const [karmaPath, karmaTypesPath] = getKarmaPaths(appRootPath);
   // fix karma if it exist or add new karma if it doesn't
-  if (await exists(karmaPath)) {
+  if (await fileOrDirExists(karmaPath)) {
     const karma = await getKarma(appRootPath);
     appMode = resetMode === "hard" ? "web" : karma.maya.appType;
-    await rm(karmaPath);
+    await removeFileOrDir(karmaPath);
   }
-  if (await exists(karmaTypesPath)) {
-    await rm(karmaTypesPath);
+  if (await fileOrDirExists(karmaTypesPath)) {
+    await removeFileOrDir(karmaTypesPath);
   }
-  await runCommand(
-    `sample-maya karma ${appMode || "web"} ${appRootPath}`,
-    appRootPath,
-  );
+
+  const appType: AppMode = appMode || "web";
+  await copyBaseKarmaFiles(appType, appRootPath);
+  if (appType !== "web") {
+    const targetKarmaPath = path.join(appRootPath, "_karma", "karma.ts");
+    await transformWebKarmaToNonWebKarma(appType, targetKarmaPath);
+  }
 
   process.exit();
 };

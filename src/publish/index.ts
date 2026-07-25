@@ -1,5 +1,5 @@
 import { $ } from "bun";
-import { isDevMode, WORKSPACE_PACKAGE_DIRS } from "../common";
+import { WORKSPACE_PACKAGE_DIRS } from "../common";
 import { prePublishCleanup } from "./pre-publish";
 import { verifyPublishState } from "./verify-version";
 import { postPublishReset } from "./post-publish";
@@ -8,11 +8,6 @@ const targetVersion = process.argv[2];
 if (!targetVersion) {
   console.warn("Version is missing");
   console.error("Usage: bun run publish <version>");
-  process.exit(1);
-}
-
-if (await isDevMode()) {
-  console.error(`Publishing of packages should happen only in 'publish' mode.`);
   process.exit(1);
 }
 

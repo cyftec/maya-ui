@@ -12,7 +12,10 @@ import {
 import { setupBuild } from "../src/builder/build-setup.ts";
 import { ProcessExit, makeKarma, makeTempDir, writeText } from "./fixtures.ts";
 
-const mayaCorePath = path.resolve(import.meta.dir, "../../maya/src/core/index.ts");
+const mayaCorePath = path.resolve(
+  import.meta.dir,
+  "../../maya/src/core/index.ts",
+);
 const roots: string[] = [];
 
 const newRoot = async () => {
@@ -39,13 +42,19 @@ const writeBuildFixture = async (root: string) => {
     path.join(view, "about.page.ts"),
     pageSource("About", "about.main.js"),
   );
-  await writeText(path.join(view, "homepage.ts"), "export const value = 'asset';");
+  await writeText(
+    path.join(view, "homepage.ts"),
+    "export const value = 'asset';",
+  );
   await writeText(
     path.join(view, "manifest.ts"),
     "export default { name: 'Fixture', start_url: '/' };",
   );
   await writeText(path.join(view, "worker.ts"), "export const worker = true;");
-  await writeText(path.join(view, "assets/styles.css"), "body { color: navy; }");
+  await writeText(
+    path.join(view, "assets/styles.css"),
+    "body { color: navy; }",
+  );
   await writeText(path.join(view, "assets/.DS_Store"), "ignored");
   await writeText(path.join(view, "@private/secret.txt"), "ignored");
   await writeText(path.join(view, "empty/.DS_Store"), "ignored");
@@ -169,7 +178,10 @@ describe("build integration", () => {
 
   test("skips a page HTML error only when configured", async () => {
     const root = await newRoot();
-    await writeText(path.join(root, "dev/view/page.ts"), "export default undefined;");
+    await writeText(
+      path.join(root, "dev/view/page.ts"),
+      "export default undefined;",
+    );
     const log = spyOn(console, "log").mockImplementation(() => {});
     await buildApp(root, makeKarma({ skipErrorAndBuildNext: true }), false);
     expect(await exists(path.join(root, "stage/index.html"))).toBe(false);
@@ -180,13 +192,16 @@ describe("build integration", () => {
 
   test("exits on page HTML errors when skipping is disabled", async () => {
     const root = await newRoot();
-    await writeText(path.join(root, "dev/view/page.ts"), "export default undefined;");
-    const log = spyOn(console, "log").mockImplementation(() => {});
-    const exit = spyOn(process, "exit").mockImplementation(
-      ((code?: number | string | null): never => {
-        throw new ProcessExit(Number(code || 0));
-      }) as typeof process.exit,
+    await writeText(
+      path.join(root, "dev/view/page.ts"),
+      "export default undefined;",
     );
+    const log = spyOn(console, "log").mockImplementation(() => {});
+    const exit = spyOn(process, "exit").mockImplementation(((
+      code?: number | string | null,
+    ): never => {
+      throw new ProcessExit(Number(code || 0));
+    }) as typeof process.exit);
     await expect(buildApp(root, makeKarma(), false)).rejects.toMatchObject({
       code: 1,
     });

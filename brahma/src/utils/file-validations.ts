@@ -1,16 +1,16 @@
-import { exists, readdir } from "node:fs/promises";
-import type { Karma } from "../probe/karma-probe/types";
+import type { Karma } from "../probe-helpers";
 import {
   getAppSrcPath,
   getAppViewPath,
   getKarmaPaths,
   getPackageJsonPath,
 } from "./file-path-getters";
+import { fileOrDirExists, readDir } from "./node-methods";
 
 export const ValidateAndExitIf = {
   karmaFileMissing: async (appRootDirPath: string) => {
     const [karmaFilePath] = getKarmaPaths(appRootDirPath);
-    if (!(await exists(karmaFilePath))) {
+    if (!(await fileOrDirExists(karmaFilePath))) {
       console.log(
         `No _karma/karma.ts found in directory - '${appRootDirPath}'`,
       );
@@ -33,8 +33,8 @@ export const ValidateAndExitIf = {
   },
   appSrcDirMissing: async (appRootDirPath: string, karma: Karma) => {
     const appSrcDirPath = getAppSrcPath(appRootDirPath, karma);
-    if (!(await exists(appSrcDirPath))) {
-      const files = await readdir(appRootDirPath);
+    if (!(await fileOrDirExists(appSrcDirPath))) {
+      const files = await readDir(appRootDirPath);
       console.log(
         `ERROR: App source directory '${karma.brahma.build.appSrcDir}' is either missing or have a different name.`,
       );
@@ -45,7 +45,7 @@ export const ValidateAndExitIf = {
   },
   appViewDirMissing: async (appRootDirPath: string, karma: Karma) => {
     const appViewDirPath = getAppViewPath(appRootDirPath, karma);
-    if (!(await exists(appViewDirPath))) {
+    if (!(await fileOrDirExists(appViewDirPath))) {
       console.log(
         `ERROR: Buildable app view source directory '${karma.brahma.build.appViewDir}' is either missing or have a different path or name.`,
       );
@@ -57,7 +57,7 @@ export const ValidateAndExitIf = {
   },
   packageJsonMissing: async (appRootDirPath: string) => {
     const packageJsonPath = getPackageJsonPath(appRootDirPath);
-    if (!(await exists(packageJsonPath))) {
+    if (!(await fileOrDirExists(packageJsonPath))) {
       console.log(`ERROR: App not installed. 'package.json' file is missing.`);
       console.log(`Run 'brahma install' command to install app first.`);
       process.exit(1);

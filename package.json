@@ -3,17 +3,14 @@
   "private": true,
   "workspaces": [
     "maya",
-    "sample-maya-app",
     "brahma",
-    "website"
+    "website" 
   ],
   "scripts": {
-    "test": "bun run test:maya && bun run test:brahma",
+    "test": "bun run test:root && bun run test:maya && bun run test:brahma",
+    "test:root": "bun test ./tests/root-tooling.test.ts --coverage --coverage-skip-test-files tests",
     "test:maya": "bun run --cwd maya test",
-    "test:brahma": "bun run --cwd brahma test",
-    "dev": "bun ./src/dev/run-dev.ts && bun run clean && bun i",
-    "dev:exit": "bun ./src/dev/exit-dev.ts",
-    "dev:modecheck": "bun ./src/dev/mode-check.ts",
+    "test:brahma": "bun run --cwd brahma test", 
     "clean:modules": "rm -rf node_modules maya/node_modules brahma/node_modules sample-maya-app/node_modules",
     "clean:packagejsonlocks": "rm -f package-lock.json maya/package-lock.json brahma/package-lock.json sample-maya-app/package-lock.json",
     "clean:bunlocks": "rm -f bun.lock maya/bun.lock brahma/bun.lock sample-maya-app/bun.lock",
@@ -21,6 +18,7 @@
     "clean:locks": "bun run clean:packagejsonlocks && bun run clean:bunlocks && bun run clean:bunlockbs",
     "clean:cache": "rm -rf ~/.bun/install/cache",
     "clean": "bun run clean:modules && bun run clean:locks",
+    "clean:install": "bun run clean && bun i",
     "publish": "bun run ./src/publish/index.ts",
     "docs": "bun run clean && bun run dev && cd website && dvbrm p && cd .. && bun run dev:exit && bun run dev:modecheck"
   },

@@ -1,5 +1,4 @@
-import { exists, mkdir } from "node:fs/promises";
-import type { Karma } from "../probe/karma-probe/types.ts";
+import type { Karma } from "../probe-helpers/index.ts";
 import { getCWD } from "../utils/common.ts";
 import {
   runShellCommand,
@@ -7,10 +6,11 @@ import {
 } from "../utils/command-runner.ts";
 import { syncPackageJsonToKarma } from "../utils/karma-file-updaters.ts";
 import { removeInstalledFiles } from "./uninstall.ts";
+import { createDir, fileOrDirExists } from "../utils/node-methods.ts";
 
 const installDotVsCodeDir = async (appRootPath: string, karma: Karma) => {
   const dotVsCodePath = `${appRootPath}/.vscode`;
-  await mkdir(dotVsCodePath);
+  await createDir(dotVsCodePath);
   const settingsPath = `${dotVsCodePath}/settings.json`;
   await Bun.write(
     settingsPath,
@@ -83,7 +83,7 @@ export const installPackageOrEverything = async (
   runCommand: CommandRunner = runShellCommand,
 ) => {
   const cwd = getCWD();
-  const packageJsonExist = await exists(`${cwd}/package.json`);
+  const packageJsonExist = await fileOrDirExists(`${cwd}/package.json`);
 
   if (!packageArgs.length || !packageJsonExist) {
     await installAllConfigsAndPackages(cwd, karma, runCommand);

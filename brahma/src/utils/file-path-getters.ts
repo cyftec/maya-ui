@@ -1,4 +1,4 @@
-import type { Karma } from "../probe/karma-probe/types";
+import type { Karma } from "../probe-helpers";
 import path from "node:path";
 
 export const getAppSrcPath = (appRootPath: string, karma: Karma): string => {

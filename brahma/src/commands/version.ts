@@ -1,9 +1,9 @@
-import { exists } from "node:fs/promises";
 import { getCWD, nonCachedImport } from "../utils/common";
 import { runShellCommand, type CommandRunner } from "../utils/command-runner";
 import { getKarmaPaths } from "../utils/file-path-getters";
 import { getCurrentBrahmaVersion } from "../brahma-version-getter";
-import type { KarmaConfigObject } from "../probe/karma-probe/types";
+import type { KarmaConfigObject } from "../probe-helpers";
+import { fileOrDirExists } from "../utils/node-methods";
 
 export const showVersionOnly = async () => {
   const brahmaV = await getCurrentBrahmaVersion();
@@ -11,7 +11,7 @@ export const showVersionOnly = async () => {
   let currentMayaV: string = "";
   try {
     const [karmaPath] = getKarmaPaths(cwd);
-    if (await exists(karmaPath)) {
+    if (await fileOrDirExists(karmaPath)) {
       const { karma } = (await nonCachedImport(karmaPath)) as KarmaConfigObject;
       currentMayaV = karma?.maya?.dependencies?.["@cyftec/maya"] || "";
     }

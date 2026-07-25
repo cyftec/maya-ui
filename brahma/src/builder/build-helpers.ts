@@ -1,11 +1,11 @@
-import { rm } from "node:fs/promises";
-import type { Karma } from "../probe/karma-probe/types";
+import type { Karma } from "../probe-helpers";
 import {
   DEST_HTML_DEFAULT_FILE_NAME,
   DEST_HTML_FILE_EXT,
   DEST_JS_DEFAULT_FILE_NAME,
   DEST_JS_FILE_EXT,
 } from "../utils/constants";
+import { removeFileOrDir } from "../utils/node-methods";
 import { zipTheFolder } from "../utils/zip-the-folder";
 
 export const isSrcPageFile = (srcPagePath: string, karma: Karma) => {
@@ -51,7 +51,7 @@ export const zipAndDeleteDir = async (
   await zipTheFolder(srcDirPath, buildZipFilePath);
   console.log(`Archive zip file generated: ${buildZipFilePath}`);
   console.log(`Deleting archived dir: ${srcDirPath}`);
-  await rm(srcDirPath, { recursive: true });
+  await removeFileOrDir(srcDirPath);
 };
 
 export const buildHtmlFnDef = `

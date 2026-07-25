@@ -74,11 +74,11 @@ each sprite a Maya component. Do not let the renderer mutate simulation state.
 
 ### 2.2 Current scaffold-friendly layout
 
-With the repository's current `appViewDir: "dev/view"` and
-`ignoreDelimiter: "@"`:
+With the repository's current web scaffold,
+`appViewDir: "dev/view/pages"` and `ignoreDelimiter: "@"`:
 
 ```text
-dev/view/
+dev/view/pages/
 ├── @game/
 │   ├── canvas-game.ts
 │   ├── core.ts
@@ -92,9 +92,13 @@ dev/view/
 └── styles.css
 ```
 
-`@game` is private bundled source: Brahma skips it as direct output, but Bun
-bundles imports from it into the page. `assets` is public copied output and
-MUST NOT use the ignore prefix.
+`@game` is private bundled source inside the emitted route tree: Brahma skips
+it as direct output, but Bun bundles imports from it into the page. `assets` is
+public copied output and MUST NOT use the ignore prefix.
+
+For PWA and extension scaffolds, Karma is transformed to use
+`appViewDir: "dev"`, so place the same private/public directories relative to
+that configured app-view root.
 
 Tests can live outside `appViewDir` when the project setup supports that, or in
 an ignored private directory. Never place tests where Brahma will emit them as

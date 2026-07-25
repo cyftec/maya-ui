@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
-import { exitProcessIfDevMode } from "./utils/dev-mode-check";
 
-await exitProcessIfDevMode("push");
+import { $ } from "bun";
+import { hasUncommittedChanges } from "../src/common";
+
+await hasUncommittedChanges();

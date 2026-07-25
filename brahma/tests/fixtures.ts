@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { Karma } from "../src/probe/karma-probe/types.ts";
+import type { Karma } from "../src/probe-helpers";
 
 export class ProcessExit extends Error {
   constructor(public readonly code: number) {

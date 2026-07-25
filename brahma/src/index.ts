@@ -39,13 +39,13 @@ export const execCli = async (argsv: string[] = Bun.argv) => {
   if (commands.install)
     await installPackageOrEverything(commands.install.args, karma);
 
+  if (commands.stage) await stageApp();
+
   await ValidateAndExitIf.appSrcDirMissing(cwd, karma);
   await ValidateAndExitIf.appViewDirMissing(cwd, karma);
   await ValidateAndExitIf.packageJsonMissing(cwd);
 
-  if (commands.stage) await stageApp();
   if (commands.publish) await publishApp();
-
 };
 
 if (import.meta.main) await execCli();

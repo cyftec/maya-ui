@@ -1,37 +1,34 @@
 import * as path from "path";
-import { isDevMode, REPO_ROOT } from "../common";
-import { disposePublishState, getPublishedState } from "./publish-state-helper";
-import { updateKarmaProbeMayaVersion } from "../../brahma/src/probe/karma-version-updatore";
-import { syncKarmaFilesToSampleApps } from "../karma-probe-syncer";
+import { REPO_ROOT, WORKSPACE_PACKAGE_DIRS } from "../common";
+import {
+  updateAndVerifyMayaVersionsInKarmaProbe,
+  updateAndVerifyVersionsInPackageJson,
+} from "../version-manager";
 
-export async function postPublishReset() {
-  if (await isDevMode()) {
-    console.error(`This should not be reached is already in 'dev' mode.`);
-    process.exit(1);
+type PostPublishResetOptions = {
+  repoRoot?: string;
+  packageDirs?: readonly string[];
+  updatePackageJson?: typeof updateAndVerifyVersionsInPackageJson;
+  updateKarmaProbe?: typeof updateAndVerifyMayaVersionsInKarmaProbe;
+};
+
+export async function postPublishReset({
+  repoRoot = REPO_ROOT,
+  packageDirs = WORKSPACE_PACKAGE_DIRS,
+  updatePackageJson = updateAndVerifyVersionsInPackageJson,
+  updateKarmaProbe = updateAndVerifyMayaVersionsInKarmaProbe,
+}: PostPublishResetOptions = {}) {
+  const WORKSPACE_VERSION = "workspace:*";
+  console.log(
+    `Replacing original dependencies with '${WORKSPACE_VERSION}' versions...\n`,
+  );
+  for (const pkgDirName of packageDirs) {
+    const pkgPath = path.join(repoRoot, pkgDirName, "package.json");
+    await updatePackageJson(pkgPath, WORKSPACE_VERSION);
+    await updateKarmaProbe(WORKSPACE_VERSION);
   }
 
-  try {
-    await updateKarmaProbeMayaVersion("workspace:*");
-    await syncKarmaFilesToSampleApps();
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
-  }
-
-  try {
-    const modifiedPackages = await getPublishedState();
-    for (const { dirName, originalDeps } of modifiedPackages) {
-      const pkgPath = path.join(REPO_ROOT, dirName, "package.json");
-      const updatedPkg = await Bun.file(pkgPath).json();
-      Object.entries(originalDeps).forEach(([depName, depsObject]) => {
-        Object.entries(depsObject).forEach(([pkgName, version]) => {
-          updatedPkg[depName][pkgName] = version;
-        });
-      });
-      await Bun.write(pkgPath, JSON.stringify(updatedPkg, null, "  ") + "\n");
-    }
-    await disposePublishState();
-  } catch {
-    console.log("No publish state found. Nothing to restore.");
-  }
+  console.log(
+    `✓ Workspace dependencies reset back with version - ${WORKSPACE_VERSION}`,
+  );
 }

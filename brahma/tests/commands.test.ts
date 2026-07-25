@@ -104,16 +104,18 @@ describe("help and create commands", () => {
     );
   });
 
-  test("creates the computed absolute target and invokes the scaffold CLI", async () => {
+  test("creates the computed absolute target and copies the embedded scaffold", async () => {
     const log = spyOn(console, "log").mockImplementation(() => {});
-    await expectProcessExit(() =>
-      createApp(["nested-app", "--pwa"], runCommand),
+    await expectProcessExit(() => createApp(["pwa-fixture-app", "--pwa"]));
+    const appRoot = path.join(root, "pwa-fixture-app");
+    expect(await exists(appRoot)).toBe(true);
+    expect(await exists(path.join(appRoot, "dev/page.ts"))).toBe(true);
+    expect(await exists(path.join(appRoot, "dev/sw.ts"))).toBe(true);
+    expect(await exists(path.join(appRoot, "_karma/karma.ts"))).toBe(true);
+    expect(await Bun.file(path.join(appRoot, "_karma/karma.ts")).text()).toContain(
+      'appType: "pwa"',
     );
-    expect(await exists(path.join(root, "nested-app"))).toBe(true);
-    expect(commands).toContainEqual({
-      command: `sample-maya app pwa ${path.join(root, "nested-app")}`,
-      cwd: root,
-    });
+    expect(commands).toEqual([]);
     log.mockRestore();
   });
 
@@ -175,28 +177,28 @@ describe("version and reset commands", () => {
     const typesPath = path.join(root, "_karma/types.ts");
     await writeText(karmaPath, karmaModuleText(karma));
     await writeText(typesPath, "export {};");
-    await expectProcessExit(() => resetApp(["--soft"], runCommand));
-    expect(await exists(karmaPath)).toBe(false);
-    expect(await exists(typesPath)).toBe(false);
-    expect(commands).toContainEqual({
-      command: `sample-maya karma ext ${root}`,
-      cwd: root,
-    });
+    await expectProcessExit(() => resetApp(["--soft"]));
+    expect(await exists(karmaPath)).toBe(true);
+    expect(await exists(typesPath)).toBe(true);
+    expect(await Bun.file(karmaPath).text()).toContain('appType: "ext"');
+    expect(commands).toEqual([]);
 
     commands = [];
     await mkdir(path.join(root, "_karma"), { recursive: true });
     await writeText(karmaPath, karmaModuleText(karma));
-    await expectProcessExit(() => resetApp(["--hard"], runCommand));
-    expect(commands).toContainEqual({
-      command: `sample-maya karma web ${root}`,
-      cwd: root,
-    });
+    await expectProcessExit(() => resetApp(["--hard"]));
+    expect(await Bun.file(karmaPath).text()).toContain('appType: "web"');
+    expect(commands).toEqual([]);
   });
 });
 
 describe("install and uninstall commands", () => {
   test("installs all generated config and packages after removing disposable files", async () => {
     const karma = makeKarma();
+    karma.tsconfig = {
+      compilerOptions: { strict: true },
+      include: ["dev/**/*"],
+    };
     await writeText(path.join(root, "stage/old.txt"), "old");
     await writeText(path.join(root, "package.json"), '{"old":true}');
     const log = spyOn(console, "log").mockImplementation(() => {});
@@ -212,6 +214,9 @@ describe("install and uninstall commands", () => {
     ).toEqual(karma.vscode.settings);
     expect(await Bun.file(path.join(root, ".gitignore")).text()).toBe(
       karma.git.ignore.join("\n"),
+    );
+    expect(await Bun.file(path.join(root, "tsconfig.json")).json()).toEqual(
+      karma.tsconfig,
     );
     expect(commands).toContainEqual({ command: "bun i", cwd: root });
     log.mockRestore();

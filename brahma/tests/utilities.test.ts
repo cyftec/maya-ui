@@ -15,7 +15,11 @@ import {
   getBrahmaRootPath,
   getCurrentBrahmaVersion,
 } from "../src/brahma-version-getter.ts";
-import { updateKarmaProbeMayaVersion } from "../src/probe/karma-version-updatore.ts";
+import { transformWebKarmaToNonWebKarma } from "../src/probe-helpers/karma-transformer.ts";
+import {
+  copyApp,
+  copyBaseKarmaFiles,
+} from "../src/probe-helpers/probe-copier/index.ts";
 import { getParsedCommands } from "../src/utils/command-parser.ts";
 import {
   createDirIfNotExist,
@@ -215,6 +219,34 @@ describe("structured file updates", () => {
   });
 });
 
+describe("probe helpers", () => {
+  test("rejects invalid karma transform paths", async () => {
+    const root = await makeTempDir();
+    await expect(
+      transformWebKarmaToNonWebKarma("pwa", path.join(root, "missing.ts")),
+    ).rejects.toBe(`Invalid karma path provided - '${path.join(root, "missing.ts")}'`);
+    await rm(root, { recursive: true });
+  });
+
+  test("exits when scaffold copy targets cannot be created", async () => {
+    const root = await makeTempDir();
+    const blockingFile = path.join(root, "blocking-file");
+    await writeText(blockingFile, "not a directory");
+    const error = spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(copyApp("web", path.join(blockingFile, "app"))).rejects.toBeInstanceOf(
+      ProcessExit,
+    );
+    await expect(
+      copyBaseKarmaFiles("web", path.join(blockingFile, "app")),
+    ).rejects.toBeInstanceOf(ProcessExit);
+    expect(error).toHaveBeenCalledTimes(2);
+
+    error.mockRestore();
+    await rm(root, { recursive: true });
+  });
+});
+
 describe("validations", () => {
   test("accepts a complete app layout", async () => {
     const root = await makeTempDir();
@@ -384,19 +416,6 @@ describe("version and process utilities", () => {
     );
     expect(error).toHaveBeenCalledTimes(2);
     error.mockRestore();
-    await rm(root, { recursive: true });
-  });
-
-  test("updates a supplied karma probe and verifies the result", async () => {
-    const root = await makeTempDir();
-    await mkdir(path.join(root, "_karma"), { recursive: true });
-    const probe = path.join(root, "_karma/karma.ts");
-    await writeText(
-      probe,
-      "type Karma = any; export const karma: Karma = { maya: { dependencies: { old: true } }, tail: true };",
-    );
-    await updateKarmaProbeMayaVersion("1.2.3", probe);
-    expect(await Bun.file(probe).text()).toContain('{"@cyftec/maya": "1.2.3"}');
     await rm(root, { recursive: true });
   });
 

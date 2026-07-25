@@ -1,4 +1,3 @@
-import { exists, lstat, readdir, rm } from "node:fs/promises";
 import {
   DS_STORE_REGEX,
   NO_HTML_ERROR,
@@ -18,9 +17,15 @@ import {
   zipAndDeleteDir,
 } from "./build-helpers.ts";
 import type { BunFile } from "bun";
-import type { Karma } from "../probe/karma-probe/types.ts";
+import type { Karma } from "../probe-helpers/index.ts";
 import { setupBuild } from "./build-setup.ts";
 import { getAppViewPath, getBuildDirPath } from "../utils/file-path-getters.ts";
+import {
+  fileOrDirExists,
+  getPathStats,
+  readDir,
+  removeFileOrDir,
+} from "../utils/node-methods.ts";
 
 type BuildData = {
   appRootPath: string;
@@ -196,25 +201,25 @@ export const buildDir = async (
     buildData.isProd,
   );
 
-  if (await exists(buildDirPath)) {
+  if (await fileOrDirExists(buildDirPath)) {
     console.log(`Deleting existing dir: ${buildDirPath}`);
-    await rm(buildDirPath, { recursive: true });
+    await removeFileOrDir(buildDirPath);
   }
   console.log(`Building dir: ${buildDirPath}`);
   await createDirIfNotExist(buildDirPath);
 
-  for (const file of await readdir(dirPath)) {
+  for (const file of await readDir(dirPath)) {
     if (file.startsWith(buildData.karma.brahma.build.ignoreDelimiter)) continue;
 
     const filePath = `${dirPath}/${file}`;
-    const fileStats = await lstat(filePath);
+    const fileStats = await getPathStats(filePath);
     if (fileStats.isDirectory()) await buildDir(filePath);
     if (fileStats.isFile()) await buildFile(filePath, buildDirPath);
   }
 
-  if (!(await readdir(buildDirPath)).length) {
+  if (!(await readDir(buildDirPath)).length) {
     console.log(`Deleting empty built dir: ${buildDirPath}`);
-    await rm(buildDirPath, { recursive: true });
+    await removeFileOrDir(buildDirPath);
   }
 
   if (
