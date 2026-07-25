@@ -38,7 +38,7 @@ export async function prePublishCleanup(
   await updateKarmaProbe(targetVersion);
   for (const pkgDirName of packageDirs) {
     const pkgPath = path.join(repoRoot, pkgDirName, "package.json");
-    await updatePackageJson(pkgPath, targetVersion);
+    await updatePackageJson(pkgPath, targetVersion, true);
   }
 
   console.log(

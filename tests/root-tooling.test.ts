@@ -108,13 +108,39 @@ describe("root package version manager", () => {
       }),
     );
 
-    await updateAndVerifyVersionsInPackageJson(packagePath, "1.2.3");
+    await updateAndVerifyVersionsInPackageJson(packagePath, "1.2.3", true);
     const pkg = await Bun.file(packagePath).json();
     expect(pkg.version).toBe("1.2.3");
     expect(pkg.dependencies["@cyftec/maya"]).toBe("1.2.3");
     expect(pkg.dependencies.untouched).toBe("1.0.0");
     expect(pkg.devDependencies["@cyftec/maya"]).toBe("1.2.3");
     expect(pkg.peerDependencies["@cyftec/maya"]).toBe("1.2.3");
+  });
+
+  test("updates dependency pins without changing package metadata version", async () => {
+    const root = await makeTempDir();
+    const packagePath = path.join(root, "package.json");
+    await writeText(
+      packagePath,
+      JSON.stringify({
+        name: "fixture",
+        version: "1.2.3",
+        dependencies: {
+          "@cyftec/maya": "1.2.3",
+          untouched: "1.0.0",
+        },
+      }),
+    );
+
+    await updateAndVerifyVersionsInPackageJson(
+      packagePath,
+      "workspace:*",
+      false,
+    );
+    const pkg = await Bun.file(packagePath).json();
+    expect(pkg.version).toBe("1.2.3");
+    expect(pkg.dependencies["@cyftec/maya"]).toBe("workspace:*");
+    expect(pkg.dependencies.untouched).toBe("1.0.0");
   });
 
   test("rejects package metadata with stale Maya dependency pins", async () => {
@@ -180,32 +206,69 @@ export const karma: Karma = {
 });
 
 describe("root publish orchestration", () => {
-  test("pre-publish updates each package and probe when the tree is clean", async () => {
-    const updatePackageJson = mock(
-      async (_pkgPath: string, _version: string) => {},
-    );
-    const updateKarmaProbe = mock(async (_version: string) => {});
+  const publishKarmaText = (version: string) => `
+type Karma = any;
+export const karma: Karma = {
+  maya: {
+    dependencies: { "@cyftec/maya": "${version}" },
+  },
+};
+`;
 
-    await prePublishCleanup("1.2.3", {
-      repoRoot: "/repo",
-      packageDirs: ["maya", "brahma"],
-      hasChanges: async () => false,
-      updatePackageJson,
-      updateKarmaProbe,
+  const packageJsonText = (name: string, version: string, mayaVersion: string) =>
+    JSON.stringify({
+      name,
+      version,
+      dependencies: {
+        "@cyftec/maya": mayaVersion,
+        untouched: "1.0.0",
+      },
+      devDependencies: { "@cyftec/maya": mayaVersion },
+      peerDependencies: { "@cyftec/maya": mayaVersion },
     });
 
-    expect(updatePackageJson).toHaveBeenNthCalledWith(
-      1,
-      "/repo/maya/package.json",
-      "1.2.3",
+  const writePublishFixture = async () => {
+    const root = await makeTempDir();
+    const karmaPath = path.join(root, "karma.ts");
+    await writeText(
+      path.join(root, "maya", "package.json"),
+      packageJsonText("@cyftec/maya", "0.0.15", "workspace:*"),
     );
-    expect(updatePackageJson).toHaveBeenNthCalledWith(
-      2,
-      "/repo/brahma/package.json",
-      "1.2.3",
+    await writeText(
+      path.join(root, "brahma", "package.json"),
+      packageJsonText("@cyftec/brahma", "0.0.15", "workspace:*"),
     );
-    expect(updateKarmaProbe).toHaveBeenCalledTimes(1);
-    expect(updateKarmaProbe).toHaveBeenCalledWith("1.2.3");
+    await writeText(karmaPath, publishKarmaText("workspace:*"));
+
+    return {
+      root,
+      karmaPath,
+      readPackageJson: (dirName: string) =>
+        Bun.file(path.join(root, dirName, "package.json")).json(),
+      updateKarmaProbe: (version: string) =>
+        updateAndVerifyMayaVersionsInKarmaProbe(version, karmaPath),
+    };
+  };
+
+  test("pre-publish writes the target version to package metadata, dependencies, and probe", async () => {
+    const fixture = await writePublishFixture();
+
+    await prePublishCleanup("1.2.3", {
+      repoRoot: fixture.root,
+      packageDirs: ["maya", "brahma"],
+      hasChanges: async () => false,
+      updateKarmaProbe: fixture.updateKarmaProbe,
+    });
+
+    for (const dirName of ["maya", "brahma"]) {
+      const pkg = await fixture.readPackageJson(dirName);
+      expect(pkg.version).toBe("1.2.3");
+      expect(pkg.dependencies["@cyftec/maya"]).toBe("1.2.3");
+      expect(pkg.dependencies.untouched).toBe("1.0.0");
+      expect(pkg.devDependencies["@cyftec/maya"]).toBe("1.2.3");
+      expect(pkg.peerDependencies["@cyftec/maya"]).toBe("1.2.3");
+    }
+    await verifyKarmProbeMayaVersion("1.2.3", fixture.karmaPath);
   });
 
   test("pre-publish exits before mutation when the tree is dirty", async () => {
@@ -223,30 +286,30 @@ describe("root publish orchestration", () => {
     error.mockRestore();
   });
 
-  test("post-publish resets each package and probe to workspace dependencies", async () => {
-    const updatePackageJson = mock(
-      async (_pkgPath: string, _version: string) => {},
-    );
-    const updateKarmaProbe = mock(async (_version: string) => {});
-
-    await postPublishReset({
-      repoRoot: "/repo",
+  test("post-publish resets dependencies and probe without changing package metadata version", async () => {
+    const fixture = await writePublishFixture();
+    await prePublishCleanup("1.2.3", {
+      repoRoot: fixture.root,
       packageDirs: ["maya", "brahma"],
-      updatePackageJson,
-      updateKarmaProbe,
+      hasChanges: async () => false,
+      updateKarmaProbe: fixture.updateKarmaProbe,
     });
 
-    expect(updatePackageJson).toHaveBeenNthCalledWith(
-      1,
-      "/repo/maya/package.json",
-      "workspace:*",
-    );
-    expect(updatePackageJson).toHaveBeenNthCalledWith(
-      2,
-      "/repo/brahma/package.json",
-      "workspace:*",
-    );
-    expect(updateKarmaProbe).toHaveBeenCalledWith("workspace:*");
+    await postPublishReset({
+      repoRoot: fixture.root,
+      packageDirs: ["maya", "brahma"],
+      updateKarmaProbe: fixture.updateKarmaProbe,
+    });
+
+    for (const dirName of ["maya", "brahma"]) {
+      const pkg = await fixture.readPackageJson(dirName);
+      expect(pkg.version).toBe("1.2.3");
+      expect(pkg.dependencies["@cyftec/maya"]).toBe("workspace:*");
+      expect(pkg.dependencies.untouched).toBe("1.0.0");
+      expect(pkg.devDependencies["@cyftec/maya"]).toBe("workspace:*");
+      expect(pkg.peerDependencies["@cyftec/maya"]).toBe("workspace:*");
+    }
+    await verifyKarmProbeMayaVersion("workspace:*", fixture.karmaPath);
   });
 });
 

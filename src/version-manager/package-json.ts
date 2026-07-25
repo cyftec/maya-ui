@@ -3,10 +3,11 @@ export const DEPENDABLE_PACKAGE_NAMES = ["@cyftec/maya"] satisfies string[];
 async function updateVersionsInPackageJson(
   pkgPath: string,
   targetVersion: string,
+  changePackageVersion: boolean,
 ): Promise<void> {
   const pkgJson = await Bun.file(pkgPath).json();
 
-  pkgJson["version"] = targetVersion;
+  if (changePackageVersion) pkgJson["version"] = targetVersion;
   const depTypes = ["dependencies", "devDependencies", "peerDependencies"];
   for (const depsType of depTypes) {
     if (pkgJson[depsType]) {
@@ -49,7 +50,12 @@ export async function verifyVersionsInPackageJson(
 export const updateAndVerifyVersionsInPackageJson = async (
   packageJsonPath: string,
   targetVersion: string,
+  changePackageVersion: boolean,
 ): Promise<void> => {
-  await updateVersionsInPackageJson(packageJsonPath, targetVersion);
+  await updateVersionsInPackageJson(
+    packageJsonPath,
+    targetVersion,
+    changePackageVersion,
+  );
   await verifyVersionsInPackageJson(packageJsonPath, targetVersion);
 };

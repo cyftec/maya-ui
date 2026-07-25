@@ -24,7 +24,7 @@ export async function postPublishReset({
   );
   for (const pkgDirName of packageDirs) {
     const pkgPath = path.join(repoRoot, pkgDirName, "package.json");
-    await updatePackageJson(pkgPath, WORKSPACE_VERSION);
+    await updatePackageJson(pkgPath, WORKSPACE_VERSION, false);
     await updateKarmaProbe(WORKSPACE_VERSION);
   }
 
