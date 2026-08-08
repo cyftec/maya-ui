@@ -1,13 +1,13 @@
 import {
   effect,
   value,
-  valueIsNonSignalObject,
+  valueIsDeadSignal,
+  valueIsLiveSignal,
   valueIsSignal,
-  valueIsSignalifiedObject,
+  type DeadSignal,
+  type LiveSignal,
   type MaybeSignal,
-  type NonSignal,
   type Signal,
-  type SignalifiedObject,
 } from "@cyftec/signal";
 import type {
   AttributeKey,
@@ -18,20 +18,20 @@ import type {
   ChildrenArray,
   CustomEventKey,
   CustomEventValue,
+  DeadSignalChild,
+  DeadSignalChildren,
   DomEventValue,
   EventProps,
   HTML5TagName,
   HtmlEventValue,
+  LiveSignalChild,
+  LiveSignalChildOrChildren,
   MayaElement,
   MayaNode,
   MayaNodeGetter,
-  NonSignalChild,
-  NonSignalChildren,
   Props,
   PropsOrChildren,
-  SignalAttributeProps,
-  SignalChild,
-  SignalChildOrChildren,
+  LiveSignalAttributeProps,
   SvgMayaElement,
   SvgTagName,
 } from "../types";
@@ -43,13 +43,13 @@ import {
   sanitizeAttributeValue,
   startUnmountObserver,
   svgTagNames,
-  validChild,
-  validChildren,
-  validChildrenProp,
-  validNonSignalChild,
+  validPlainChild,
   validPlainChildren,
-  validSignalChild,
-  validSignalChildOrChildren,
+  validChildrenProp,
+  validDeadSignalChild,
+  validChildren,
+  validLiveSignalChild,
+  validLiveSignalChildOrChildren,
   valueIsArray,
   valueIsMayaNode,
 } from "../utils";
@@ -138,8 +138,8 @@ const setAttribute = (
   attrKey: string,
   attributePropValue: MaybeSignal<AttributeValue>,
 ): void => {
-  const unsafeAttrValue = valueIsSignalifiedObject(attributePropValue)
-    ? (attributePropValue as SignalifiedObject<AttributeValue>).value
+  const unsafeAttrValue = valueIsSignal(attributePropValue)
+    ? (attributePropValue as Signal<AttributeValue>).value
     : (attributePropValue as AttributeValue);
   const attrValue = sanitizeAttributeValue(attrKey, unsafeAttrValue);
 
@@ -157,23 +157,23 @@ const handleAttributeProps = (
   mayaNode: MayaNode,
   attributeProps: AttributeProps,
 ): void => {
-  const signalAttributeProps: SignalAttributeProps = {};
+  const liveSignalAttributeProps: LiveSignalAttributeProps = {};
 
   Object.entries(attributeProps).forEach((attributeProp) => {
     const [attrKey, attrVal] = attributeProp;
-    if (valueIsSignal(attrVal)) {
-      signalAttributeProps[attrKey as AttributeKey] =
-        attrVal as Signal<AttributeValue>;
+    if (valueIsLiveSignal(attrVal)) {
+      liveSignalAttributeProps[attrKey as AttributeKey] =
+        attrVal as LiveSignal<AttributeValue>;
     }
     setAttribute(mayaNode, attrKey, attrVal);
   });
 
   const attributesUpdator = effect(() => {
-    Object.entries(signalAttributeProps).forEach((signalAttributeProp) => {
-      const [attrKey, attrVal] = signalAttributeProp;
-      const signalAttrVal = (attrVal as Signal<AttributeValue>).value;
+    Object.entries(liveSignalAttributeProps).forEach((liveAttrProp) => {
+      const [attrKey, attrVal] = liveAttrProp;
+      const liveAttrValue = (attrVal as LiveSignal<AttributeValue>).value;
       if (!phase.currentIs("run")) return;
-      setAttribute(mayaNode, attrKey, signalAttrVal);
+      setAttribute(mayaNode, attrKey, liveAttrValue);
     });
   });
   mayaNode.effects.push(attributesUpdator);
@@ -184,7 +184,7 @@ const getNodeFromChild = (child: Child): MayaNode | Text => {
     return document.createTextNode(decodeHTMLEntities(child || ""));
   }
 
-  if (validChild(child)) {
+  if (validPlainChild(child)) {
     // the valid child is only 'MayaNodeGetter' now and not
     // 'undefined' or 'string' as that case is handled above already
     const mayaNode = (child as MayaNodeGetter)();
@@ -218,13 +218,14 @@ const setChild = (
 const handleChildrenProp = (parentNode: MayaNode, children?: Children) => {
   if (!children) return;
 
-  if (validSignalChildOrChildren(children)) {
+  if (validLiveSignalChildOrChildren(children)) {
     const signalChildrenUpdator = effect(() => {
-      const signalChildOrChildrenValue = (children as SignalChildOrChildren)
-        .value;
-      const childrenList = valueIsArray(signalChildOrChildrenValue)
-        ? (signalChildOrChildrenValue as Child[])
-        : [signalChildOrChildrenValue as Child];
+      const liveSignalChildOrChildrenValue = (
+        children as LiveSignalChildOrChildren
+      ).value;
+      const childrenList = valueIsArray(liveSignalChildOrChildrenValue)
+        ? (liveSignalChildOrChildrenValue as Child[])
+        : [liveSignalChildOrChildrenValue as Child];
       childrenList.forEach((child, index) =>
         setChild(parentNode, child, index),
       );
@@ -238,40 +239,40 @@ const handleChildrenProp = (parentNode: MayaNode, children?: Children) => {
     parentNode.effects.push(signalChildrenUpdator);
   }
 
-  const childrenList: (Child | SignalChild)[] = validChild(children)
+  const childrenList: (Child | LiveSignalChild)[] = validPlainChild(children)
     ? [children as Child]
-    : valueIsNonSignalObject(children)
-      ? validChild((children as NonSignal<any>).value)
-        ? [(children as NonSignal<any>).value as Child]
-        : validChildren((children as NonSignal<any>).value)
-          ? (children as NonSignalChildren).value
+    : valueIsDeadSignal(children)
+      ? validPlainChild((children as DeadSignal<any>).value)
+        ? [(children as DeadSignal<any>).value as Child]
+        : validPlainChildren((children as DeadSignal<any>).value)
+          ? (children as DeadSignalChildren).value
           : []
-      : validPlainChildren(children)
+      : validChildren(children)
         ? (children as ChildrenArray).map((ch) =>
-            validSignalChild(ch)
-              ? (ch as SignalChild)
-              : validNonSignalChild(ch)
-                ? (ch as NonSignalChild).value
+            validLiveSignalChild(ch)
+              ? (ch as LiveSignalChild)
+              : validDeadSignalChild(ch)
+                ? (ch as DeadSignalChild).value
                 : (ch as Child),
           )
         : [];
 
-  const signalChildren: { index: number; signalChild: SignalChild }[] = [];
-  childrenList.forEach((maybeSignalChild, index) => {
-    if (validSignalChild(maybeSignalChild)) {
-      signalChildren.push({
+  const liveChildren: { index: number; liveChild: LiveSignalChild }[] = [];
+  childrenList.forEach((maybeLiveSignalChild, index) => {
+    if (validLiveSignalChild(maybeLiveSignalChild)) {
+      liveChildren.push({
         index,
-        signalChild: maybeSignalChild as SignalChild,
+        liveChild: maybeLiveSignalChild as LiveSignalChild,
       });
     }
-    const childValue = value<Child>(maybeSignalChild);
+    const childValue = value<Child>(maybeLiveSignalChild);
     setChild(parentNode, childValue, index);
   });
 
-  if (signalChildren.length) {
-    signalChildren.forEach(({ index, signalChild }) => {
+  if (liveChildren.length) {
+    liveChildren.forEach(({ index, liveChild }) => {
       const signalChildUpdator = effect(() => {
-        const childValue = signalChild.value;
+        const childValue = liveChild.value;
         if (!phase.currentIs("run")) return;
         setChild(parentNode, childValue, index);
       });

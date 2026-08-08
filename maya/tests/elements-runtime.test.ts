@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
-import { getNonSignalObject, signal } from "@cyftec/signal";
+import { deadSignal, signal } from "@cyftec/signal";
 import { m } from "../src/core/elements/m.ts";
 import { idGen } from "../src/core/utils/id-generator.ts";
 
@@ -29,7 +29,9 @@ describe("native Maya elements", () => {
     const path = m.Path({ d: "M0 0L1 1", "stroke-width": "2" })();
     expect(path.getAttribute("d")).toBe("M0 0L1 1");
     expect(path.getAttribute("stroke-width")).toBe("2");
-    expect(m.Math({ display: "block" })().getAttribute("display")).toBe("block");
+    expect(m.Math({ display: "block" })().getAttribute("display")).toBe(
+      "block",
+    );
   });
 
   test("reacts to signal attributes only during run phase", () => {
@@ -59,7 +61,7 @@ describe("native Maya elements", () => {
       children: [
         "&lt;start&gt;",
         undefined,
-        getNonSignalObject(" fixed "),
+        deadSignal(" fixed "),
         first,
         m.Span(children),
       ],

@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import {
-  derive,
-  getNonSignalObject,
-  signal,
-  value,
-} from "@cyftec/signal";
+import { derive, deadSignal, signal, value } from "@cyftec/signal";
 import { component } from "../src/core/component.ts";
 import { fragment } from "../src/core/fragment.ts";
 import { m } from "../src/core/elements/m.ts";
@@ -51,7 +46,7 @@ describe("fragments and components", () => {
   });
 
   test("preserves explicitly wrapped child arrays and component output", () => {
-    const children = getNonSignalObject([m.Span("a"), m.Span("b")]);
+    const children = deadSignal([m.Span("a"), m.Span("b")]);
     const Row = component<any>((props) => m.Div(props["children"]));
     expect((Row({ children }) as any)().textContent).toBe("ab");
     expect((Row({}) as any)().textContent).toBe("");
@@ -60,8 +55,9 @@ describe("fragments and components", () => {
 
 describe("If and Switch custom elements", () => {
   test("selects truthy, falsy, and hidden fallback branches for plain subjects", () => {
-    expect(textFromChildren(m.If({ subject: 1, isTruthy: (v) => `${v}!` })))
-      .toBe("1!");
+    expect(
+      textFromChildren(m.If({ subject: 1, isTruthy: (v) => `${v}!` })),
+    ).toBe("1!");
     expect(textFromChildren(m.If({ subject: 0, isFalsy: () => "no" }))).toBe(
       "no",
     );
@@ -88,9 +84,7 @@ describe("If and Switch custom elements", () => {
 
   test("matches Switch cases normally, with a matcher, by default, and reactively", () => {
     expect(
-      textFromChildren(
-        m.Switch({ subject: 2, cases: { "2": () => "two" } }),
-      ),
+      textFromChildren(m.Switch({ subject: 2, cases: { "2": () => "two" } })),
     ).toBe("two");
     expect(
       textFromChildren(
@@ -108,12 +102,15 @@ describe("If and Switch custom elements", () => {
     ).toBe("default");
 
     const subject = signal("a");
-    const cases = signal({ a: () => signal("A"), b: () => signal("B") });
+    const cases = signal<{ [x: string]: () => string }>({
+      a: () => "A" as string,
+      b: () => "B" as string,
+    });
     const node = m.Div(m.Switch({ subject, cases }))();
     expect(node.textContent).toBe("A");
     subject.value = "b";
     expect(node.textContent).toBe("B");
-    cases.value = { a: () => signal("AA"), b: () => signal("BB") };
+    cases.value = { a: () => "AA", b: () => "BB" };
     expect(node.textContent).toBe("BB");
   });
 });

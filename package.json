@@ -23,7 +23,7 @@
     "docs": "bun run clean && bun run dev && cd website && dvbrm p && cd .. && bun run dev:exit && bun run dev:modecheck"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.14",
+    "bun-types": "^1.3.14",
     "@cyftec/brahma": "link:@cyftec/brahma"
   }
 }

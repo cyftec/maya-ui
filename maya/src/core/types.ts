@@ -1,8 +1,10 @@
 import {
+  type DeadSignal,
+  type DerivedSignal,
+  type Effect,
+  type LiveSignal,
   type MaybeSignal,
-  type NonSignal,
-  type Signal,
-  type SignalsEffect,
+  type SourceSignal,
 } from "@cyftec/signal";
 import type {
   htmlTagNames,
@@ -59,7 +61,7 @@ export type MayaTagName =
   | SvgTagAliasName;
 export type MayaNode<H extends Element = HTMLElement> = H & {
   nodeID: number;
-  effects: SignalsEffect[];
+  effects: Effect[];
   unmountListener: CustomEventValue | undefined;
   value?: string; // for HTMLInputElement
 };
@@ -71,13 +73,38 @@ export type MayaNodeGetter = {
 export type RawChild = undefined | string;
 export type Child = RawChild | MayaNodeGetter;
 
-export type NonSignalChild = NonSignal<Child>;
-export type NonSignalChildren = NonSignal<Child[]>;
-export type NonSignalChildOrChildren = NonSignalChild | NonSignalChildren;
+export type SourceSignalChild =
+  | SourceSignal<undefined>
+  | SourceSignal<string>
+  | SourceSignal<MayaNodeGetter>
+  | SourceSignal<undefined | string>
+  | SourceSignal<string | MayaNodeGetter>
+  | SourceSignal<undefined | MayaNodeGetter>
+  | SourceSignal<undefined | string | MayaNodeGetter>;
+export type DerivedSignalChild =
+  | DerivedSignal<undefined>
+  | DerivedSignal<string>
+  | DerivedSignal<MayaNodeGetter>
+  | DerivedSignal<undefined | string>
+  | DerivedSignal<string | MayaNodeGetter>
+  | DerivedSignal<undefined | MayaNodeGetter>
+  | DerivedSignal<undefined | string | MayaNodeGetter>;
+export type LiveSignalChild = SourceSignalChild | DerivedSignalChild;
 
-export type SignalChild = Signal<Child>;
-export type SignalChildren = Signal<Child[]>;
-export type SignalChildOrChildren = SignalChild | SignalChildren;
+export type LiveSignalChildren = LiveSignal<Child[]>;
+export type LiveSignalChildOrChildren = LiveSignalChild | LiveSignalChildren;
+
+export type DeadSignalChild =
+  | DeadSignal<undefined>
+  | DeadSignal<string>
+  | DeadSignal<MayaNodeGetter>
+  | DeadSignal<undefined | string>
+  | DeadSignal<string | MayaNodeGetter>
+  | DeadSignal<undefined | MayaNodeGetter>
+  | DeadSignal<undefined | string | MayaNodeGetter>;
+
+export type DeadSignalChildren = DeadSignal<Child[]>;
+export type DeadSignalChildOrChildren = DeadSignalChild | DeadSignalChildren;
 
 export type ChildrenArray = MaybeSignal<Child>[];
 
@@ -93,8 +120,8 @@ export type EventProps = Partial<{ [E in DomEventKey]: DomEventValue<E> }>;
 export type AttributeProps = Partial<{
   [A in AttributeKey]: MaybeSignal<AttributeValue>;
 }>;
-export type SignalAttributeProps = Partial<{
-  [A in AttributeKey]: Signal<AttributeValue>;
+export type LiveSignalAttributeProps = Partial<{
+  [A in AttributeKey]: LiveSignal<AttributeValue>;
 }>;
 export type ChildrenProp = { children?: Children };
 
@@ -481,18 +508,26 @@ type SvgAnimationAttributeKey =
   | "to"
   | "values";
 
-type SvgFilterPrimitiveAttributeKey =
-  | "height"
-  | "result"
-  | "width"
-  | "x"
-  | "y";
+type SvgFilterPrimitiveAttributeKey = "height" | "result" | "width" | "x" | "y";
 
 /** SVG attributes use their serialized, case-sensitive spellings. */
 export type SvgAttributesByTag = {
-  a: "download" | "href" | "hreflang" | "ping" | "referrerpolicy" | "rel" | "target" | "type";
+  a:
+    | "download"
+    | "href"
+    | "hreflang"
+    | "ping"
+    | "referrerpolicy"
+    | "rel"
+    | "target"
+    | "type";
   animate: SvgAnimationAttributeKey;
-  animateMotion: SvgAnimationAttributeKey | "keyPoints" | "origin" | "path" | "rotate";
+  animateMotion:
+    | SvgAnimationAttributeKey
+    | "keyPoints"
+    | "origin"
+    | "path"
+    | "rotate";
   animateTransform: SvgAnimationAttributeKey | "type";
   circle: "cx" | "cy" | "pathLength" | "r";
   clipPath: "clipPathUnits";
@@ -539,12 +574,27 @@ export type SvgAttributesByTag = {
   feDistantLight: "azimuth" | "elevation";
   feDropShadow: SvgFilterPrimitiveAttributeKey | "dx" | "dy" | "stdDeviation";
   feFlood: SvgFilterPrimitiveAttributeKey;
-  feFuncA: "amplitude" | "exponent" | "intercept" | "offset" | "slope" | "tableValues" | "type";
+  feFuncA:
+    | "amplitude"
+    | "exponent"
+    | "intercept"
+    | "offset"
+    | "slope"
+    | "tableValues"
+    | "type";
   feFuncB: SvgAttributesByTag["feFuncA"];
   feFuncG: SvgAttributesByTag["feFuncA"];
   feFuncR: SvgAttributesByTag["feFuncA"];
-  feGaussianBlur: SvgFilterPrimitiveAttributeKey | "edgeMode" | "in" | "stdDeviation";
-  feImage: SvgFilterPrimitiveAttributeKey | "crossorigin" | "href" | "preserveAspectRatio";
+  feGaussianBlur:
+    | SvgFilterPrimitiveAttributeKey
+    | "edgeMode"
+    | "in"
+    | "stdDeviation";
+  feImage:
+    | SvgFilterPrimitiveAttributeKey
+    | "crossorigin"
+    | "href"
+    | "preserveAspectRatio";
   feMerge: SvgFilterPrimitiveAttributeKey;
   feMergeNode: "in";
   feMorphology: SvgFilterPrimitiveAttributeKey | "in" | "operator" | "radius";
@@ -574,7 +624,14 @@ export type SvgAttributesByTag = {
     | "seed"
     | "stitchTiles"
     | "type";
-  filter: "filterUnits" | "height" | "href" | "primitiveUnits" | "width" | "x" | "y";
+  filter:
+    | "filterUnits"
+    | "height"
+    | "href"
+    | "primitiveUnits"
+    | "width"
+    | "x"
+    | "y";
   foreignObject: "height" | "width" | "x" | "y";
   g: never;
   image:
@@ -651,9 +708,24 @@ export type SvgAttributesByTag = {
     | "y"
     | "zoomAndPan";
   switch: never;
-  symbol: "height" | "preserveAspectRatio" | "refX" | "refY" | "viewBox" | "width" | "x" | "y";
+  symbol:
+    | "height"
+    | "preserveAspectRatio"
+    | "refX"
+    | "refY"
+    | "viewBox"
+    | "width"
+    | "x"
+    | "y";
   text: "dx" | "dy" | "lengthAdjust" | "rotate" | "textLength" | "x" | "y";
-  textPath: "href" | "lengthAdjust" | "method" | "side" | "spacing" | "startOffset" | "textLength";
+  textPath:
+    | "href"
+    | "lengthAdjust"
+    | "method"
+    | "side"
+    | "spacing"
+    | "startOffset"
+    | "textLength";
   title: never;
   tspan: "dx" | "dy" | "lengthAdjust" | "rotate" | "textLength" | "x" | "y";
   use: "height" | "href" | "width" | "x" | "y";

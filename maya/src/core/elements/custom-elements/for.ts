@@ -5,9 +5,9 @@ import {
   value,
   valueIsSignal,
   type DerivedSignal,
+  type LiveSignal,
   type MaybeSignal,
   type Signal,
-  type SignalifiedObject,
   type SourceSignal,
 } from "@cyftec/signal";
 import type { Child, MayaNode, MayaNodeGetter } from "../../types";
@@ -127,7 +127,7 @@ const getChildrenAfterInjection = (
  */
 export const forElement = <
   Subject extends MaybeSignal<any[]>,
-  ItemKey extends Subject extends SignalifiedObject<(infer Item)[]>
+  ItemKey extends Subject extends Signal<(infer Item)[]>
     ? Item extends Record<string, any>
       ? keyof Item | undefined
       : undefined
@@ -143,7 +143,7 @@ export const forElement = <
   itemKey?: ItemKey;
   map: Subject extends (infer Item)[]
     ? PlainMapFn<Item>
-    : Subject extends SignalifiedObject<(infer Item)[]>
+    : Subject extends Signal<(infer Item)[]>
       ? Item extends Record<string, any>
         ? [ItemKey] extends [keyof Item]
           ? MutableMapFn<Item>
@@ -193,7 +193,7 @@ export const forElement = <
   const list = derive(() => {
     const items = value(subject) as Record<string, any>[];
     if (!Array.isArray(items))
-      throw `subject must be an array or signalified-object of array, found ${JSON.stringify(subject)}`;
+      throw `subject must be an array or signalled array, found ${JSON.stringify(subject)}`;
 
     return items;
   });
@@ -202,7 +202,7 @@ export const forElement = <
   let previousItems: SubjectItem[] | null = null;
   const currentItems = derive((prevItems: SubjectItem[] | undefined) => {
     previousItems = prevItems || previousItems;
-    return (list as Signal<SubjectItem[]>).value;
+    return (list as LiveSignal<SubjectItem[]>).value;
   });
 
   const mappedChildren = derive<MappedChild<SubjectItem>[]>(

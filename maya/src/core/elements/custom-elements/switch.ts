@@ -1,16 +1,19 @@
 import {
   derive,
   value,
-  valueIsSignal,
+  valueIsLiveSignal,
   type DerivedSignal,
   type MaybeSignal,
-  type Signal,
+  type LiveSignal,
+  type PlainValue,
 } from "@cyftec/signal";
 import type { Children } from "../../types.ts";
 import { m } from "../m.ts";
 
 type SwitchReturn<Subject, C extends Children> =
-  Subject extends Signal<unknown> ? DerivedSignal<C> : NonNullable<C>;
+  Subject extends LiveSignal<unknown>
+    ? DerivedSignal<PlainValue<C>>
+    : NonNullable<C>;
 
 type SubjectValue<S extends MaybeSignal<string | number | boolean>> =
   S extends MaybeSignal<string>
@@ -41,7 +44,7 @@ export const switchElement = <
   const deadComponent = m.Span({ style: "display: none;" });
   const defaultCaseComponent = defaultCase && defaultCase();
 
-  const switchReturnGetter = (unwrap: boolean) => {
+  const switchReturnGetter = (plainValue: boolean) => {
     const subjectValue = value(subject) as SubjectValue<typeof subject>;
     const casesValue = value(cases);
     let component: C = undefined as C;
@@ -52,7 +55,7 @@ export const switchElement = <
       const normalCaseMatch = `${subjectValue}` === currentCaseKey;
 
       if (matchWithCaseMatcher || normalCaseMatch) {
-        component = unwrap ? (value(comp() as any) as C) : comp();
+        component = plainValue ? (value(comp() as any) as C) : comp();
         break;
       }
     }
@@ -60,7 +63,7 @@ export const switchElement = <
   };
 
   return (
-    valueIsSignal(subject)
+    valueIsLiveSignal(subject)
       ? derive(() => switchReturnGetter(true))
       : switchReturnGetter(false)
   ) as SwitchReturn<typeof subject, C>;

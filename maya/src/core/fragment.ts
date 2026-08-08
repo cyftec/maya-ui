@@ -1,15 +1,19 @@
 import {
-  getNonSignalObject,
+  deadSignal,
   value,
+  valueIsLiveSignal,
   valueIsSignal,
-  valueIsSignalifiedObject,
+  type DeadSignal,
   type MaybeSignal,
-  type NonSignal,
   type PlainValue,
   type Signal,
-  type SignalifiedObject,
 } from "@cyftec/signal";
-import type { Child, Children, NonSignalChild, SignalChild } from "./types";
+import type {
+  Child,
+  Children,
+  DeadSignalChild,
+  LiveSignalChild,
+} from "./types";
 
 type InnerFragmentProps<P extends Record<string, any>> = {
   [K in keyof P]: P[K] extends
@@ -17,14 +21,14 @@ type InnerFragmentProps<P extends Record<string, any>> = {
     | (((...args: any) => any) | undefined)
     ? P[K]
     : P[K] extends string | string[] | undefined
-      ? SignalifiedObject<P[K]>
-      : P[K] extends NonSignal<(Child | NonSignalChild | SignalChild)[]>
+      ? Signal<P[K]>
+      : P[K] extends DeadSignal<(Child | DeadSignalChild | LiveSignalChild)[]>
         ? PlainValue<P[K]>
         : P[K] extends Child[]
           ? MaybeSignal<P[K]>
           : P[K] extends Children
             ? P[K]
-            : SignalifiedObject<P[K]>;
+            : Signal<P[K]>;
 };
 type Props<P extends Record<string, any>> = {
   [K in keyof P]: P[K] extends
@@ -43,35 +47,37 @@ export type InnerFragment<P extends Record<string, any>, R> = (
 ) => R;
 export type Fragment<P extends Record<string, any>, R> = (props: Props<P>) => R;
 
-const arrayWithSignalifiedObjectItems = (input: any) => {
+const valueIsArrayWithSignalItems = (input: any) => {
   const val = value(input);
-  return (
-    Array.isArray(val) &&
-    (val as unknown[]).some((v) => valueIsSignalifiedObject(v))
-  );
+  return Array.isArray(val) && (val as unknown[]).some((v) => valueIsSignal(v));
 };
 
-export const fragment =
-  <P extends Record<string, any>, R extends Children>(
-    innerFragment: InnerFragment<P, R>,
-  ): Fragment<P, ReturnType<typeof innerFragment>> =>
-  (props: Props<P> = {} as Props<P>) => {
+export const fragment = <P extends Record<string, any>, R extends Children>(
+  innerFragment: InnerFragment<P, R>,
+): Fragment<P, ReturnType<typeof innerFragment>> => {
+  const outerFragment = (props: Props<P> = {} as Props<P>) => {
+    const innerFragmentProps = {} as InnerFragmentProps<P>;
+
     for (const key of Object.keys(props) as Array<keyof P>) {
       if (props[key] === undefined) delete props[key];
     }
-    const innerFragmentProps: InnerFragmentProps<P> = Object.entries(
-      props,
-    ).reduce((map, prop) => {
+
+    Object.entries(props).forEach((prop) => {
       const [propKey, propValue] = prop as [keyof P, Props<P>[keyof P]];
 
       const innerPropValue =
-        valueIsSignal(propValue) || typeof propValue === "function"
+        valueIsLiveSignal(propValue) || typeof propValue === "function"
           ? propValue
-          : arrayWithSignalifiedObjectItems(propValue)
+          : valueIsArrayWithSignalItems(propValue)
             ? value(propValue)
-            : getNonSignalObject(value(propValue));
-      map[propKey] = innerPropValue as InnerFragmentProps<P>[keyof P];
-      return map;
-    }, {} as InnerFragmentProps<P>);
+            : deadSignal(value(propValue));
+
+      innerFragmentProps[propKey] =
+        innerPropValue as InnerFragmentProps<P>[keyof P];
+    });
+
     return innerFragment(innerFragmentProps);
   };
+
+  return outerFragment;
+};
