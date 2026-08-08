@@ -3,7 +3,7 @@ import {
   derive,
   signal,
   value,
-  valueIsSignal,
+  valueIsLiveSignal,
   type DerivedSignal,
   type LiveSignal,
   type MaybeSignal,
@@ -178,7 +178,7 @@ export const forElement = <
       );
 
     return (
-      valueIsSignal(subject) ? derive(elementsGetter) : elementsGetter()
+      valueIsLiveSignal(subject) ? derive(elementsGetter) : elementsGetter()
     ) as ForReturnType<typeof subject>;
   }
 

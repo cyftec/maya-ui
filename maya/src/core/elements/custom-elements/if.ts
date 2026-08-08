@@ -1,7 +1,7 @@
 import {
   derive,
   value,
-  valueIsSignal,
+  valueIsLiveSignal,
   type DerivedSignal,
   type NonNullSignalValue,
   type LiveSignal,
@@ -36,7 +36,9 @@ export const ifElement = <S, TC extends Children, FC extends Children>({
   };
 
   return (
-    valueIsSignal(subject) ? derive(() => compGetter(true)) : compGetter(false)
+    valueIsLiveSignal(subject)
+      ? derive(() => compGetter(true))
+      : compGetter(false)
   ) as S extends LiveSignal<any>
     ? DerivedSignal<PlainValue<TC | FC | MayaNodeGetter>>
     : TC | FC | MayaNodeGetter;
