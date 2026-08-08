@@ -32,12 +32,17 @@ type HtmlEventName<K extends HtmlEventKey> = K extends `on${infer Name}`
 export type HtmlEventValue<K extends HtmlEventKey = HtmlEventKey> = (
   event: GlobalEventHandlersEventMap[HtmlEventName<K>],
 ) => void;
-export type CustomEventValue = (currentNode: MayaNode) => void;
-export type DomEventValue<K extends DomEventKey = DomEventKey> =
+export type CustomEventValue<H extends Element = HTMLElement> = (
+  currentNode: MayaNode<H>,
+) => void;
+export type DomEventValue<
+  K extends DomEventKey = DomEventKey,
+  H extends Element = HTMLElement,
+> =
   | (K extends HtmlEventKey
       ? HtmlEventValue<K>
       : K extends CustomEventKey
-        ? CustomEventValue
+        ? CustomEventValue<H>
         : never)
   | undefined;
 
@@ -59,6 +64,20 @@ export type HTML5TagName = HtmlTagName | SvgTagName | MathMlTagName;
 export type MayaTagName =
   | PascalCase<HtmlTagName | UnaliasedSvgTagName | MathMlTagName>
   | SvgTagAliasName;
+
+/** The platform element produced by a Maya tag. */
+type NativeElementForTag<T extends HTML5TagName> = T extends SvgTagName
+  ? T extends keyof SVGElementTagNameMap
+    ? SVGElementTagNameMap[T]
+    : SVGElement
+  : T extends MathMlTagName
+    ? T extends keyof MathMLElementTagNameMap
+      ? MathMLElementTagNameMap[T]
+      : MathMLElement
+    : T extends keyof HTMLElementTagNameMap
+      ? HTMLElementTagNameMap[T]
+      : HTMLElement;
+
 export type MayaNode<H extends Element = HTMLElement> = H & {
   nodeID: number;
   effects: Effect[];
@@ -1142,7 +1161,7 @@ export type EventKeyForTag<T extends HTML5TagName> =
   | HtmlEventKeysByTag[T]
   | CustomEventKey;
 export type EventPropsForTag<T extends HTML5TagName> = Partial<{
-  [E in EventKeyForTag<T>]: DomEventValue<E>;
+  [E in EventKeyForTag<T>]: DomEventValue<E, NativeElementForTag<T>>;
 }>;
 
 /** HTML void elements cannot contain children. */
