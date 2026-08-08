@@ -402,7 +402,7 @@ describe("version and process utilities", () => {
     expect(getBrahmaPackageJsonPath()).toBe(
       path.join(getBrahmaRootPath(), "package.json"),
     );
-    expect(await getCurrentBrahmaVersion()).toBe("0.0.19");
+    expect(await getCurrentBrahmaVersion()).toBe("0.0.20");
   });
 
   test("exits for missing or versionless package metadata", async () => {
