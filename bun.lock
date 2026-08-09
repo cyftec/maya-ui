@@ -38,7 +38,7 @@
       "version": "0.0.20",
       "dependencies": {
         "@cyftec/immut": "0.1.0",
-        "@cyftec/signal": "0.3.8",
+        "@cyftec/signal": "0.3.9",
       },
       "devDependencies": {
         "@types/jsdom": "^21.1.7",
@@ -76,7 +76,7 @@
 
     "@cyftec/maya": ["@cyftec/maya@workspace:maya"],
 
-    "@cyftec/signal": ["@cyftec/signal@0.3.8", "", { "dependencies": { "@cyftec/immut": "^0.1.0" } }, "sha512-E1bnzGOMLk8IJ6SKFEOkjWFr0fGc1qs9QEeDrp59zt7vMzGqe5VZRgatHlDN6UQKaBU7mphHKBruuHEDS41MAQ=="],
+    "@cyftec/signal": ["@cyftec/signal@0.3.9", "", { "dependencies": { "@cyftec/immut": "^0.1.0" } }, "sha512-0d7eWi+pYqMP5joKM3kwdcMnonqKuGR4KoCdsTxd5ayh2DY+LYj21AWLaW6ylecJ3x6F/bNEGw2M+EnJC1g29A=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA=="],
 
