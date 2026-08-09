@@ -5,15 +5,23 @@ import {
   type DerivedSignal,
   type MaybeSignal,
   type LiveSignal,
-  type PlainValue,
 } from "@cyftec/signal";
-import type { Children } from "../../types.ts";
+import type { Children, MayaNodeGetter } from "../../types.ts";
 import { m } from "../m.ts";
 
-type SwitchReturn<Subject, C extends Children> =
+type FilterUnknown<T> = T extends unknown
+  ? unknown extends T
+    ? never
+    : T
+  : never;
+
+// Prevent an enclosing `children` context from widening a branch's result.
+type NoContext<T> = [T] extends [infer Result] ? Result : never;
+
+type SwitchReturn<Subject, C> =
   Subject extends LiveSignal<unknown>
-    ? DerivedSignal<PlainValue<C>>
-    : NonNullable<C>;
+    ? DerivedSignal<FilterUnknown<C | MayaNodeGetter>>
+    : FilterUnknown<C | MayaNodeGetter>;
 
 type SubjectValue<S extends MaybeSignal<string | number | boolean>> =
   S extends MaybeSignal<string>
@@ -26,7 +34,7 @@ type SubjectValue<S extends MaybeSignal<string | number | boolean>> =
 
 export const switchElement = <
   S extends MaybeSignal<string | number | boolean>,
-  C extends Children,
+  C extends Children = never,
 >({
   subject,
   caseMatcher,
@@ -40,7 +48,7 @@ export const switchElement = <
   ) => boolean;
   defaultCase?: () => C;
   cases?: MaybeSignal<{ [x in string]: () => C }>;
-}): SwitchReturn<typeof subject, C> => {
+}): SwitchReturn<typeof subject, NoContext<C>> => {
   const deadComponent = m.Span({ style: "display: none;" });
   const defaultCaseComponent = defaultCase && defaultCase();
 
@@ -66,5 +74,5 @@ export const switchElement = <
     valueIsLiveSignal(subject)
       ? derive(() => switchReturnGetter(true))
       : switchReturnGetter(false)
-  ) as SwitchReturn<typeof subject, C>;
+  ) as SwitchReturn<typeof subject, NoContext<C>>;
 };

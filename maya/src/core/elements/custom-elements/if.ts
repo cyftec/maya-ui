@@ -3,14 +3,27 @@ import {
   value,
   valueIsLiveSignal,
   type DerivedSignal,
-  type NonNullSignalValue,
   type LiveSignal,
-  type PlainValue,
+  type NonNullSignalValue,
 } from "@cyftec/signal";
-import type { Children, MayaNodeGetter } from "../../types";
+import type { MayaNodeGetter } from "../../types";
 import { m } from "../m.ts";
 
-export const ifElement = <S, TC extends Children, FC extends Children>({
+type FilterUnknown<T> = T extends unknown
+  ? unknown extends T
+    ? never
+    : T
+  : never;
+
+// Prevent an enclosing `children` context from widening a branch's result.
+type NoContext<T> = [T] extends [infer Result] ? Result : never;
+
+type IfReturn<S, TC, FC> =
+  S extends LiveSignal<any>
+    ? DerivedSignal<FilterUnknown<TC | FC | MayaNodeGetter>>
+    : FilterUnknown<TC | FC | MayaNodeGetter>;
+
+export function ifElement<S, TC, FC>({
   subject,
   isTruthy,
   isFalsy,
@@ -18,7 +31,7 @@ export const ifElement = <S, TC extends Children, FC extends Children>({
   subject: S;
   isTruthy?: (nonNullSubject: NonNullSignalValue<S>) => TC;
   isFalsy?: (subject: S) => FC;
-}) => {
+}): IfReturn<S, NoContext<TC>, NoContext<FC>> {
   const deadComponent = m.Span({ style: "display: none;" });
   const compGetter = (plainValue: boolean) => {
     const subjectValue = value(subject);
@@ -39,7 +52,5 @@ export const ifElement = <S, TC extends Children, FC extends Children>({
     valueIsLiveSignal(subject)
       ? derive(() => compGetter(true))
       : compGetter(false)
-  ) as S extends LiveSignal<any>
-    ? DerivedSignal<PlainValue<TC | FC | MayaNodeGetter>>
-    : TC | FC | MayaNodeGetter;
-};
+  ) as IfReturn<S, NoContext<TC>, NoContext<FC>>;
+}

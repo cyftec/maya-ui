@@ -1,3 +1,4 @@
+import { signal } from "@cyftec/signal";
 import type {
   HtmlTagName,
   MathMlTagName,
@@ -46,9 +47,7 @@ const intrinsicElementsMap = [
   ...htmlTagNames,
   ...svgTagNames,
   ...mathMlTagNames,
-].reduce<
-  Record<string, unknown>
->((map, html5TagName) => {
+].reduce<Record<string, unknown>>((map, html5TagName) => {
   const mayaElement = getMayaElement(html5TagName);
   const mayaTagName: MayaTagName = html5TagName
     .split("-")
@@ -76,3 +75,15 @@ export const m: MayaElementsMap = {
   ...svgAliasedElementsMap,
   ...customElementsMap,
 };
+
+m.If({
+  subject: signal(true),
+  isTruthy: (_) => m.Span("span"),
+});
+
+m.Div({
+  children: m.If({
+    subject: signal(true),
+    isTruthy: (_) => m.Span("span"),
+  }),
+});
