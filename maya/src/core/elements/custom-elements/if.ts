@@ -1,26 +1,22 @@
 import {
   derive,
   value,
-  valueIsLiveSignal,
+  valueIsSignal,
   type DerivedSignal,
-  type LiveSignal,
+  type Signal,
   type NonNullSignalValue,
-} from "@cyftec/signal";
-import type { MayaNodeGetter } from "../../types";
+} from "@cyftec/signals";
+import type {
+  FilterUnknown,
+  MayaNodeGetter,
+  NoContext,
+  UnwrapSignal,
+} from "../../types";
 import { m } from "../m.ts";
 
-type FilterUnknown<T> = T extends unknown
-  ? unknown extends T
-    ? never
-    : T
-  : never;
-
-// Prevent an enclosing `children` context from widening a branch's result.
-type NoContext<T> = [T] extends [infer Result] ? Result : never;
-
 type IfReturn<S, TC, FC> =
-  S extends LiveSignal<any>
-    ? DerivedSignal<FilterUnknown<TC | FC | MayaNodeGetter>>
+  S extends Signal<any>
+    ? DerivedSignal<FilterUnknown<UnwrapSignal<TC> | UnwrapSignal<FC> | MayaNodeGetter>>
     : FilterUnknown<TC | FC | MayaNodeGetter>;
 
 export function ifElement<S, TC, FC>({
@@ -49,8 +45,6 @@ export function ifElement<S, TC, FC>({
   };
 
   return (
-    valueIsLiveSignal(subject)
-      ? derive(() => compGetter(true))
-      : compGetter(false)
+    valueIsSignal(subject) ? derive(() => compGetter(true)) : compGetter(false)
   ) as IfReturn<S, NoContext<TC>, NoContext<FC>>;
 }

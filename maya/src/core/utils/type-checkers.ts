@@ -1,4 +1,4 @@
-import { valueIsDeadSignal, valueIsLiveSignal } from "@cyftec/signal";
+import { valueIsSignal } from "@cyftec/signals";
 
 export const valueIsArray = (value: any): boolean => Array.isArray(value);
 
@@ -8,7 +8,7 @@ export const valueIsMayaNode = (value: any): boolean =>
 export const validMayaNodeGetter = (value: any) =>
   typeof value === "function" && value.isMayaNodeGetter === true;
 
-export const validPlainChild = (value: any): boolean =>
+export const validChild = (value: any): boolean =>
   /**
    * if value is MayaNodeGetter, never check with valueIsMayaNode(value())
    * becaue value() will trigger idGen.getNewId() and it will mess up
@@ -18,38 +18,25 @@ export const validPlainChild = (value: any): boolean =>
   typeof value === "string" ||
   validMayaNodeGetter(value);
 
-export const validPlainChildren = (value: any): boolean =>
-  valueIsArray(value) && value.every((item: any) => validPlainChild(item));
+export const validChildArray = (value: any): boolean =>
+  valueIsArray(value) && value.every((item: any) => validChild(item));
 
-export const validPlainChildOrChildren = (value: any): boolean =>
-  validPlainChild(value) || validPlainChildren(value);
+export const validChildOrChildArray = (value: any): boolean =>
+  !valueIsSignal(value) && (validChild(value) || validChildArray(value));
 
-export const validDeadSignalChild = (value: any): boolean =>
-  valueIsDeadSignal(value) && validPlainChild(value.value);
+export const validChildSignal = (value: any): boolean =>
+  valueIsSignal(value) && validChild(value.value);
 
-export const validLiveSignalChild = (value: any): boolean =>
-  valueIsLiveSignal(value) && validPlainChild(value.value);
-
-export const validChildren = (value: any): boolean =>
+export const validArrayOfChildOrChildSignal = (value: any): boolean =>
   valueIsArray(value) &&
-  value.every(
-    (item: any) =>
-      validPlainChild(item) ||
-      validDeadSignalChild(item) ||
-      validLiveSignalChild(item),
-  );
+  value.every((item: any) => validChild(item) || validChildSignal(item));
 
-export const validDeadSignalChildOrChildren = (value: any): boolean =>
-  valueIsDeadSignal(value) && validPlainChildOrChildren(value.value);
+export const validChildOrArrayOfChildOrChildSignal = (value: any): boolean =>
+  !valueIsSignal(value) &&
+  (validChild(value) || validArrayOfChildOrChildSignal(value));
 
-export const validLiveSignalChildOrChildren = (value: any): boolean =>
-  valueIsLiveSignal(value) && validPlainChildOrChildren(value.value);
-
-export const validNonLiveChildOrChildren = (value: any): boolean =>
-  !valueIsLiveSignal(value) &&
-  (validPlainChild(value) ||
-    validDeadSignalChildOrChildren(value) ||
-    validChildren(value));
+export const validSignalOfChildOrChildArray = (value: any): boolean =>
+  valueIsSignal(value) && validChildOrChildArray(value.value);
 
 /**
  * The variable is named as "validCh.." instead of something like
@@ -57,4 +44,5 @@ export const validNonLiveChildOrChildren = (value: any): boolean =>
  * Children but not necessariy meant to be of Children type. Hence the name.
  */
 export const validChildrenProp = (value: any): boolean =>
-  validNonLiveChildOrChildren(value) || validLiveSignalChildOrChildren(value);
+  validChildOrArrayOfChildOrChildSignal(value) ||
+  validSignalOfChildOrChildArray(value);

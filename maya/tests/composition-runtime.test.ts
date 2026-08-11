@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import { derive, deadSignal, signal, value } from "@cyftec/signal";
+import { derive, signal, value, type Signal } from "@cyftec/signals";
 import { component } from "../src/core/component.ts";
 import { fragment } from "../src/core/fragment.ts";
 import { m } from "../src/core/elements/m.ts";
@@ -46,7 +46,7 @@ describe("fragments and components", () => {
   });
 
   test("preserves explicitly wrapped child arrays and component output", () => {
-    const children = deadSignal([m.Span("a"), m.Span("b")]);
+    const children = [m.Span("a"), m.Span("b")];
     const Row = component<any>((props) => m.Div(props["children"]));
     expect((Row({ children }) as any)().textContent).toBe("ab");
     expect((Row({}) as any)().textContent).toBe("");
@@ -112,6 +112,23 @@ describe("If and Switch custom elements", () => {
     expect(node.textContent).toBe("B");
     cases.value = { a: () => "AA", b: () => "BB" };
     expect(node.textContent).toBe("BB");
+  });
+
+  test("unwraps reactive Switch case results", () => {
+    const subject = signal("yes");
+    const cases: { [key: string]: () => Signal<string> } = {
+      yes: () => derive(() => "yes"),
+      no: () => signal("no"),
+    };
+    const output = m.Switch({
+      subject,
+      cases,
+    });
+    const node = m.Div(output)();
+
+    expect(node.textContent).toBe("yes");
+    subject.value = "no";
+    expect(node.textContent).toBe("no");
   });
 });
 
@@ -184,12 +201,13 @@ describe("For custom element", () => {
     const output = m.For({
       subject,
       itemKey: "id",
-      map: (item, index) =>
-        m.P([
+      map: (item, index) => {
+        return m.P([
           derive(() => item.value.label),
           ":",
           derive(() => String(index.value)),
-        ]),
+        ]);
+      },
     });
     const parent = m.Div(output)();
     const originalA = parent.children[0];

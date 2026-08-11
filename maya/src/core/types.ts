@@ -1,17 +1,28 @@
 import {
-  type DeadSignal,
   type DerivedSignal,
-  type Effect,
-  type LiveSignal,
+  type Receiver,
+  type Signal,
   type MaybeSignal,
   type SourceSignal,
-} from "@cyftec/signal";
+} from "@cyftec/signals";
 import type {
   htmlTagNames,
   mathMlTagNames,
   svgTagAliases,
   svgTagNames,
 } from "./utils/index.ts";
+
+// Prevent an enclosing `children` context from widening a branch's result.
+export type NoContext<T> = [T] extends [infer Result] ? Result : never;
+
+/** The value held by a signal, or the input itself when it is not a signal. */
+export type UnwrapSignal<T> = T extends Signal<infer Value> ? Value : T;
+
+export type FilterUnknown<T> = T extends unknown
+  ? unknown extends T
+    ? never
+    : T
+  : never;
 
 export type MaybeArray<T> = T | T[];
 
@@ -80,7 +91,7 @@ type NativeElementForTag<T extends HTML5TagName> = T extends SvgTagName
 
 export type MayaNode<H extends Element = HTMLElement> = H & {
   nodeID: number;
-  effects: Effect[];
+  effects: Receiver[];
   unmountListener: CustomEventValue | undefined;
   value?: string; // for HTMLInputElement
 };
@@ -108,28 +119,18 @@ export type DerivedSignalChild =
   | DerivedSignal<string | MayaNodeGetter>
   | DerivedSignal<undefined | MayaNodeGetter>
   | DerivedSignal<undefined | string | MayaNodeGetter>;
-export type LiveSignalChild = SourceSignalChild | DerivedSignalChild;
+export type ChildSignal = SourceSignalChild | DerivedSignalChild;
 
-export type LiveSignalChildren = LiveSignal<Child[]>;
-export type LiveSignalChildOrChildren = LiveSignalChild | LiveSignalChildren;
+export type SignalOfChildArray = Signal<Child[]>;
+export type SignalOfChildOrChildArray = ChildSignal | SignalOfChildArray;
 
-export type DeadSignalChild =
-  | DeadSignal<undefined>
-  | DeadSignal<string>
-  | DeadSignal<MayaNodeGetter>
-  | DeadSignal<undefined | string>
-  | DeadSignal<string | MayaNodeGetter>
-  | DeadSignal<undefined | MayaNodeGetter>
-  | DeadSignal<undefined | string | MayaNodeGetter>;
-
-export type DeadSignalChildren = DeadSignal<Child[]>;
-export type DeadSignalChildOrChildren = DeadSignalChild | DeadSignalChildren;
-
-export type ChildrenArray = MaybeSignal<Child>[];
+export type ChildOrChildSignal = MaybeSignal<Child>;
+export type ChildOrChildArray = MaybeArray<Child>;
+export type ArrayOfChildOrChildSignal = ChildOrChildSignal[];
 
 export type Children =
-  | MaybeArray<MaybeSignal<Child>>
-  | MaybeSignal<MaybeArray<Child>>;
+  | MaybeArray<ChildOrChildSignal>
+  | MaybeSignal<ChildOrChildArray>;
 
 /**
  * Props type-defs
@@ -139,8 +140,8 @@ export type EventProps = Partial<{ [E in DomEventKey]: DomEventValue<E> }>;
 export type AttributeProps = Partial<{
   [A in AttributeKey]: MaybeSignal<AttributeValue>;
 }>;
-export type LiveSignalAttributeProps = Partial<{
-  [A in AttributeKey]: LiveSignal<AttributeValue>;
+export type SignalAttributeProps = Partial<{
+  [A in AttributeKey]: Signal<AttributeValue>;
 }>;
 export type ChildrenProp = { children?: Children };
 

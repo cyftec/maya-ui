@@ -1,10 +1,9 @@
-import { signal, type DerivedSignal } from "@cyftec/signal";
+import { signal, type DerivedSignal } from "@cyftec/signals";
 import { m } from "../src/core/elements/m.ts";
 import type { MayaNodeGetter } from "../src/core/types.ts";
 
 type Equal<Left, Right> =
-  (<T>() => T extends Left ? 1 : 2) extends
-  (<T>() => T extends Right ? 1 : 2)
+  (<T>() => T extends Left ? 1 : 2) extends <T>() => T extends Right ? 1 : 2
     ? true
     : false;
 type Assert<T extends true> = T;

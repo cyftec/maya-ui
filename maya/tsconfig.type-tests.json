@@ -4,7 +4,7 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@cyftec/signal": ["./tests/type-test-signal.d.ts"],
+      "@cyftec/signals": ["./tests/type-test-signal.d.ts"],
       "@cyftec/immut": ["./tests/type-test-immut.d.ts"]
     }
   },

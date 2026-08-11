@@ -1,4 +1,4 @@
-import { effect, promstates, signal } from "@cyftec/signal";
+import { effect, promstates, signal } from "@cyftec/signals";
 
 /**
  * TODO: Implement below modern querying features

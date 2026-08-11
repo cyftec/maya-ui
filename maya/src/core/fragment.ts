@@ -1,35 +1,13 @@
 import {
-  deadSignal,
+  derive,
   value,
-  valueIsLiveSignal,
   valueIsSignal,
-  type DeadSignal,
   type MaybeSignal,
-  type PlainValue,
   type Signal,
-} from "@cyftec/signal";
-import type {
-  Child,
-  Children,
-  DeadSignalChild,
-  LiveSignalChild,
-} from "./types";
+} from "@cyftec/signals";
+import type { Child, Children } from "./types";
+import { validArrayOfChildOrChildSignal } from "./utils";
 
-type InnerFragmentProps<P extends Record<string, any>> = {
-  [K in keyof P]: P[K] extends
-    | (Signal<any> | undefined)
-    | (((...args: any) => any) | undefined)
-    ? P[K]
-    : P[K] extends string | string[] | undefined
-      ? Signal<P[K]>
-      : P[K] extends DeadSignal<(Child | DeadSignalChild | LiveSignalChild)[]>
-        ? PlainValue<P[K]>
-        : P[K] extends Child[]
-          ? MaybeSignal<P[K]>
-          : P[K] extends Children
-            ? P[K]
-            : Signal<P[K]>;
-};
 type Props<P extends Record<string, any>> = {
   [K in keyof P]: P[K] extends
     | (Signal<any> | undefined)
@@ -41,16 +19,24 @@ type Props<P extends Record<string, any>> = {
         ? P[K]
         : MaybeSignal<P[K]>;
 };
+type InnerFragmentProps<P extends Record<string, any>> = {
+  [K in keyof P]: P[K] extends
+    | (Signal<any> | undefined)
+    | (((...args: any) => any) | undefined)
+    ? P[K]
+    : P[K] extends string | string[] | undefined
+      ? Signal<P[K]>
+      : P[K] extends Child[]
+        ? MaybeSignal<P[K]>
+        : P[K] extends Children
+          ? P[K]
+          : Signal<P[K]>;
+};
 
+export type Fragment<P extends Record<string, any>, R> = (props: Props<P>) => R;
 export type InnerFragment<P extends Record<string, any>, R> = (
   p: InnerFragmentProps<P>,
 ) => R;
-export type Fragment<P extends Record<string, any>, R> = (props: Props<P>) => R;
-
-const valueIsArrayWithSignalItems = (input: any) => {
-  const val = value(input);
-  return Array.isArray(val) && (val as unknown[]).some((v) => valueIsSignal(v));
-};
 
 export const fragment = <P extends Record<string, any>, R extends Children>(
   innerFragment: InnerFragment<P, R>,
@@ -66,11 +52,11 @@ export const fragment = <P extends Record<string, any>, R extends Children>(
       const [propKey, propValue] = prop as [keyof P, Props<P>[keyof P]];
 
       const innerPropValue =
-        valueIsLiveSignal(propValue) || typeof propValue === "function"
+        valueIsSignal(propValue) ||
+        typeof propValue === "function" ||
+        validArrayOfChildOrChildSignal(propValue)
           ? propValue
-          : valueIsArrayWithSignalItems(propValue)
-            ? value(propValue)
-            : deadSignal(value(propValue));
+          : derive(() => value(propValue));
 
       innerFragmentProps[propKey] =
         innerPropValue as InnerFragmentProps<P>[keyof P];

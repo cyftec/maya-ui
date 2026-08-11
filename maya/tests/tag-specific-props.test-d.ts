@@ -1,5 +1,5 @@
 import { m } from "../src/core";
-import { signal } from "../src/re-exports/signal";
+import { signal } from "../src/re-exports/signals";
 
 // Global, data-*, events, and valid element-specific attributes remain usable.
 m.Div({ class: "panel", "data-state": "open", onclick: () => {} });

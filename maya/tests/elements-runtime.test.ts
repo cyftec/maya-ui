@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
-import { deadSignal, signal } from "@cyftec/signal";
+import { signal } from "@cyftec/signals";
 import { m } from "../src/core/elements/m.ts";
 import { idGen } from "../src/core/utils/id-generator.ts";
 
@@ -58,21 +58,15 @@ describe("native Maya elements", () => {
     const first = signal("one");
     const children = signal<any[]>(["alpha", m.Strong("beta")]);
     const node = m.Div({
-      children: [
-        "&lt;start&gt;",
-        undefined,
-        deadSignal(" fixed "),
-        first,
-        m.Span(children),
-      ],
+      children: ["&lt;start&gt;", undefined, first, m.Span(children)],
     })();
-    expect(node.textContent).toBe("<start> fixed onealphabeta");
+    expect(node.textContent).toBe("<start>onealphabeta");
 
     first.value = "ONE";
     children.value = ["gamma"];
-    expect(node.textContent).toBe("<start> fixed ONEgamma");
+    expect(node.textContent).toBe("<start>ONEgamma");
     children.value = ["x", "y", "z"];
-    expect(node.textContent).toBe("<start> fixed ONExyz");
+    expect(node.textContent).toBe("<start>ONExyz");
   });
 
   test("rejects invalid children and invalid Maya-node getters", () => {

@@ -3,13 +3,12 @@ import {
   derive,
   signal,
   value,
-  valueIsLiveSignal,
+  valueIsSignal,
   type DerivedSignal,
-  type LiveSignal,
   type MaybeSignal,
   type Signal,
   type SourceSignal,
-} from "@cyftec/signal";
+} from "@cyftec/signals";
 import type { Child, MayaNode, MayaNodeGetter } from "../../types";
 
 type PlainMapFn<Item> = (item: Item, index: number) => Child;
@@ -178,36 +177,32 @@ export const forElement = <
       );
 
     return (
-      valueIsLiveSignal(subject) ? derive(elementsGetter) : elementsGetter()
+      valueIsSignal(subject) ? derive(elementsGetter) : elementsGetter()
     ) as ForReturnType<typeof subject>;
   }
 
   /**
    * Mutable nodes list logic below
    */
-
   const itemsValue = value(subject);
   if (itemsValue.length && typeof itemsValue[0] !== "object")
     throw new Error("for mutable map, item in the list must be an object");
 
-  const list = derive(() => {
-    const items = value(subject) as Record<string, any>[];
-    if (!Array.isArray(items))
-      throw `subject must be an array or signalled array, found ${JSON.stringify(subject)}`;
-
-    return items;
-  });
-
   type SubjectItem = Record<string, any>;
-  let previousItems: SubjectItem[] | null = null;
-  const currentItems = derive((prevItems: SubjectItem[] | undefined) => {
-    previousItems = prevItems || previousItems;
-    return (list as LiveSignal<SubjectItem[]>).value;
+
+  const currentItems = derive(() => {
+    const listItems = value(subject) as Record<string, any>[];
+    if (!Array.isArray(listItems))
+      throw `subject must be an array or signalled array, found ${JSON.stringify(subject)}`;
+    return listItems as SubjectItem[];
   });
 
   const mappedChildren = derive<MappedChild<SubjectItem>[]>(
     (prevMappedChildren) => {
-      if (!prevMappedChildren || !previousItems) {
+      if (
+        !(prevMappedChildren || []).length ||
+        !(currentItems.prevValue || []).length
+      ) {
         const initialItems = currentItems.value;
         return initialItems.map((item, i) =>
           getMappedChild(
@@ -219,12 +214,12 @@ export const forElement = <
       }
 
       const muts = getArrayMutations(
-        previousItems,
+        currentItems.prevValue || [],
         currentItems.value,
         itemKey as string,
       );
 
-      return muts.map((mut, i) => {
+      const updatedMappedChildren = muts.map((mut, i) => {
         const oldMappedChild = (prevMappedChildren || [])[mut.oldIndex];
         console.assert(
           (mut.type === "add" && mut.oldIndex === -1 && !oldMappedChild) ||
@@ -247,6 +242,8 @@ export const forElement = <
 
         return getMappedChild(mut.value, i, map as MutableMapFn<SubjectItem>);
       });
+
+      return updatedMappedChildren;
     },
   );
 

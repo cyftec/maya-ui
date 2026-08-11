@@ -6,13 +6,13 @@
   "license": "MIT",
   "exports": {
     "./core": "./src/core/index.ts",
-    "./signal": "./src/re-exports/signal.ts",
+    "./signals": "./src/re-exports/signals.ts",
     "./immut": "./src/re-exports/immut.ts",
     "./toolkit": "./src/toolkit/index.ts"
   },
   "dependencies": {
     "@cyftec/immut": "0.1.0",
-    "@cyftec/signal": "0.3.9"
+    "@cyftec/signals": "0.0.3"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

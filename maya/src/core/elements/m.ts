@@ -1,4 +1,3 @@
-import { signal } from "@cyftec/signal";
 import type {
   HtmlTagName,
   MathMlTagName,
@@ -75,15 +74,3 @@ export const m: MayaElementsMap = {
   ...svgAliasedElementsMap,
   ...customElementsMap,
 };
-
-m.If({
-  subject: signal(true),
-  isTruthy: (_) => m.Span("span"),
-});
-
-m.Div({
-  children: m.If({
-    subject: signal(true),
-    isTruthy: (_) => m.Span("span"),
-  }),
-});

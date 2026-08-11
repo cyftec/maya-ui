@@ -12,12 +12,14 @@ describe("query", () => {
   test("tracks loading, parsed data, request options, and completion", async () => {
     let requestInit: RequestInit | undefined;
     let resolveFetch!: (response: Response) => void;
-    globalThis.fetch = mock(async (_url: string | URL | Request, init?: RequestInit) => {
-      requestInit = init;
-      return await new Promise<Response>((resolve) => {
-        resolveFetch = resolve;
-      });
-    }) as unknown as typeof fetch;
+    globalThis.fetch = mock(
+      async (_url: string | URL | Request, init?: RequestInit) => {
+        requestInit = init;
+        return await new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        });
+      },
+    ) as unknown as typeof fetch;
     const completed = mock(() => {});
     const state = query<{ answer: number }>(
       "/answer",
@@ -39,11 +41,12 @@ describe("query", () => {
   });
 
   test("preserves previous data on fetch and JSON errors", async () => {
-    const responses: Array<Response | Error | { json: () => Promise<never> }> = [
-      Response.json({ value: "cached" }),
-      new Error("offline"),
-      { json: () => Promise.reject<never>(new Error("bad json")) },
-    ];
+    const responses: Array<Response | Error | { json: () => Promise<never> }> =
+      [
+        Response.json({ value: "cached" }),
+        new Error("offline"),
+        { json: () => Promise.reject<never>(new Error("bad json")) },
+      ];
     globalThis.fetch = mock(async () => {
       const next = responses.shift();
       if (next instanceof Error) throw next;
@@ -68,10 +71,12 @@ describe("query", () => {
 
   test("aborts in-flight work and clears cached state", async () => {
     let requestSignal: AbortSignal | undefined;
-    globalThis.fetch = mock(async (_url: string | URL | Request, init?: RequestInit) => {
-      requestSignal = init?.signal as AbortSignal;
-      return await new Promise<Response>(() => {});
-    }) as unknown as typeof fetch;
+    globalThis.fetch = mock(
+      async (_url: string | URL | Request, init?: RequestInit) => {
+        requestSignal = init?.signal as AbortSignal;
+        return await new Promise<Response>(() => {});
+      },
+    ) as unknown as typeof fetch;
     const state = query("/slow", undefined);
     void state.runQuery();
     expect(state.isLoading.value).toBe(true);

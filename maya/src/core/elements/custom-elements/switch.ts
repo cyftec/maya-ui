@@ -1,26 +1,23 @@
 import {
   derive,
   value,
-  valueIsLiveSignal,
+  valueIsSignal,
   type DerivedSignal,
   type MaybeSignal,
-  type LiveSignal,
-} from "@cyftec/signal";
-import type { Children, MayaNodeGetter } from "../../types.ts";
+  type Signal,
+} from "@cyftec/signals";
+import type {
+  Children,
+  FilterUnknown,
+  MayaNodeGetter,
+  NoContext,
+  UnwrapSignal,
+} from "../../types.ts";
 import { m } from "../m.ts";
 
-type FilterUnknown<T> = T extends unknown
-  ? unknown extends T
-    ? never
-    : T
-  : never;
-
-// Prevent an enclosing `children` context from widening a branch's result.
-type NoContext<T> = [T] extends [infer Result] ? Result : never;
-
 type SwitchReturn<Subject, C> =
-  Subject extends LiveSignal<unknown>
-    ? DerivedSignal<FilterUnknown<C | MayaNodeGetter>>
+  Subject extends Signal<unknown>
+    ? DerivedSignal<FilterUnknown<UnwrapSignal<C> | MayaNodeGetter>>
     : FilterUnknown<C | MayaNodeGetter>;
 
 type SubjectValue<S extends MaybeSignal<string | number | boolean>> =
@@ -71,7 +68,7 @@ export const switchElement = <
   };
 
   return (
-    valueIsLiveSignal(subject)
+    valueIsSignal(subject)
       ? derive(() => switchReturnGetter(true))
       : switchReturnGetter(false)
   ) as SwitchReturn<typeof subject, NoContext<C>>;

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, spyOn, test } from "bun:test";
-import { deadSignal, signal } from "@cyftec/signal";
+import { signal } from "@cyftec/signals";
 import {
   decodeHTMLEntities,
   decodeJSUnicode,
@@ -13,17 +13,15 @@ import {
   sanitizeStyle,
 } from "../src/core/utils/sanitizers.ts";
 import {
-  validPlainChild,
-  validPlainChildren,
+  validChild,
+  validChildArray,
   validChildrenProp,
-  validDeadSignalChild,
-  validDeadSignalChildOrChildren,
-  validNonLiveChildOrChildren,
-  validChildren,
-  validLiveSignalChild,
-  validLiveSignalChildOrChildren,
+  validArrayOfChildOrChildSignal,
+  validChildSignal,
+  validSignalOfChildOrChildArray,
   valueIsArray,
   valueIsMayaNode,
+  validChildOrArrayOfChildOrChildSignal,
 } from "../src/core/utils/type-checkers.ts";
 
 beforeEach(() => {
@@ -97,34 +95,29 @@ describe("identity, phase, and child type checks", () => {
     log.mockRestore();
   });
 
-  test("classifies Maya nodes, child getters, arrays, signals, and non-signals", () => {
+  test("classifies Maya nodes, child getters, arrays, and signals", () => {
     const getter = Object.assign(() => ({ nodeID: 1 }), {
       isMayaNodeGetter: true,
     });
     const source = signal("reactive");
-    const nonSignal = deadSignal("plain");
     const signalChildren = signal(["a", getter]);
-    const plainChildren = ["a", source, nonSignal, getter];
+    const plainChildren = ["a", source, getter];
 
     expect(valueIsArray([])).toBe(true);
     expect(valueIsArray({})).toBe(false);
     expect(valueIsMayaNode({ nodeID: 1 })).toBe(true);
     expect(valueIsMayaNode({ nodeID: 0 })).toBe(false);
     expect(valueIsMayaNode(null)).toBe(false);
-    expect(validPlainChild(undefined)).toBe(true);
-    expect(validPlainChild("text")).toBe(true);
-    expect(validPlainChild(getter)).toBe(true);
-    expect(validPlainChild(() => ({}))).toBe(false);
-    expect(validPlainChildren([undefined, "text", getter])).toBe(true);
-    expect(validPlainChildren([1])).toBe(false);
-    expect(validDeadSignalChild(nonSignal)).toBe(true);
-    expect(validLiveSignalChild(source)).toBe(true);
-    expect(validDeadSignalChildOrChildren(deadSignal(["a", getter]))).toBe(
-      true,
-    );
-    expect(validLiveSignalChildOrChildren(signalChildren)).toBe(true);
-    expect(validChildren(plainChildren)).toBe(true);
-    expect(validNonLiveChildOrChildren(plainChildren)).toBe(true);
+    expect(validChild(undefined)).toBe(true);
+    expect(validChild("text")).toBe(true);
+    expect(validChild(getter)).toBe(true);
+    expect(validChild(() => ({}))).toBe(false);
+    expect(validChildArray([undefined, "text", getter])).toBe(true);
+    expect(validChildArray([1])).toBe(false);
+    expect(validChildSignal(source)).toBe(true);
+    expect(validSignalOfChildOrChildArray(signalChildren)).toBe(true);
+    expect(validArrayOfChildOrChildSignal(plainChildren)).toBe(true);
+    expect(validChildOrArrayOfChildOrChildSignal(plainChildren)).toBe(true);
     expect(validChildrenProp(signalChildren)).toBe(true);
     expect(validChildrenProp({ value: 42 })).toBe(false);
   });
