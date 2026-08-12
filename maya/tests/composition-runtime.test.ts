@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import { derive, signal, value, type Signal } from "@cyftec/signals";
+import {
+  derive,
+  signal,
+  value,
+  valueIsSignal,
+  type Signal,
+} from "@cyftec/signals";
 import { component } from "../src/core/component.ts";
 import { fragment } from "../src/core/fragment.ts";
 import { m } from "../src/core/elements/m.ts";
@@ -17,9 +23,10 @@ beforeEach(() => {
 });
 
 describe("fragments and components", () => {
-  test("normalizes plain props while preserving functions, signals, and signal arrays", () => {
+  test("normalizes plain props while preserving functions and ordinary signals", () => {
     const live = signal("live");
     const arrayItem = signal("item");
+    const plainChildArraySignal = signal(["plain item"]);
     const callback = () => "called";
     let innerProps: Record<string, any> = {};
     const Card = fragment<any, any>((props) => {
@@ -32,6 +39,7 @@ describe("fragments and components", () => {
       live,
       callback,
       items: [arrayItem],
+      plainItems: plainChildArraySignal,
       absent: undefined,
     };
 
@@ -41,6 +49,7 @@ describe("fragments and components", () => {
     expect(innerProps["live"]).toBe(live);
     expect(innerProps["callback"]).toBe(callback);
     expect(innerProps["items"]).toEqual([arrayItem]);
+    expect(innerProps["plainItems"]).toBe(plainChildArraySignal);
     expect("absent" in innerProps).toBe(false);
     expect("absent" in input).toBe(false);
   });
@@ -50,6 +59,31 @@ describe("fragments and components", () => {
     const Row = component<any>((props) => m.Div(props["children"]));
     expect((Row({ children }) as any)().textContent).toBe("ab");
     expect((Row({}) as any)().textContent).toBe("");
+  });
+
+  test("renders a signal-wrapped array of child signals", () => {
+    const firstChild = signal("first");
+    const children = signal([firstChild]);
+    const Row = component<any>((props) => m.Div(props["children"]));
+
+    const node = (Row({ children }) as any)();
+    expect(node.textContent).toBe("first");
+  });
+
+  test("unwraps an array signal with signal items before calling the inner fragment", () => {
+    const item = signal(1);
+    const items = signal([item]);
+    let innerItems: unknown;
+    const Card = fragment<any, any>((props) => {
+      innerItems = props["items"];
+      return m.Div();
+    });
+
+    Card({ items });
+
+    expect(Array.isArray(innerItems)).toBe(true);
+    expect(valueIsSignal((innerItems as unknown[])[0])).toBe(true);
+    expect(valueIsSignal(innerItems)).toBe(false);
   });
 });
 

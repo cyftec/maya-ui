@@ -6,7 +6,6 @@ import {
   type Signal,
 } from "@cyftec/signals";
 import type { Child, Children } from "./types";
-import { validArrayOfChildOrChildSignal } from "./utils";
 
 type Props<P extends Record<string, any>> = {
   [K in keyof P]: P[K] extends
@@ -38,6 +37,12 @@ export type InnerFragment<P extends Record<string, any>, R> = (
   p: InnerFragmentProps<P>,
 ) => R;
 
+const valueIsMaybeSignalArrayWithSomeSignalItem = (input: any): boolean => {
+  const inputValue = value(input);
+  if (!Array.isArray(inputValue)) return false;
+  return inputValue.some((item) => valueIsSignal(item));
+};
+
 export const fragment = <P extends Record<string, any>, R extends Children>(
   innerFragment: InnerFragment<P, R>,
 ): Fragment<P, ReturnType<typeof innerFragment>> => {
@@ -52,11 +57,13 @@ export const fragment = <P extends Record<string, any>, R extends Children>(
       const [propKey, propValue] = prop as [keyof P, Props<P>[keyof P]];
 
       const innerPropValue =
-        valueIsSignal(propValue) ||
-        typeof propValue === "function" ||
-        validArrayOfChildOrChildSignal(propValue)
+        typeof propValue === "function"
           ? propValue
-          : derive(() => value(propValue));
+          : valueIsMaybeSignalArrayWithSomeSignalItem(propValue)
+            ? value(propValue)
+            : valueIsSignal(propValue)
+              ? propValue
+              : derive(() => value(propValue));
 
       innerFragmentProps[propKey] =
         innerPropValue as InnerFragmentProps<P>[keyof P];
