@@ -1,4 +1,4 @@
-import { tmpl } from "@cyftec/maya/signal";
+import { tmpl } from "@cyftec/maya/signals";
 import { component, m } from "@cyftec/maya/core";
 
 type GithubLinkProps = {

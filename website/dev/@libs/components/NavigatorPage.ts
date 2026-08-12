@@ -1,5 +1,5 @@
 import { fragment, Child, Children, m, MayaNode } from "@cyftec/maya/core";
-import { effect, Signal, tmpl } from "@cyftec/maya/signal";
+import { effect, Signal, tmpl } from "@cyftec/maya/signals";
 import { Navbar } from "../elements";
 
 type NavigatorPageProps = {

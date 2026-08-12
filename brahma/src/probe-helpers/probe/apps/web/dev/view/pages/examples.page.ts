@@ -1,5 +1,5 @@
 import { component, type DomEventValue, m } from "@cyftec/maya/core";
-import { op, signal, tmpl } from "@cyftec/maya/signal";
+import { op, signal, tmpl } from "@cyftec/maya/signals";
 import { Header } from "../elements/index.js";
 
 const topBulbIsOn = signal(false);

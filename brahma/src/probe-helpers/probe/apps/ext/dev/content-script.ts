@@ -1,5 +1,5 @@
 import { m } from "@cyftec/maya/core";
-import { derive, signal } from "@cyftec/maya/signal";
+import { derive, signal } from "@cyftec/maya/signals";
 import { ATTENTION, SELECTOR, UI_ELEM_ID } from "./@libs/constants";
 import { getNumberFromElement } from "./@libs/utils";
 

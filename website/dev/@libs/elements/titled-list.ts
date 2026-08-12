@@ -1,4 +1,4 @@
-import { tmpl } from "@cyftec/maya/signal";
+import { tmpl } from "@cyftec/maya/signals";
 import { Child, Children, component, m } from "@cyftec/maya/core";
 import { Link } from "./link";
 

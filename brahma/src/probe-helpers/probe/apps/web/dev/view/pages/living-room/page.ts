@@ -1,5 +1,5 @@
 import { m } from "@cyftec/maya/core";
-import { derive, signal, tmpl } from "@cyftec/maya/signal";
+import { derive, signal, tmpl } from "@cyftec/maya/signals";
 import { Bulb, PhotoFrame } from "./@components";
 import { Button } from "../../elements";
 

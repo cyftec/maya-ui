@@ -1,5 +1,5 @@
 import { m } from "@cyftec/maya/core";
-import { signal } from "@cyftec/maya/signal";
+import { signal } from "@cyftec/maya/signals";
 import { Header } from "../elements/index.js";
 
 const sub = signal("a");

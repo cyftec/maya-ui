@@ -1,7 +1,7 @@
 import { m, type Child } from "@cyftec/maya/core";
 import { runHighlightJsScriptOnMount } from "@root-libs/utils";
 import { Icon } from "@root-libs/elements";
-import { signal } from "@cyftec/maya/signal";
+import { signal } from "@cyftec/maya/signals";
 
 export const Code = (code: string) => {
   const iconName = signal("content_copy");

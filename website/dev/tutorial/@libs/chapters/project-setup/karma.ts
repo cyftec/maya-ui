@@ -33,7 +33,7 @@ export const karma: Karma = {
   maya: {
     name: "hello-maya",
     appType: "web",
-    dependencies: { "@cyftec/maya": "0.0.11" },
+    dependencies: { "@cyftec/maya": "0.1.2" },
   },
   git: { ignore: ["stage", "node_modules"] },
   vscode: { settings: { "deno.enable": false, "files.exclude": {} } },

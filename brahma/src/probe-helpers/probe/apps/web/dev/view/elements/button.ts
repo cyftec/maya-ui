@@ -1,5 +1,5 @@
 import { Child, component, m } from "@cyftec/maya/core";
-import { tmpl } from "@cyftec/maya/signal";
+import { tmpl } from "@cyftec/maya/signals";
 
 type ButtonProps = {
   classNames?: string;

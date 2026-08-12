@@ -1,4 +1,4 @@
-import { signal } from "@cyftec/maya/signal";
+import { signal } from "@cyftec/maya/signals";
 
 export const hash = signal(document.location.hash);
 export const path = signal(document.location.pathname);

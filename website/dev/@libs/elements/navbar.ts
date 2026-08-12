@@ -1,4 +1,4 @@
-import { tmpl } from "@cyftec/maya/signal";
+import { tmpl } from "@cyftec/maya/signals";
 import { Children, component, m } from "@cyftec/maya/core";
 
 type NavbarProps = {

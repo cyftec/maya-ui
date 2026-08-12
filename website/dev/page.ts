@@ -1,5 +1,5 @@
 import { m } from "@cyftec/maya/core";
-import { derive, signal } from "@cyftec/maya/signal";
+import { derive, signal } from "@cyftec/maya/signals";
 import { Page } from "@root-libs/components/Page";
 
 const signalValue = signal(12);
@@ -560,8 +560,8 @@ export default Page({
                 ),
                 CodeWindow(
                   "page.ts",
-                  `import { m } from "@cyftec/maya";
-import { signal, tmpl } from "@cyftec/maya/signal";
+                  `import { m } from "@cyftec/maya/core";
+import { signal, tmpl } from "@cyftec/maya/signals";
 
 const count = signal(0);
 
