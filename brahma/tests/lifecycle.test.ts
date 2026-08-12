@@ -28,7 +28,6 @@ describe("stage lifecycle", () => {
     let onQuit: (() => void) | undefined;
     const build = mock(async () => {});
     const serve = mock(() => {});
-    const install = mock(async () => {});
     const exit = mock(() => undefined) as unknown as typeof process.exit;
     const log = spyOn(console, "log").mockImplementation(() => {});
 
@@ -50,7 +49,6 @@ describe("stage lifecycle", () => {
       startStdinListener: (async (callback: () => void) => {
         onQuit = callback;
       }) as never,
-      installAllConfigsAndPackages: install as never,
       exit,
     });
 
@@ -80,7 +78,6 @@ describe("stage lifecycle", () => {
       watchFileChange: mock(() => ({})) as never,
       runLocalServer: mock(() => {}) as never,
       startStdinListener: mock(async () => {}) as never,
-      installAllConfigsAndPackages: mock(async () => {}) as never,
       exit: mock(() => undefined) as never,
     });
     expect(result).toBe(false);

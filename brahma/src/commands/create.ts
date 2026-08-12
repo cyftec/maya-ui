@@ -69,6 +69,7 @@ export const createApp = async (cmdArgs: string[]) => {
   Run following commands to start dev:
 
   cd ${appRootDirName}
+  brahma install
   brahma stage
   `);
   process.exit();
