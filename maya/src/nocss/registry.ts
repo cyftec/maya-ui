@@ -1,14 +1,7 @@
-import type { PhraseConstrain } from "./utils";
-
-export type ClassNamesPhrase<
-  T extends string,
-  ClassNamesUnion extends string,
-> = T & PhraseConstrain<T, ClassNamesUnion>;
-
-type NoCssGlobalRegistry<ClassNamesUnion extends string> = {
-  baseClassNamesOverrides: Record<ClassNamesUnion, string>;
-  compundClassNames: Record<string, ClassNamesPhrase<string, ClassNamesUnion>>;
-  usedClassNames: Set<ClassNamesUnion>;
+type NoCssGlobalRegistry = {
+  baseClassNamesOverrides: Record<string, string>;
+  compundClassNames: Record<string, string>;
+  usedClassNames: Set<string>;
 };
 
 export const NoCssRegistry = (function () {
@@ -16,37 +9,30 @@ export const NoCssRegistry = (function () {
   const globalContext = globalThis as Record<string, any>;
 
   let noCssGlobalRegistry = globalContext[NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY] as
-    | NoCssGlobalRegistry<string>
+    | NoCssGlobalRegistry
     | undefined;
 
   if (!noCssGlobalRegistry) {
     globalContext[NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY] = {};
     noCssGlobalRegistry = globalContext[
       NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY
-    ] as NoCssGlobalRegistry<string>;
+    ] as NoCssGlobalRegistry;
     noCssGlobalRegistry.usedClassNames = new Set();
   }
 
   const registry = {
-    overrideBaseClassNames: <ClassNamesUnion extends string>(
-      obj: Record<ClassNamesUnion, string>,
-    ) => {
+    overrideBaseClassNames: (obj: Record<string, string>) => {
       noCssGlobalRegistry.baseClassNamesOverrides = obj;
     },
-    registerCompoundClassNames: <ClassNamesUnion extends string>(
-      coumpoundClassNamesObject: Record<
-        string,
-        ClassNamesPhrase<string, ClassNamesUnion>
-      >,
+    registerCompoundClassNames: (
+      coumpoundClassNamesObject: Record<string, string>,
     ) => {
       noCssGlobalRegistry.compundClassNames = coumpoundClassNamesObject;
     },
-    registerAndReturn: <T extends string, ClassNamesUnion extends string>(
-      phrase: ClassNamesPhrase<T, ClassNamesUnion>,
-    ): string => {
+    registerAndReturn: (phrase: string): string => {
       const classNames = phrase
         .split(" ")
-        .filter((str) => !!str) as ClassNamesUnion[];
+        .filter((str) => !!str);
       classNames.forEach((name) => {
         noCssGlobalRegistry.usedClassNames.add(name);
       });

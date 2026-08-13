@@ -4,74 +4,61 @@ import {
   valueIsSignal,
   type DerivedSignal,
   type MaybeSignal,
+  type PlainValue,
   type Signal,
 } from "@cyftec/signals";
-import { NoCssRegistry, type ClassNamesPhrase } from "./registry";
+import { NoCssRegistry } from "./registry";
+import type { ClassNamesHint, ClassNamesPhrase } from "./utils";
 
-type NoCssReturnType<T extends string, ClassNamesUnion extends string> =
-  | DerivedSignal<ClassNamesPhrase<T, ClassNamesUnion>>
-  | ClassNamesPhrase<T, ClassNamesUnion>;
+type CssResult<Phrase extends string> = Phrase | DerivedSignal<Phrase>;
 
-type PhraseValue<Phrase> =
-  Phrase extends MaybeSignal<infer Value> ? Extract<Value, string> : never;
-
-type PhraseValues<Phrases extends readonly MaybeSignal<string>[]> = PhraseValue<
-  Phrases[number]
->;
-
-type ValidatedPhraseInput<Phrase, ClassNamesUnion extends string> =
-  Phrase extends MaybeSignal<infer Value>
-    ? [Value] extends [string]
-      ? MaybeSignal<ClassNamesPhrase<Value, ClassNamesUnion>>
-      : never
-    : never;
-
-type ValidatedPhraseInputs<
-  Phrases extends readonly MaybeSignal<string>[],
-  ClassNamesUnion extends string,
+// The one inference helper: validate the value of every plain/signal argument.
+type ValidPhrases<
+  Phrases extends readonly MaybeSignal<ClassNamesHint<ClassNames>>[],
+  ClassNames extends string,
 > = {
-  [Index in keyof Phrases]: ValidatedPhraseInput<
-    Phrases[Index],
-    ClassNamesUnion
+  [Index in keyof Phrases]: MaybeSignal<
+    ClassNamesPhrase<Extract<PlainValue<Phrases[Index]>, string>, ClassNames>
   >;
 };
 
-type NoCssCaseInput<S> =
-  S extends Signal<infer V> ? MaybeSignal<V> : MaybeSignal<S>;
+type CaseValue<Subject> =
+  Subject extends Signal<infer Value>
+    ? MaybeSignal<Value>
+    : MaybeSignal<Subject>;
 
-type NoCssCases<
-  S,
-  ClassNamesUnion extends string,
-  Cases extends Record<string, unknown>,
-> = {
-  [ClassNames in keyof Cases]: ClassNames extends string
-    ? ClassNames extends ClassNamesPhrase<ClassNames, ClassNamesUnion>
-      ? NoCssCaseInput<S>
-      : never
-    : never;
-};
-
-type Css<ClassNamesUnion extends string> = {
-  <const Phrases extends readonly MaybeSignal<string>[]>(
-    ...phrases: Phrases & ValidatedPhraseInputs<Phrases, ClassNamesUnion>
-  ): NoCssReturnType<PhraseValues<Phrases>, ClassNamesUnion>;
-  when: <C, const T extends string, const F extends string>(
-    truthyCondition: C,
-    truhtyClassNames: ClassNamesPhrase<T, ClassNamesUnion>,
-    falsyClassNames: ClassNamesPhrase<F, ClassNamesUnion>,
-  ) => NoCssReturnType<T | F, ClassNamesUnion>;
-  cases: <
-    S,
-    const Cases extends Record<string, unknown>,
-    const D extends string,
+type Css<ClassName extends string> = {
+  <const Phrases extends readonly MaybeSignal<ClassNamesHint<ClassName>>[]>(
+    // The conditional runs after inference, so one bad argument cannot hide
+    // behind the valid arguments in the tuple.
+    ...phrases: Phrases &
+      ([Phrases] extends [ValidPhrases<Phrases, ClassName>] ? unknown : never)
+  ): CssResult<string>;
+  when<
+    Condition,
+    const TruthyPhrase extends ClassNamesHint<ClassName>,
+    const FalsyPhrase extends ClassNamesHint<ClassName>,
   >(
-    subject: S,
-    cases: Cases & NoCssCases<S, ClassNamesUnion, Cases>,
-    defaultCase?: ClassNamesPhrase<D, ClassNamesUnion>,
-  ) => NoCssReturnType<Extract<keyof Cases, string> | D, ClassNamesUnion>;
+    truthyCondition: Condition,
+    truthyClassNames: ClassNamesPhrase<TruthyPhrase, ClassName>,
+    falsyClassNames: ClassNamesPhrase<FalsyPhrase, ClassName>,
+  ): CssResult<TruthyPhrase | FalsyPhrase>;
+  cases<
+    Subject,
+    const Phrase extends ClassNamesHint<ClassName>,
+    const DefaultPhrase extends ClassNamesHint<ClassName>,
+  >(
+    subject: Subject,
+    cases: {
+      [Key in Phrase]: Key extends ClassNamesPhrase<Key, ClassName>
+        ? CaseValue<Subject>
+        : never;
+    } & Partial<Record<ClassNamesHint<ClassName>, CaseValue<Subject>>>,
+    defaultCase?: ClassNamesPhrase<DefaultPhrase, ClassName>,
+  ): CssResult<Phrase | DefaultPhrase | "">;
 };
 
-export const getCss = function <ClassNamesUnion extends string>() {
+export const getCss = function <ClassName extends string>() {
   const nocss = ((...phrases: MaybeSignal<string>[]) => {
     const evaluator = () =>
       phrases
@@ -85,65 +72,46 @@ export const getCss = function <ClassNamesUnion extends string>() {
 
     const isSignalledInput = phrases.some((phrase) => valueIsSignal(phrase));
     return isSignalledInput ? derive(evaluator) : evaluator();
-  }) as Css<ClassNamesUnion>;
+  }) as Css<ClassName>;
 
-  nocss.when = <C, const T extends string, const F extends string>(
-    truthyCondition: C,
-    truhtyClassNames: ClassNamesPhrase<T, ClassNamesUnion>,
-    falsyClassNames: ClassNamesPhrase<F, ClassNamesUnion>,
-  ): NoCssReturnType<T | F, ClassNamesUnion> => {
-    const truthyClasses = NoCssRegistry.registerAndReturn<T, ClassNamesUnion>(
-      truhtyClassNames,
-    );
-    const falsyClasses = NoCssRegistry.registerAndReturn<F, ClassNamesUnion>(
-      falsyClassNames,
-    );
+  const when = <Condition>(
+    truthyCondition: Condition,
+    truthyClassNames: string,
+    falsyClassNames: string,
+  ): CssResult<string> => {
+    const truthyClasses = NoCssRegistry.registerAndReturn(truthyClassNames);
+    const falsyClasses = NoCssRegistry.registerAndReturn(falsyClassNames);
     const evaluator = () =>
-      (value(truthyCondition)
-        ? truthyClasses
-        : falsyClasses) as ClassNamesPhrase<T | F, ClassNamesUnion>;
+      value(truthyCondition) ? truthyClasses : falsyClasses;
 
     return valueIsSignal(truthyCondition) ? derive(evaluator) : evaluator();
   };
 
-  nocss.cases = <
-    S,
-    const Cases extends Record<string, unknown>,
-    const D extends string,
-  >(
-    subject: S,
-    cases: Cases & NoCssCases<S, ClassNamesUnion, Cases>,
-    defaultCase?: ClassNamesPhrase<D, ClassNamesUnion>,
-  ): NoCssReturnType<Extract<keyof Cases, string> | D, ClassNamesUnion> => {
-    type CaseClassNames = Extract<keyof Cases, string>;
+  const cases = <Subject>(
+    subject: Subject,
+    cases: Record<string, CaseValue<Subject>>,
+    defaultCase?: string,
+  ): CssResult<string> => {
     const registeredCases = Object.entries(cases) as [
-      CaseClassNames,
-      NoCssCaseInput<S>,
+      string,
+      CaseValue<Subject>,
     ][];
 
     registeredCases.forEach(([classNames]) => {
-      NoCssRegistry.registerAndReturn<CaseClassNames, ClassNamesUnion>(
-        classNames as ClassNamesPhrase<CaseClassNames, ClassNamesUnion>,
-      );
+      NoCssRegistry.registerAndReturn(classNames);
     });
 
     if (defaultCase) {
-      NoCssRegistry.registerAndReturn<D, ClassNamesUnion>(defaultCase);
+      NoCssRegistry.registerAndReturn(defaultCase);
     }
 
     const evaluator = () => {
       for (const [classNamesPhrase, possibleCase] of registeredCases) {
         if (value(possibleCase) === value(subject)) {
-          return classNamesPhrase as ClassNamesPhrase<
-            CaseClassNames | D,
-            ClassNamesUnion
-          >;
+          return classNamesPhrase;
         }
       }
-      return (defaultCase || "") as ClassNamesPhrase<
-        CaseClassNames | D,
-        ClassNamesUnion
-      >;
+      return defaultCase || "";
     };
 
     const isSignalledInput =
@@ -152,6 +120,9 @@ export const getCss = function <ClassNamesUnion extends string>() {
 
     return isSignalledInput ? derive(evaluator) : evaluator();
   };
+
+  nocss.when = when as Css<ClassName>["when"];
+  nocss.cases = cases as Css<ClassName>["cases"];
 
   return nocss;
 };

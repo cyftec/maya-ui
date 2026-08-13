@@ -1,6 +1,14 @@
-import { describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import { signal, value } from "@cyftec/signals";
 import { getCss } from "../src/nocss/css.ts";
+
+const usedClassNames = (
+  globalThis as typeof globalThis & {
+    __noCssGlobalRegistry: { usedClassNames: Set<string> };
+  }
+).__noCssGlobalRegistry.usedClassNames;
+
+beforeEach(() => usedClassNames.clear());
 
 describe("no-css helpers", () => {
   test("combines phrases and reacts to conditional classes", () => {
@@ -14,6 +22,9 @@ describe("no-css helpers", () => {
     expect(value(classNames) as string).toBe("mv2 bg-light-gray");
     isOn.value = true;
     expect(value(classNames) as string).toBe("mv2 bg-yellow");
+    expect(usedClassNames).toEqual(
+      new Set(["mv2", "bg-yellow", "bg-light-gray"]),
+    );
   });
 
   test("selects matching case classes reactively", () => {
@@ -28,5 +39,8 @@ describe("no-css helpers", () => {
     expect(value(classNames)).toBe("bg-light-gray");
     state.value = "on";
     expect(value(classNames)).toBe("bg-yellow");
+    expect(usedClassNames).toEqual(
+      new Set(["bg-yellow", "bg-light-gray", "mv2"]),
+    );
   });
 });

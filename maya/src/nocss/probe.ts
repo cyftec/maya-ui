@@ -1,11 +1,11 @@
 import {
   getCss,
   type ClassNamesPhrase,
-  type KeysOfUnion,
+  type ClassNamesFrom,
 } from "@cyftec/maya/nocss";
 
 /**
- *  Inspired by:
+ *  CSS Definitions Inspired by:
  *  TACHYONS | http://tachyons.io
  *
  *
@@ -19,8 +19,8 @@ import {
  */
 
 // DO NOT IMPORT BELOW VARIABLE ANYWHERE IN YOUR APP. IT'S FOR COMPILATION.
-// HOWEVER YOU"RE FREE TO MODIFY THE CLASS DEFINITIONS AS PER YOUR REQUIREMENTS.
-export const atomicClasses = {
+// HOWEVER YOU"RE FREE TO MODIFY THE CLASSNAME ENTRIES AS PER YOUR REQUIREMENTS.
+export const factoryClasses = {
   default: {
     /* Modules */
 
@@ -1751,7 +1751,7 @@ export const atomicClasses = {
 
   Tips on extending:
   There might be a time worth using negative z-index values.
-  Or if you are using atomicClasses with another project, you might need to
+  Or if you are using factoryClasses with another project, you might need to
   adjust these values to suit your needs.
 
 */
@@ -3134,23 +3134,8 @@ export const atomicClasses = {
   },
 } as const;
 
-type MediaContraintsKey = "constraints";
-type ClassNameFromSelector<Selector extends string> =
-  Selector extends `${infer ClassName}:${string}` ? ClassName : Selector;
+export type FactoryClassName = ClassNamesFrom<typeof factoryClasses>;
 
-export type FactoryClassNamesUnion = Exclude<
-  ClassNameFromSelector<
-    Extract<
-      KeysOfUnion<(typeof atomicClasses)[keyof typeof atomicClasses]>,
-      string
-    >
-  >,
-  MediaContraintsKey
->;
+export type CssPhrase<T extends string> = ClassNamesPhrase<T, FactoryClassName>;
 
-export type CssPhrase<T extends string> = ClassNamesPhrase<
-  T,
-  FactoryClassNamesUnion
->;
-
-export const css = getCss<FactoryClassNamesUnion>();
+export const css = getCss<FactoryClassName>();
