@@ -8,6 +8,7 @@
     "./core": "./src/core/index.ts",
     "./signals": "./src/re-exports/signals.ts",
     "./immut": "./src/re-exports/immut.ts",
+    "./nocss": "./src/nocss/index.ts",
     "./toolkit": "./src/toolkit/index.ts"
   },
   "dependencies": {
