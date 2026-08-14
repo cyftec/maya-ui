@@ -9,11 +9,11 @@ export const watchFileChange = (
   ignorePaths: Matcher | Matcher[] | undefined,
   onFileChange: (path: string, stats?: Stats | undefined) => void,
   controlledProcess: ProcessControl = process,
+  watch: typeof chokidar.watch = chokidar.watch,
 ) => {
-  const watcher = chokidar
-    .watch(watchableDirPath, {
-      ignored: ignorePaths,
-    })
+  const watcher = watch(watchableDirPath, {
+    ignored: ignorePaths,
+  })
     .on("change", onFileChange);
   console.log(`Watching changes in "${watchableDirPath}"`);
 

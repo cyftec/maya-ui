@@ -168,6 +168,19 @@ describe("version and reset commands", () => {
     log.mockRestore();
   });
 
+  test("exits unsuccessfully when shifting Brahma versions fails", async () => {
+    const log = spyOn(console, "log").mockImplementation(() => {});
+    const failedCommand: CommandRunner = async () => {
+      throw new Error("registry unavailable");
+    };
+
+    await expectProcessExit(
+      () => showVersion(["--v=latest"], failedCommand),
+      1,
+    );
+    log.mockRestore();
+  });
+
   test("rejects malformed version and reset specifiers", async () => {
     const log = spyOn(console, "log").mockImplementation(() => {});
     await expectProcessExit(() => showVersion(["latest"]), 1);

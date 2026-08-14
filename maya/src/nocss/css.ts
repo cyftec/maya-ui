@@ -51,7 +51,7 @@ type CheckedInputs<
 };
 
 type CaseValue<Subject> =
-  Subject extends Signal<infer Value>
+  [Subject] extends [Signal<infer Value>]
     ? MaybeSignal<Value>
     : MaybeSignal<Subject>;
 
@@ -91,7 +91,7 @@ type Css<ClassName extends string> = {
         ? unknown
         : CheckedCases<Cases, ClassName>),
     defaultCase?: PhraseInput<DefaultPhrase, ClassName>,
-  ): CssResult<Extract<keyof Cases, string> | DefaultPhrase | "">;
+  ): CssResult<Extract<keyof Cases, string> | DefaultPhrase>;
   ifNullable<
     const NullablePhrase extends CssInput,
     const StaticPhrase extends ClassNameHint<ClassName>,

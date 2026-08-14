@@ -38,6 +38,19 @@ type BuildData = {
   karma: Karma;
   isProd: boolean;
   deferredStylesheets: DeferredStylesheet[];
+  runtime: BuildRuntime;
+};
+
+export type BuildRuntime = {
+  build: typeof Bun.build;
+  file: typeof Bun.file;
+  write: typeof Bun.write;
+};
+
+const defaultBuildRuntime: BuildRuntime = {
+  build: Bun.build,
+  file: Bun.file,
+  write: Bun.write,
 };
 
 type DeferredStylesheet = { sourcePath: string };
@@ -65,13 +78,13 @@ const buildData: BuildData = {} as BuildData;
 
 const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
   try {
-    const buildJs = await Bun.file(destJsPath).text();
+    const buildJs = await buildData.runtime.file(destJsPath).text();
     const buildJsWithoutExports = buildJs.split("export {")[0];
     const appMethodName = getBuiltJsMethodName(
       getFileNameFromPath(destJsPath),
       buildData.karma,
     );
-    const AsyncFunction = Object.getPrototypeOf(async () => {})
+    const AsyncFunction = Object.getPrototypeOf(buildHtmlFile)
       .constructor as new (body: string) => () => Promise<string | undefined>;
     const buildPageHtml = new AsyncFunction(`
       ${buildJsWithoutExports}
@@ -83,7 +96,7 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
     const pageHtml = await buildPageHtml();
     if (!pageHtml) throw new Error(NO_HTML_ERROR);
     const html = `<!DOCTYPE html>\n${pageHtml}`;
-    await Bun.write(destHtmlPath, html);
+    await buildData.runtime.write(destHtmlPath, html);
   } catch (error) {
     console.log(
       `\x1b[31m%s\x1b[0m`,
@@ -113,8 +126,8 @@ const buildCssFile = async (srcPath: string): Promise<string> => {
 
 const buildSourceTsFile = async (srcPath: string): Promise<Bun.BuildOutput> => {
   const tsConfigFilePath = `${buildData.appRootPath}/tsconfig.json`;
-  const tsconfigExists = await Bun.file(tsConfigFilePath).exists();
-  const jsBuild = await Bun.build({
+  const tsconfigExists = await buildData.runtime.file(tsConfigFilePath).exists();
+  const jsBuild = await buildData.runtime.build({
     entrypoints: [srcPath],
     tsconfig: tsconfigExists ? tsConfigFilePath : undefined,
   });
@@ -134,11 +147,11 @@ const buildJsFile = async (destJsPath: string, srcPagePath: string) => {
     ${buildHtmlFnDef}
   `;
 
-  await Bun.write(destJsPath, sanitizedJs);
+  await buildData.runtime.write(destJsPath, sanitizedJs);
 };
 
 const sanitizeJsFile = async (destJsPath: string) => {
-  const jsWithExports = await Bun.file(destJsPath).text();
+  const jsWithExports = await buildData.runtime.file(destJsPath).text();
   if (!jsWithExports) {
     throw new Error(NO_JS_ERROR);
   }
@@ -157,11 +170,11 @@ const sanitizeJsFile = async (destJsPath: string) => {
     }
   `;
 
-  await Bun.write(destJsPath, sanitizedJs);
+  await buildData.runtime.write(destJsPath, sanitizedJs);
 };
 
 const minifyJsFile = async (destJsPath: string) => {
-  const jsBuild = await Bun.build({
+  const jsBuild = await buildData.runtime.build({
     entrypoints: [destJsPath], // already built (unminified) js file
     minify: true,
   });
@@ -171,7 +184,7 @@ const minifyJsFile = async (destJsPath: string) => {
   if (!minifiedJsCode) {
     throw new Error(NO_JS_ERROR);
   }
-  await Bun.write(destJsPath, minifiedJsCode);
+  await buildData.runtime.write(destJsPath, minifiedJsCode);
 };
 
 const buildFile = async (srcFilePath: string, buildDirPath: string) => {
@@ -221,11 +234,11 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
   } else {
     const fileName = getFileNameFromPath(srcFilePath);
     filePath = `${buildDirPath}/${fileName}`;
-    fileData = Bun.file(srcFilePath);
+    fileData = buildData.runtime.file(srcFilePath);
   }
 
   try {
-    await Bun.write(filePath, fileData);
+    await buildData.runtime.write(filePath, fileData);
   } catch (error) {
     console.log(filePath);
     console.log(fileData);
@@ -286,8 +299,8 @@ const buildDeferredStylesheets = async () => {
 
   for (const stylesheet of stylesheets) {
     const css = await buildCssFile(stylesheet.sourcePath);
-    await Bun.write(outputPath, css);
-    const cssBuild = await Bun.build({
+    await buildData.runtime.write(outputPath, css);
+    const cssBuild = await buildData.runtime.build({
       entrypoints: [outputPath],
       minify: true,
     });
@@ -295,7 +308,7 @@ const buildDeferredStylesheets = async () => {
     if (minifiedCss === undefined) {
       throw new Error(`Unable to minify CSS '${outputPath}'.`);
     }
-    await Bun.write(outputPath, minifiedCss);
+    await buildData.runtime.write(outputPath, minifiedCss);
   }
 };
 
@@ -303,11 +316,13 @@ export const buildApp = async (
   appRootPath: string,
   karma: Karma,
   isProd: boolean,
+  runtime: BuildRuntime = defaultBuildRuntime,
 ): Promise<void> => {
   buildData.appRootPath = appRootPath;
   buildData.karma = karma;
   buildData.isProd = isProd;
   buildData.deferredStylesheets = [];
+  buildData.runtime = runtime;
   await setupBuild();
   (await getNoCssCompiler()).resetNoCssBuildRegistry();
   const appViewPath = getAppViewPath(appRootPath, karma);
