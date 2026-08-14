@@ -1,62 +1,74 @@
 import { signal } from "@cyftec/signals";
 import { getCss } from "../src/nocss/css";
-import type { ClassNamesFrom, ClassNamesPhrase } from "../src/nocss/utils";
+import type {
+  AppClassNames,
+  AtomicClassOverrides,
+  BaseClassName,
+  CheckedCompoundClasses,
+  CssPhrase,
+  CssValue,
+} from "../src/nocss/index";
 
-const factoryClasses = {
-  default: {
-    mv2: "",
-    pa4: "",
-    "bg-yellow": "",
-    "bg-light-gray": "",
-    "pointer:hover": "",
-    "hover-bg-washed-yellow:hover": "",
-    red: "",
-    green: "",
-  },
-  large: {
-    constraints: { minWidth: "60em" },
-    "pa4-l": "",
-  },
+const overriddenBaseClasses = {
+  default: { theme: "", "bg-theme": "" },
+} as const satisfies AtomicClassOverrides;
+
+type AtomicClassName = AppClassNames<
+  BaseClassName,
+  typeof overriddenBaseClasses
+>;
+
+const compoundClasses = {
+  card: "bg-theme pa2 b--light-silver br4",
 } as const;
 
-type AppClassNames = ClassNamesFrom<typeof factoryClasses>;
+type CompoundClassesAreValid = CheckedCompoundClasses<
+  typeof compoundClasses,
+  AtomicClassName
+>;
+const compoundClassesAreValid: CompoundClassesAreValid = true;
+void compoundClassesAreValid;
 
-const css = getCss<AppClassNames>();
+type AppClassName = AppClassNames<
+  BaseClassName,
+  typeof overriddenBaseClasses,
+  typeof compoundClasses
+>;
 
-css("mv2 pa4");
+const css = getCss<AppClassName>();
+
+css("pa2 bg-theme");
 css("pointer hover-bg-washed-yellow");
-css("pa4-l");
-css.when(true, "bg-yellow", "bg-light-gray");
+css("card");
+css.when(true, "bg-theme", "bg-yellow");
 css.cases(
   "enabled" as "enabled" | "disabled",
   {
-    "bg-yellow": "enabled",
-    "bg-light-gray": "disabled",
+    "bg-theme": "enabled",
+    "bg-yellow": "disabled",
   },
-  "pa4",
+  "card",
 );
 
-const color: ClassNamesPhrase<"red" | "green", AppClassNames> = "green";
-css(color);
-css(signal<ClassNamesPhrase<"red" | "green", AppClassNames>>("green"));
+const color: CssPhrase<"red" | "green"> = "green";
+const colorValue: CssValue<"red" | "green"> = signal(color);
+css(colorValue);
 
 // @ts-expect-error Invalid words in a phrase must be rejected.
-css("mv2 pa4sada");
+css("pa2 missing");
 // @ts-expect-error Every argument is validated independently.
-css("mv2", "pa4sada");
-// @ts-expect-error A valid final word must not hide an invalid earlier word.
-css("missing mv2");
-// @ts-expect-error Invalid members of a signal union must be rejected.
-css(signal<"green" | "missing mv2">("green"));
-// @ts-expect-error Conditional branches use the factory's class-name union.
-css.when(true, "bg-yellowdsa", "bg-light-gray");
-// @ts-expect-error Conditional phrases validate every word.
-css.when(true, "missing bg-yellow", "bg-light-gray");
-// @ts-expect-error Case-object keys use the factory's class-name union.
-css.cases("enabled", { "bg-yellowdsa": "enabled" });
-// @ts-expect-error Case phrases validate every word.
-css.cases("enabled", { "missing bg-yellow": "enabled" });
+css("pa2", "missing");
+const invalidCompoundClasses = { invalidCard: "card missing" } as const;
+type InvalidCompoundClassesAreRejected = CheckedCompoundClasses<
+  // @ts-expect-error Compound values may contain only atomic class names.
+  typeof invalidCompoundClasses,
+  AtomicClassName
+>;
+declare const invalidCompoundClassesAreRejected: InvalidCompoundClassesAreRejected;
+void invalidCompoundClassesAreRejected;
+// @ts-expect-error Conditional branches use the complete app class union.
+css.when(true, "missing", "bg-theme");
+// @ts-expect-error Case-object keys use the complete app class union.
+css.cases("enabled", { missing: "enabled" });
 // @ts-expect-error Selector suffixes are not HTML class names.
 css("pointer:hover");
-// @ts-expect-error Responsive configuration is not an HTML class name.
-css("constraints");

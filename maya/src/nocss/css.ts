@@ -58,12 +58,16 @@ type Css<ClassName extends string> = {
   ): CssResult<Phrase | DefaultPhrase | "">;
 };
 
+/**
+ * Creates a typed class helper. `when` and `cases` register every declared
+ * outcome during a static build; direct signal values register when evaluated.
+ */
 export const getCss = function <ClassName extends string>() {
   const nocss = ((...phrases: MaybeSignal<string>[]) => {
     const evaluator = () =>
       phrases
         .reduce((array, phrase) => {
-          const phraseValue = NoCssRegistry.registerAndReturn(value(phrase));
+          const phraseValue = NoCssRegistry.registerClassName(value(phrase));
           const clasNamesArray = phraseValue.split(" ").filter((n) => !!n);
           array.push(...clasNamesArray);
           return array;
@@ -79,8 +83,8 @@ export const getCss = function <ClassName extends string>() {
     truthyClassNames: string,
     falsyClassNames: string,
   ): CssResult<string> => {
-    const truthyClasses = NoCssRegistry.registerAndReturn(truthyClassNames);
-    const falsyClasses = NoCssRegistry.registerAndReturn(falsyClassNames);
+    const truthyClasses = NoCssRegistry.registerClassName(truthyClassNames);
+    const falsyClasses = NoCssRegistry.registerClassName(falsyClassNames);
     const evaluator = () =>
       value(truthyCondition) ? truthyClasses : falsyClasses;
 
@@ -98,11 +102,11 @@ export const getCss = function <ClassName extends string>() {
     ][];
 
     registeredCases.forEach(([classNames]) => {
-      NoCssRegistry.registerAndReturn(classNames);
+      NoCssRegistry.registerClassName(classNames);
     });
 
     if (defaultCase) {
-      NoCssRegistry.registerAndReturn(defaultCase);
+      NoCssRegistry.registerClassName(defaultCase);
     }
 
     const evaluator = () => {

@@ -9,14 +9,14 @@
     "@types/bun": "^1.3.14",
     "@types/browser-sync": "^2.29.0",
     "@types/jsdom": "^21.1.7",
-    "@types/node": "^24.3.0",
-    "@cyftec/maya": "workspace:*"
+    "@types/node": "^24.3.0"
   },
   "dependencies": {
     "archiver": "^7.0.1",
     "browser-sync": "^3.0.3",
     "chokidar": "^4.0.3",
-    "jsdom": "^24.1.0"
+    "jsdom": "^24.1.0",
+    "@cyftec/maya": "workspace:*"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

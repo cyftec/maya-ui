@@ -1,3 +1,5 @@
+import type { MaybeSignal } from "@cyftec/signals";
+
 // `keyof` applied directly to a union returns only keys shared by every
 // member. The breakpoint maps have no common utility keys, so distribute the
 // lookup over each member before collecting its keys.
@@ -29,9 +31,17 @@ type InvalidWords<
     ? never
     : Phrase;
 
+/**
+ * Keeps known classes in editor completions while accepting a phrase during
+ * inference. Validation is performed separately by `InvalidWords`.
+ *
+ * Avoid constructing `${string} ${ClassName}` here: with the factory map that
+ * eagerly materialises thousands of template-literal union members, and the
+ * type is subsequently used in generic constraints and `Record` keys.
+ */
 export type ClassNamesHint<ClassName extends string> =
   | ClassName
-  | `${string} ${ClassName}`;
+  | (string & {});
 
 export type PhraseConstrain<
   Phrase extends string,
@@ -49,3 +59,68 @@ export type ClassNamesPhrase<
     ClassNamesHint<ClassName> extends Phrase
     ? Phrase
     : Phrase & PhraseConstrain<Phrase, ClassName>;
+
+/** A public, readable name for narrowing a class-name phrase variable. */
+export type CssPhrase<
+  Phrase extends string,
+  ClassName extends string = string,
+> = ClassNamesPhrase<Phrase, ClassName>;
+
+/** A plain or signalled class-name phrase. */
+export type CssValue<
+  Phrase extends string,
+  ClassName extends string = string,
+> = MaybeSignal<CssPhrase<Phrase, ClassName>>;
+
+export type AtomicClassGroup = "default" | "ns" | "m" | "l";
+
+/** App CSS may replace factory rules and add application-specific rules. */
+export type AtomicClassOverrides = Partial<
+  Record<AtomicClassGroup, Record<string, string>>
+>;
+
+export type MediaConstraints = {
+  ns: { minWidth: string };
+  m: { minWidth: string; maxWidth: string };
+  l: { minWidth: string };
+};
+
+/** Each override is merged with the corresponding factory breakpoint. */
+export type MediaConstraintsOverrides = Partial<{
+  [Group in keyof MediaConstraints]: Partial<MediaConstraints[Group]>;
+}>;
+
+/**
+ * Combines factory names, app atomic names, and app compound names without
+ * importing either map at runtime.
+ */
+export type AppClassNames<
+  BaseClassNames extends string,
+  Overrides extends Record<string, object>,
+  CompoundClasses extends Record<string, string> = {},
+> =
+  | BaseClassNames
+  | ClassNamesFrom<Overrides>
+  | Extract<keyof CompoundClasses, string>;
+
+type ValidCompoundClasses<
+  CompoundClasses extends Record<string, string>,
+  AtomicClassNames extends string,
+> = {
+  [Name in keyof CompoundClasses]: CssPhrase<
+    Extract<CompoundClasses[Name], string>,
+    AtomicClassNames
+  >;
+};
+
+/**
+ * Type-only validation for a compound-class map. It keeps the map out of the
+ * browser bundle while ensuring every compound value uses atomic names only.
+ */
+export type CheckedCompoundClasses<
+  CompoundClasses extends ValidCompoundClasses<
+    CompoundClasses,
+    AtomicClassNames
+  >,
+  AtomicClassNames extends string,
+> = true;

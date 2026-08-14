@@ -43,4 +43,15 @@ describe("no-css helpers", () => {
       new Set(["bg-yellow", "bg-light-gray", "mv2"]),
     );
   });
+
+  test("accepts a signalled class phrase and records each evaluated value", () => {
+    const css = getCss<"red" | "green">();
+    const colorSignal = signal<"red" | "green">("red");
+    const classNames = css(colorSignal);
+
+    expect(value(classNames)).toBe("red");
+    colorSignal.value = "green";
+    expect(value(classNames)).toBe("green");
+    expect(usedClassNames).toEqual(new Set(["red", "green"]));
+  });
 });

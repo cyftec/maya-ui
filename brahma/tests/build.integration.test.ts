@@ -16,6 +16,10 @@ const mayaCorePath = path.resolve(
   import.meta.dir,
   "../../maya/src/core/index.ts",
 );
+const mayaNoCssIndexPath = path.resolve(
+  import.meta.dir,
+  "../../maya/src/nocss/index.ts",
+);
 const roots: string[] = [];
 
 const newRoot = async () => {
@@ -169,11 +173,68 @@ describe("build integration", () => {
   test("minifies and zips extension production output", async () => {
     const root = await newRoot();
     await writeBuildFixture(root);
+    await writeText(
+      path.join(root, "dev/view/assets/styles.ts"),
+      "export const overriddenBaseClasses = {} as const;",
+    );
     const karma = makeKarma({ appType: "ext", reloadPageOnFocus: true });
     await buildApp(root, karma, true);
     expect(await exists(path.join(root, "prod"))).toBe(false);
     expect(await exists(path.join(root, "prod.zip"))).toBe(true);
     expect(Bun.file(path.join(root, "prod.zip")).size).toBeGreaterThan(100);
+  }, 20_000);
+
+  test("writes nocss beside a dynamically located styles.ts without bundling its maps", async () => {
+    const root = await newRoot();
+    const view = path.join(root, "dev/view");
+    await writeText(
+      path.join(view, "some-folder/custom-assets/styles.ts"),
+      `
+        import { getCss } from ${JSON.stringify(mayaNoCssIndexPath)};
+
+        export const overriddenBaseClasses = {
+          default: { "bg-theme": "{ background-color: #ee4440; }" },
+        } as const;
+        export const overriddenMediaConstraints = {
+          ns: { minWidth: "31em" },
+        } as const;
+        export const compoundClasses = { card: "bg-theme pa2" } as const;
+        export const css = getCss<"card" | "pa2" | "pa2-ns">();
+      `,
+    );
+    await writeText(
+      path.join(view, "page.ts"),
+      `
+        import { m } from ${JSON.stringify(mayaCorePath)};
+        import { css } from "./some-folder/custom-assets/styles";
+
+        export default m.Html({
+          lang: "en",
+          children: [
+            m.Head([m.Title("No CSS")]),
+            m.Body([m.Div({ class: css("card pa2 pa2-ns"), children: "No CSS" })]),
+          ],
+        });
+      `,
+    );
+
+    await buildApp(root, makeKarma(), false);
+
+    const stage = path.join(root, "stage");
+    const stylesheetPath = path.join(
+      stage,
+      "some-folder/custom-assets/styles.css",
+    );
+    const stylesheet = await Bun.file(stylesheetPath).text();
+    const mainJs = await Bun.file(path.join(stage, "main.js")).text();
+    expect(stylesheet).toContain(".card{background-color:#ee4440}");
+    expect(stylesheet).toContain(".card,.pa2{padding:.5rem}");
+    expect(stylesheet).toContain("@media (min-width:31em){.pa2-ns{padding:.5rem}}");
+    expect(await exists(path.join(stage, "some-folder/custom-assets/styles.js"))).toBe(false);
+    expect(mainJs).not.toContain("#ee4440");
+    expect(mainJs).not.toContain("bg-theme pa2");
+    expect(mainJs).not.toContain("31em");
+    expect(mainJs).not.toContain("background-size: cover");
   }, 20_000);
 
   test("skips a page HTML error only when configured", async () => {

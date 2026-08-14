@@ -9,6 +9,7 @@ export type ProjectFileNames = {
     appSrcDir: string;
     appViewDir: string;
     pageFile: `${string}.ts`;
+    stylesheetFile: `${string}.ts`;
     manifestFile: `${string}.ts`;
   } & FileNamesMap;
   static: {
@@ -40,6 +41,7 @@ export type Karma = {
        */
       ignoreDelimiter: string;
       buildablePageFileName: string;
+      buildableStylesheetFileName: string;
       buildableManifestFileName: string;
       stagingDir: string;
       publishDir: string;

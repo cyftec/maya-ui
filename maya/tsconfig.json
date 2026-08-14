@@ -16,5 +16,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "types": ["bun-types"]
-  }
+  },
+  "exclude": ["node_modules", "dist", "build"]
 }

@@ -1,44 +1,37 @@
-type NoCssGlobalRegistry = {
-  baseClassNamesOverrides: Record<string, string>;
-  compundClassNames: Record<string, string>;
-  usedClassNames: Set<string>;
-};
+type CssGlobalRegistry = { usedClassNames: Set<string> };
 
 export const NoCssRegistry = (function () {
   const NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY = "__noCssGlobalRegistry";
   const globalContext = globalThis as Record<string, any>;
 
-  let noCssGlobalRegistry = globalContext[NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY] as
-    | NoCssGlobalRegistry
+  let cssGlobalRegistry = globalContext[NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY] as
+    | CssGlobalRegistry
     | undefined;
 
-  if (!noCssGlobalRegistry) {
+  if (!cssGlobalRegistry) {
     globalContext[NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY] = {};
-    noCssGlobalRegistry = globalContext[
+    cssGlobalRegistry = globalContext[
       NO_CSS_GLOBAL_REGISTRY_WINDOW_KEY
-    ] as NoCssGlobalRegistry;
-    noCssGlobalRegistry.usedClassNames = new Set();
+    ] as CssGlobalRegistry;
+  }
+
+  if (!cssGlobalRegistry.usedClassNames) {
+    cssGlobalRegistry.usedClassNames = new Set();
   }
 
   const registry = {
-    overrideBaseClassNames: (obj: Record<string, string>) => {
-      noCssGlobalRegistry.baseClassNamesOverrides = obj;
-    },
-    registerCompoundClassNames: (
-      coumpoundClassNamesObject: Record<string, string>,
-    ) => {
-      noCssGlobalRegistry.compundClassNames = coumpoundClassNamesObject;
-    },
-    registerAndReturn: (phrase: string): string => {
-      const classNames = phrase
-        .split(" ")
-        .filter((str) => !!str);
+    registerClassName: (phrase: string): string => {
+      const classNames = phrase.split(" ").filter((str) => !!str);
       classNames.forEach((name) => {
-        noCssGlobalRegistry.usedClassNames.add(name);
+        cssGlobalRegistry.usedClassNames.add(name);
       });
       return phrase;
     },
-  };
+    getClassNamesList: () => {
+      return new Set(cssGlobalRegistry.usedClassNames);
+    },
+    reset: () => cssGlobalRegistry.usedClassNames.clear(),
+  } as const;
 
   return registry;
 })();

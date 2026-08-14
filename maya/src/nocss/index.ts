@@ -1,3 +1,3 @@
 export * from "./css";
-export * from "./registry";
 export * from "./utils";
+export type { BaseClassName } from "./factory";

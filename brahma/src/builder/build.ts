@@ -26,12 +26,35 @@ import {
   readDir,
   removeFileOrDir,
 } from "../utils/node-methods.ts";
+import path from "node:path";
 
 type BuildData = {
   appRootPath: string;
   karma: Karma;
   isProd: boolean;
+  deferredStylesheets: DeferredStylesheet[];
 };
+
+type DeferredStylesheet = { sourcePath: string; outputPath: string };
+
+type NoCssStylesheetConfig = {
+  overriddenBaseClasses?: Record<string, Record<string, string>>;
+  overriddenMediaConstraints?: Record<string, Record<string, string>>;
+  compoundClasses?: Record<string, string>;
+};
+
+type NoCssCompiler = {
+  buildNoCssStylesheet: (
+    usedClassNames: Iterable<string>,
+    config: NoCssStylesheetConfig,
+  ) => string;
+  getUsedNoCssClassNames: () => Set<string>;
+  resetNoCssBuildRegistry: () => void;
+};
+
+const noCssCompilerModule = "@cyftec/maya/nocss/compiler";
+const getNoCssCompiler = async () =>
+  (await import(noCssCompilerModule)) as NoCssCompiler;
 
 const buildData: BuildData = {} as BuildData;
 
@@ -72,6 +95,15 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
     const skipToNextBuild = buildData.karma.brahma.build.skipErrorAndBuildNext;
     if (!skipToNextBuild) process.exit(1);
   }
+};
+
+const buildCssFile = async (srcPath: string): Promise<string> => {
+  const config = (await nonCachedImport(srcPath)) as NoCssStylesheetConfig;
+  const compiler = await getNoCssCompiler();
+  return compiler.buildNoCssStylesheet(
+    compiler.getUsedNoCssClassNames(),
+    config,
+  );
 };
 
 const buildSourceTsFile = async (srcPath: string): Promise<Bun.BuildOutput> => {
@@ -158,12 +190,22 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
     return;
   }
 
+  const stylesheetFileName =
+    buildData.karma.brahma.build.buildableStylesheetFileName;
   const manifestFileName =
     buildData.karma.brahma.build.buildableManifestFileName;
   const appSrcPath = getAppViewPath(buildData.appRootPath, buildData.karma);
   let filePath: string;
   let fileData: string | BunFile;
-  if (
+
+  if (srcFilePath.endsWith(stylesheetFileName)) {
+    const fileName = getFileNameFromPath(srcFilePath);
+    buildData.deferredStylesheets.push({
+      sourcePath: srcFilePath,
+      outputPath: `${buildDirPath}/${fileName.slice(0, -3)}.css`,
+    });
+    return;
+  } else if (
     srcFilePath.endsWith(manifestFileName) &&
     srcFilePath.slice(0, -(manifestFileName.length + 1)) === appSrcPath
   ) {
@@ -190,10 +232,7 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
   }
 };
 
-export const buildDir = async (
-  dirPath: string,
-  isAppViewDir: boolean = false,
-): Promise<void> => {
+export const buildDir = async (dirPath: string): Promise<void> => {
   const buildDirPath = getBuildDirPath(
     buildData.appRootPath,
     dirPath,
@@ -217,17 +256,35 @@ export const buildDir = async (
     if (fileStats.isFile()) await buildFile(filePath, buildDirPath);
   }
 
-  if (!(await readDir(buildDirPath)).length) {
+  const hasDeferredStylesheet = buildData.deferredStylesheets.some(
+    ({ outputPath }) => path.dirname(outputPath) === buildDirPath,
+  );
+  if (!(await readDir(buildDirPath)).length && !hasDeferredStylesheet) {
     console.log(`Deleting empty built dir: ${buildDirPath}`);
     await removeFileOrDir(buildDirPath);
   }
+};
 
-  if (
-    isAppViewDir &&
-    buildData.isProd &&
-    buildData.karma.maya.appType === "ext"
-  ) {
-    await zipAndDeleteDir(buildDirPath, `${buildDirPath}.zip`);
+const buildDeferredStylesheets = async () => {
+  const stylesheets = buildData.deferredStylesheets;
+  if (stylesheets.length > 1) {
+    throw new Error(
+      `Only one '${buildData.karma.brahma.build.buildableStylesheetFileName}' nocss configuration file is supported per app.`,
+    );
+  }
+
+  for (const stylesheet of stylesheets) {
+    const css = await buildCssFile(stylesheet.sourcePath);
+    await Bun.write(stylesheet.outputPath, css);
+    const cssBuild = await Bun.build({
+      entrypoints: [stylesheet.outputPath],
+      minify: true,
+    });
+    const minifiedCss = await cssBuild.outputs[0]?.text();
+    if (minifiedCss === undefined) {
+      throw new Error(`Unable to minify CSS '${stylesheet.outputPath}'.`);
+    }
+    await Bun.write(stylesheet.outputPath, minifiedCss);
   }
 };
 
@@ -239,7 +296,14 @@ export const buildApp = async (
   buildData.appRootPath = appRootPath;
   buildData.karma = karma;
   buildData.isProd = isProd;
+  buildData.deferredStylesheets = [];
   await setupBuild();
+  (await getNoCssCompiler()).resetNoCssBuildRegistry();
   const appViewPath = getAppViewPath(appRootPath, karma);
-  return await buildDir(appViewPath, true);
+  await buildDir(appViewPath);
+  await buildDeferredStylesheets();
+  if (isProd && karma.maya.appType === "ext") {
+    const buildDirPath = getBuildDirPath(appRootPath, appViewPath, karma, true);
+    await zipAndDeleteDir(buildDirPath, `${buildDirPath}.zip`);
+  }
 };

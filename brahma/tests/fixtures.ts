@@ -31,6 +31,7 @@ export const makeKarma = (
       skipErrorAndBuildNext: overrides.skipErrorAndBuildNext || false,
       ignoreDelimiter: "@",
       buildablePageFileName: "page.ts",
+      buildableStylesheetFileName: "styles.ts",
       buildableManifestFileName: "manifest.ts",
       stagingDir: "stage",
       publishDir: "prod",
