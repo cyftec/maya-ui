@@ -1,5 +1,5 @@
 import { Child, component, m } from "@cyftec/maya/core";
-import { css, type ClassName, type CssPhraseValue } from "../styles";
+import { css, type CssPhraseValue } from "../styles";
 
 type ButtonProps = {
   classNames?: CssPhraseValue;

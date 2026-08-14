@@ -1,5 +1,4 @@
 import { component, m } from "@cyftec/maya/core";
-import { tmpl } from "@cyftec/maya/signals";
 import { css, type CssPhraseValue } from "../../../styles";
 
 type BulbProps = {
