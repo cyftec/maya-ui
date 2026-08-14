@@ -5,7 +5,7 @@ export const FirstApp = Article(
   m.H3({ class: "black", children: "Create a Maya app" }),
   Paragraphs(
     "Brahma creates a ready-to-run Maya project from one command. The app name becomes the new folder, and the optional mode chooses the kind of project scaffold you want to start with.",
-    "Start with a web app while learning. It is the smallest target: TypeScript source is built into static HTML, JavaScript, CSS, and assets for web.",
+    "Start with a web app while learning. TypeScript pages become static HTML and page JavaScript, while the typed NoCSS source becomes the generated application stylesheet.",
   ),
   Code("brahma create hello-maya"),
   m.H3({ class: "black", children: "Install and run" }),
@@ -22,7 +22,7 @@ export const FirstApp = Article(
     ),
   ),
   Note(
-    "The 'brahma create' command creates the app scaffold in the mode you choose. The command 'brahma install' then creates the local package/config files from karma.ts and installs dependencies. Run it before the first 'brahma stage' and again whenever you need to synchronize generated files or dependencies.",
+    "The 'brahma create' command creates the selected scaffold and installs its NoCSS probe. 'brahma install' creates local package/config files from _karma/karma.ts and installs dependencies. Run it before the first 'brahma stage' and whenever generated files or dependencies need synchronization.",
   ),
   Code("brahma create hello-pwa --pwa\nbrahma create hello-extension --ext"),
 );

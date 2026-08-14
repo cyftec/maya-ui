@@ -10,6 +10,7 @@ import {
   InstallationAndSetup,
   Karma,
   Maya,
+  NoCss,
 } from "./chapters/project-setup";
 import {
   Component,
@@ -70,6 +71,10 @@ export const TUTORIAL_CHAPTERS = [
       {
         title: "Karma",
         article: Karma,
+      },
+      {
+        title: "NoCSS styling",
+        article: NoCss,
       },
       {
         title: "Brahma",

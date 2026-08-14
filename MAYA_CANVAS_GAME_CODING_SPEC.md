@@ -7,6 +7,8 @@
 **Also read:** [`MAYA_UI_CODING_SPEC.md`](./MAYA_UI_CODING_SPEC.md) for menus,
 HUD, settings, forms, and other DOM interface
 
+**Styling contract:** [`NOCSS_CODING_SPEC.md`](./NOCSS_CODING_SPEC.md)
+
 This profile is for real-time games whose playfield is rendered into
 `m.Canvas(...)`. Maya owns the document, route, canvas element, lifecycle, and
 DOM interface. A plain TypeScript game session owns the simulation, input
@@ -40,6 +42,11 @@ A Maya canvas game MUST:
     half-loaded implicit state;
 15. test deterministic game logic separately from browser rendering;
 16. verify gameplay in a real browser at multiple sizes and input modes.
+
+Coding agents use NoCSS for the canvas element and every DOM surface. Canvas
+context properties such as `fillStyle` and `strokeStyle` are pixel-rendering
+commands and remain valid inside the renderer; they are not an alternative way
+to style the DOM.
 
 ---
 
@@ -91,10 +98,10 @@ dev/
     ├── elements/
     └── pages/
         ├── assets/
+        │   ├── styles.ts
         │   ├── images/
         │   └── audio/
-        ├── page.ts
-        └── styles.css
+        └── page.ts
 ```
 
 In this layout `dev/view/pages` is the emitted route tree. The reusable
@@ -114,10 +121,10 @@ dev/view/pages/
 │   ├── assets.ts
 │   └── session.ts
 ├── assets/
+│   ├── styles.ts
 │   ├── images/
 │   └── audio/
-├── page.ts
-└── styles.css
+└── page.ts
 ```
 
 In the colocated layout, `@game` is private bundled source inside the emitted
@@ -145,6 +152,7 @@ session:
 
 ```ts
 import { component, m } from "@cyftec/maya/core";
+import { css } from "../pages/assets/styles.js";
 
 type GameCanvasProps = {
   label: string;
@@ -167,7 +175,7 @@ export const GameCanvas = component<GameCanvasProps>(
     let unmounted = false;
 
     return m.Canvas({
-      class: "game__canvas",
+      class: css("game-canvas"),
       width: "1280",
       height: "720",
       tabindex: "0",
@@ -222,8 +230,9 @@ status outside the bitmap:
 
 ```ts
 import { m } from "@cyftec/maya/core";
-import { signal, tmpl } from "@cyftec/maya/signal";
+import { signal, tmpl } from "@cyftec/maya/signals";
 import { GameCanvas } from "../components/GameCanvas.js";
+import { css } from "./assets/styles.js";
 
 const score = signal(0);
 const error = signal("");
@@ -238,11 +247,11 @@ export default m.Html({
         content: "width=device-width, initial-scale=1",
       }),
       m.Title("Skyway"),
-      m.Link({ rel: "stylesheet", href: "styles.css" }),
+      m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
     ]),
     m.Body([
       m.Main({
-        class: "game",
+        class: css("game"),
         children: [
           m.H1("Skyway"),
           m.P({
@@ -251,17 +260,17 @@ export default m.Html({
               "Focus the playfield. Use Left and Right Arrow to move.",
           }),
           m.Output({
-            class: "game__score",
+            class: css("game-score"),
             "aria-label": "Score",
             children: tmpl`Score: ${score}`,
           }),
           m.P({
-            class: "game__error",
+            class: css("game-error"),
             role: "alert",
             children: error,
           }),
           m.Div({
-            class: "game__frame",
+            class: css("game-frame"),
             children: GameCanvas({
               label:
                 "Skyway playfield. Use Left and Right Arrow to move.",
@@ -486,27 +495,29 @@ For most games, remaining paused until user intent is safest.
 
 ## 6. Responsive and high-DPI canvas
 
-CSS size and backing resolution are separate:
+CSS display size and backing resolution are separate. Coding agents declare
+the display rules in the configured NoCSS source:
 
-```css
-.game__frame {
-  inline-size: min(100%, 80rem);
-  margin-inline: auto;
-}
-
-.game__canvas {
-  display: block;
-  inline-size: 100%;
-  aspect-ratio: 16 / 9;
-  background: #10131a;
-  touch-action: none;
-}
-
-.game__canvas:focus-visible {
-  outline: 0.1875rem solid #7dd3fc;
-  outline-offset: 0.25rem;
-}
+```ts
+export const overriddenBaseClasses = {
+  default: {
+    game: "{ min-block-size: 100vh; }",
+    "game-frame":
+      "{ inline-size: min(100%, 80rem); margin-inline: auto; }",
+    "game-canvas":
+      "{ display: block; inline-size: 100%; aspect-ratio: 16 / 9; background: #10131a; touch-action: none; }",
+    "game-canvas:focus-visible":
+      "{ outline: .1875rem solid #7dd3fc; outline-offset: .25rem; }",
+    "game-score": "{ font-variant-numeric: tabular-nums; }",
+    "game-error": "{ color: #e7040f; }",
+  },
+} as const satisfies AtomicClassOverrides;
 ```
+
+The route and component examples pass `game`, `game-frame`, `game-canvas`,
+`game-score`, and `game-error` through `css`, so Brahma collects and emits
+these rules. Do not place the same declarations in a handwritten stylesheet or
+inline style.
 
 Synchronize the backing store after mount:
 
@@ -1200,7 +1211,9 @@ phase/score/status, and an appropriate alternative interaction strategy.
 - [ ] Randomness is seeded/injected where outcomes matter.
 - [ ] Simulation uses elapsed time and capped fixed-step catch-up.
 - [ ] Render does not mutate authoritative game state.
-- [ ] CSS size, backing size, DPR, and world transforms are explicit.
+- [ ] NoCSS display size, backing size, DPR, and world transforms are explicit.
+- [ ] Every canvas/DOM class passes through the typed NoCSS helper; no
+      agent-authored stylesheet or inline DOM style was added.
 - [ ] Pointer coordinates are converted through named coordinate spaces.
 - [ ] Keyboard held/pressed/released state and blur clearing are correct.
 - [ ] Pointer cancel/capture and touch behavior are handled.

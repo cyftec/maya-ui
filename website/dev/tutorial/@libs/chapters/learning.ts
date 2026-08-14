@@ -7,10 +7,12 @@ export const Syntax = Article(
     "Maya does not add a template language. You write normal TypeScript and call functions that describe the DOM. The visual mapping is close to HTML, but every node is an expression.",
     "Use a direct child for a short element, or pass an object when you need attributes, events, and children together.",
   ),
-  Code(`m.Div("A short child")
+  Code(`import { css } from "./assets/styles.js";
+
+m.Div("A short child")
 
 m.Div({
-  class: "card",
+  class: css("card"),
   children: [m.H2("A heading"), m.P("A paragraph")],
 })`),
   Bullets(
@@ -27,11 +29,15 @@ export const Overview = Article(
     "A Maya application is assembled from small getters. Elements compose into fragments, fragments become components, and a default page getter gives Brahma an entry point to build.",
     "There is no virtual DOM tree to learn. When the page is mounted, the same getter sequence attaches behavior to the static nodes that were already generated.",
   ),
-  Code(`const Card = () =>
+  Code(`import { component } from "@cyftec/maya/core";
+import { css } from "./assets/styles.js";
+
+const Card = component(() =>
   m.Article({
-    class: "card",
+    class: css("card"),
     children: [m.H2("Title"), m.P("Content")],
-  });
+  }),
+);
 
 export default m.Html({
   children: [
@@ -60,7 +66,7 @@ const node = content();`),
   Section(
     "Element props",
     Bullets(
-      "class, id, href, value, and data-* become attributes.",
+      "id, href, value, and data-* become attributes; pass application class values through the typed NoCSS css helper.",
       "onclick, oninput, and other supported lower-case event keys register listeners.",
       "onmount and onunmount are lifecycle callbacks for browser-only work and cleanup.",
     ),
@@ -71,30 +77,44 @@ export const Fragment = Article(
   m.H3({ class: "black", children: "Fragments group children" }),
   Paragraphs(
     "A fragment is a function that returns children rather than one wrapper element. Use it when a reusable piece of UI should contribute several siblings to its parent.",
-    "The low-level fragment helper also powers component(). For simple static pieces, a plain function returning an array of children is enough.",
+    "Use fragment() for a reusable sibling group and component() for one reusable Maya child. Keep plain functions for work that does not return Maya UI.",
   ),
-  Code(`const Actions = () => [
+  Code(`import { component, fragment, m } from "@cyftec/maya/core";
+
+const Actions = fragment(() => [
   m.Button({ children: "Save" }),
   m.Button({ children: "Cancel" }),
-];
+]);
 
-const Toolbar = () =>
-  m.Div({ children: [m.Strong("Actions"), Actions()] });`),
+const Toolbar = component(() =>
+  m.Div({ children: [m.Strong("Actions"), Actions()] }),
+);`),
 );
 
 export const Component = Article(
   m.H3({ class: "black", children: "Components add a typed boundary" }),
   Paragraphs(
-    "Use component() when a reusable function has named props. Maya normalizes ordinary props so the implementation can read them through .value, while signals and callback functions remain usable as signals and functions.",
+    "Use component() when reusable Maya UI has named props. Maya preserves compatible reactive values and callback functions so the component can forward data into attributes or children without a rerender loop.",
   ),
   Code(`import { component, m } from "@cyftec/maya/core";
+import { css } from "./assets/styles.js";
 
-type BadgeProps = { label: string; tone: string };
+type BadgeProps = {
+  label: string;
+  tone: "neutral" | "success" | "danger";
+};
 const Badge = component<BadgeProps>(({ label, tone }) =>
-  m.Span({ class: tone.value, children: label.value }),
+  m.Span({
+    class: css.cases(tone, {
+      "near-black": "neutral",
+      "dark-green": "success",
+      "dark-red": "danger",
+    }),
+    children: label,
+  }),
 );
 
-Badge({ label: "New", tone: "theme-col" });`),
+Badge({ label: "New", tone: "success" });`),
   Note(
     "A component is your TypeScript function; m.Div and m.Span are the element factories it composes.",
   ),
@@ -126,14 +146,18 @@ export const Page = Article(
     "Include the generated page script in the body. It mounts the page and starts the run phase in the browser.",
   ),
   Code(`import { m } from "@cyftec/maya/core";
+import { css } from "./assets/styles.js";
 
 export default m.Html({
   lang: "en",
   children: [
-    m.Head([m.Title("Home")]),
+    m.Head([
+      m.Title("Home"),
+      m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
+    ]),
     m.Body([
       m.Script({ src: "main.js", defer: true }),
-      m.Main(m.H1("Home page")),
+      m.Main({ class: css("center mw8 pa3"), children: m.H1("Home page") }),
     ]),
   ],
 });`),
@@ -145,10 +169,10 @@ export const FolderRoutes = Article(
     "Brahma uses the view folder structure as the URL structure. Put page.ts inside a folder for an index page, and use a dotted page filename for a single named HTML file.",
   ),
   Code(
-    `dev/view/page.ts            -> /index.html
-dev/view/docs/page.ts        -> /docs/index.html
-dev/view/docs/signals/page.ts -> /docs/signals/index.html
-dev/view/contact.page.ts     -> /contact.html`,
+    `dev/view/pages/page.ts             -> /index.html
+dev/view/pages/docs/page.ts        -> /docs/index.html
+dev/view/pages/docs/signals/page.ts -> /docs/signals/index.html
+dev/view/pages/contact.page.ts     -> /contact.html`,
   ),
   Bullets(
     "Relative imports follow the source folder structure.",

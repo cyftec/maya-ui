@@ -4,10 +4,13 @@
 
 **Audience:** coding agents and engineers building Maya applications
 
-**Verified against:** `@cyftec/maya` 0.0.15 and `@cyftec/brahma` 0.0.15 in this repository
+**Verified against:** `@cyftec/maya` 0.1.4, `@cyftec/brahma` 0.1.4, NoCSS,
+and TypeScript 7.0.2 in this repository
 
 **Required companion:** choose one profile below
 
+- For every application, read
+  [`NOCSS_CODING_SPEC.md`](./NOCSS_CODING_SPEC.md).
 - For document-style applications, dashboards, forms, and sites, read
   [`MAYA_UI_CODING_SPEC.md`](./MAYA_UI_CODING_SPEC.md).
 - For real-time games rendered with HTML canvas, read
@@ -44,7 +47,7 @@ tests are the source of truth. Update this specification when that happens.
 ## 2. Shared non-negotiable rules
 
 1. Import DOM factories and composition helpers from `@cyftec/maya/core`.
-2. Import signals from `@cyftec/maya/signal`.
+2. Import signals from `@cyftec/maya/signals`.
 3. A route entry **MUST** default-export one Maya node getter, normally the
    result of `m.Html(...)`.
 4. A reusable unit that returns Maya UI **MUST** use `component()` when it
@@ -73,6 +76,10 @@ tests are the source of truth. Update this specification when that happens.
 14. Keep authored source and assets out of Karma's `disposable` list.
 15. A task is not complete because it type-checks. Build the production output
     and verify the mounted app in a real browser.
+16. Coding agents **MUST** author CSS-based styling only through NoCSS, import
+    the app's typed `css` helper, and pass every class value through it. They
+    **MUST NOT** write stylesheets, inline CSS, injected CSS, or raw class
+    strings. This agent-only restriction does not apply to humans.
 
 ---
 
@@ -101,13 +108,19 @@ import {
   value,
   type Signal,
   type SourceSignal,
-} from "@cyftec/maya/signal";
+} from "@cyftec/maya/signals";
 
 import { query } from "@cyftec/maya/toolkit";
+
+// Adjust the relative path to the project's configured NoCSS source.
+import { css } from "./assets/styles.js";
 ```
 
 The root `@cyftec/maya` path is not exported by the current package. Its public
-exports are `./core`, `./signal`, `./immut`, and `./toolkit`.
+exports are `./core`, `./signals`, `./immut`, `./nocss`, `./nocss/compiler`,
+`./nocss/probe`, and `./toolkit`. Application components normally import the
+typed `css` helper from their local NoCSS `styles.ts` module rather than
+constructing another helper from the package.
 
 Use type-only imports when a value is not needed at runtime. Do not silence a
 Maya type error with `any` merely to make generated code compile; child,
@@ -189,7 +202,7 @@ Start from stable markup and adapt after mount:
 const compact = signal(false);
 
 const panel = m.Section({
-  class: compact.when.truthy().then("panel panel--compact", "panel"),
+  class: css("pa3", css.when(compact, "pa2", "pa4")),
   onmount: () => {
     const media = window.matchMedia("(max-width: 45rem)");
     compact.value = media.matches;
@@ -198,8 +211,8 @@ const panel = m.Section({
 });
 ```
 
-Prefer CSS media or container queries for layout. Use `onmount` when JavaScript
-must observe the browser.
+Prefer NoCSS responsive classes and configured media rules for layout. Use
+`onmount` when JavaScript must observe the browser.
 
 ---
 
@@ -432,10 +445,10 @@ when true and removed when false. The input `value` path updates the DOM
 property.
 
 The current runtime rejects dangerous `href` protocols and inline `style`
-values containing URL/expression-like payloads. Prefer CSS classes and do not
-attempt to bypass these checks. Never put untrusted text into executable code,
-HTML, CSS, storage keys, or asset URLs without validation appropriate to the
-sink.
+values containing URL/expression-like payloads. Coding agents do not use inline
+styles at all: use the typed NoCSS helper and do not attempt to bypass these
+checks. Never put untrusted text into executable code, HTML, CSS, storage keys,
+or asset URLs without validation appropriate to the sink.
 
 ---
 
@@ -531,6 +544,8 @@ my-app/
         ├── elements/
         │   └── reusable-ui.ts
         └── pages/
+            ├── assets/
+            │   └── styles.ts
             ├── about/
             │   └── page.ts
             ├── living-room/
@@ -548,6 +563,8 @@ The checked-in scaffold config has:
 appSrcDir: "dev";
 appViewDir: "dev/view/pages";
 buildablePageFileName: "page.ts";
+buildableStylesheetFileName: "styles.ts";
+assetsDirName: "assets";
 buildableManifestFileName: "manifest.ts";
 ignoreDelimiter: "@";
 stagingDir: "stage";
@@ -599,6 +616,8 @@ Within `appViewDir`:
   skipped as independent output;
 - an ignored TypeScript module can still be imported into a page and bundled;
 - ordinary non-page TypeScript files are emitted independently as `.js`;
+- the single configured NoCSS stylesheet module is compiled to generated CSS
+  in the output assets directory after page class usage is collected;
 - non-TypeScript files are copied while preserving relative paths;
 - the configured manifest at the app-view root becomes `manifest.json`;
 - empty output directories are removed;
@@ -611,7 +630,42 @@ when imported by a page, but they are not emitted as route outputs. The
 bundled modules inside the emitted route tree. Public assets must not be placed
 under an ignored directory.
 
-### 9.3 Karma rules
+### 9.3 NoCSS styling and build contract
+
+NoCSS is the application styling path. Its configured TypeScript module exports
+the base overrides, media-constraint overrides, compound classes, complete
+`ClassName` type, and the app's `css` helper. Components import that helper and
+use it for every `class` attribute, including single static classes:
+
+```ts
+import { css } from "../assets/styles.js";
+
+m.Main({
+  class: css(
+    "center mw8 pa3",
+    css.when(compact, "pa4-ns", "pa2"),
+  ),
+});
+```
+
+Brahma resets the usage registry, statically builds the pages, collects the
+classes registered by `css`, imports the one configured `styles.ts`, emits only
+the used rules, applies responsive media groups, and writes a minified
+`styles.css` to the output assets directory. `css.when` and `css.cases` register
+all declared runtime outcomes during the build; use them instead of dynamic
+class interpolation.
+
+The generated CSS is output, not authored source. Coding agents must not create
+or edit `.css` files, inline CSS, style elements, injected CSS, or raw class
+strings. The restriction applies to coding agents, not human contributors.
+Canvas drawing properties are rendering commands rather than DOM styling, but
+the canvas element and surrounding DOM still use NoCSS.
+
+Read [`NOCSS_CODING_SPEC.md`](./NOCSS_CODING_SPEC.md) for the complete helper
+API, configuration types, responsive groups, compounds, reset behavior, and
+verification checklist.
+
+### 9.4 Karma rules
 
 The named configuration export MUST remain `karma`. Important fields:
 
@@ -620,6 +674,9 @@ The named configuration export MUST remain `karma`. Important fields:
 - `skipErrorAndBuildNext`: keep `false` for agent and CI work;
 - `ignoreDelimiter`: prefix that suppresses direct output;
 - `buildablePageFileName`: page-entry suffix;
+- `buildableStylesheetFileName`: the single NoCSS TypeScript source basename;
+- `assetsDirName`: source/output assets directory containing NoCSS source and
+  generated CSS respectively;
 - `buildableManifestFileName`: manifest source filename;
 - `stagingDir` / `publishDir`: recreated output paths;
 - `disposable`: install/generated paths that Brahma may remove;
@@ -630,25 +687,42 @@ The named configuration export MUST remain `karma`. Important fields:
 Treat `disposable` as destructive configuration. Never add authored source,
 assets, tests, saves, or hand-maintained configuration to it.
 
-Use a strict DOM-capable TypeScript setup:
+Generated apps pin exactly TypeScript `7.0.2` in `maya.devDependencies` and use
+the same strict DOM-capable compiler options as this monorepo:
 
 ```ts
 tsconfig: {
   compilerOptions: {
-    target: "ES2022",
+    lib: ["ESNext", "DOM", "DOM.Iterable"],
+    target: "ESNext",
     module: "ESNext",
-    lib: ["ES2022", "DOM", "DOM.Iterable"],
-    moduleResolution: "bundler",
-    esModuleInterop: true,
-    skipLibCheck: true,
+    moduleResolution: "Bundler",
+    moduleDetection: "force",
+    allowImportingTsExtensions: true,
+    isolatedModules: true,
+    noEmit: true,
     strict: true,
+    skipLibCheck: true,
+    forceConsistentCasingInFileNames: true,
+    noErrorTruncation: true,
+    noFallthroughCasesInSwitch: true,
+    noPropertyAccessFromIndexSignature: true,
+    noUncheckedIndexedAccess: true,
+    noUncheckedSideEffectImports: true,
+    noUnusedLocals: true,
+    noUnusedParameters: true,
+    types: ["bun-types"],
   },
-  include: ["dev/**/*"],
+  include: ["_karma/**/*.ts", "dev/**/*.ts"],
 }
 ```
 
-The scaffold currently serializes equivalent TypeScript enum numeric values;
-the readable string form above describes their meaning.
+Repository projects extend `tsconfig.base.json`; local configs change only
+file boundaries or required type-test aliases. A generated app is outside that
+inheritance tree, so Karma carries the equivalent full configuration and
+regenerates its disposable `tsconfig.json`. Change `_karma/karma.ts`, not the
+generated config. Do not downgrade TypeScript or widen its version to work
+around a diagnostic.
 
 ---
 
@@ -687,6 +761,7 @@ refresh for every route.
 
 ```ts
 import { m } from "@cyftec/maya/core";
+import { css } from "./assets/styles.js";
 
 export default m.Html({
   lang: "en",
@@ -699,12 +774,15 @@ export default m.Html({
           content: "width=device-width, initial-scale=1",
         }),
         m.Title({ children: "Maya application" }),
-        m.Link({ rel: "stylesheet", href: "styles.css" }),
+        m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
       ],
     }),
     m.Body({
       children: [
-        m.Main({ children: "Replace with the selected profile's root." }),
+        m.Main({
+          class: css("center mw8 pa3"),
+          children: "Replace with the selected profile's root.",
+        }),
         m.Script({ src: "main.js", defer: true }),
       ],
     }),
@@ -719,7 +797,8 @@ Requirements:
 - keep the initial tree deterministic;
 - use the script name generated for that route;
 - include the viewport declaration;
-- use copied CSS rather than a large inline `style` attribute.
+- link the CSS generated from the configured NoCSS source;
+- pass every class through the app's typed `css` helper.
 
 ---
 
@@ -758,6 +837,8 @@ Before running commands, verify:
 - reusable Maya UI uses `component()` or `fragment()`;
 - non-UI game/domain code remains plain TypeScript;
 - no browser globals or nondeterminism run during tree construction;
+- all DOM styling is authored through NoCSS and every class is registered by
+  the app's typed helper;
 - private modules and public assets respect the configured ignore delimiter;
 - every page script name matches its output;
 - cleanup exists for every mounted resource.
@@ -775,7 +856,8 @@ Confirm:
 - the command exits successfully;
 - no page was silently skipped;
 - each expected HTML and JavaScript file exists;
-- copied CSS, images, audio, fonts, and manifests exist at referenced paths;
+- generated NoCSS, copied images, audio, fonts, and manifests exist at
+  referenced paths;
 - no private `@` directory leaked into output;
 - generated HTML begins with a doctype and contains initial content;
 - each page references an existing matching bundle.
@@ -867,7 +949,9 @@ root-relative public path and verify direct route loading.
 - [ ] Read the target project's `_karma/karma.ts`; do not assume its paths.
 - [ ] Keep `appViewDir` focused on intended public view output, or use
       `ignoreDelimiter` deliberately for private modules inside it.
-- [ ] Use `@cyftec/maya/core` and `@cyftec/maya/signal`.
+- [ ] Use `@cyftec/maya/core` and `@cyftec/maya/signals`.
+- [ ] Read and follow the NoCSS specification; coding agents author no CSS
+      outside NoCSS and pass every class through the typed `css` helper.
 - [ ] Default-export a deterministic complete HTML page getter.
 - [ ] Use `component()` / `fragment()` only for Maya UI composition.
 - [ ] Keep domain or game logic in ordinary TypeScript modules.

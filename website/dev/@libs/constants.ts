@@ -1,4 +1,4 @@
-export const BASE_MAYA_VERSION = "0.0.14";
+export const BASE_MAYA_VERSION = "0.1.4";
 export const MAYA_TITLE = "Maya UI Framework";
 export const LINKS = {
   DOCS: {
@@ -17,11 +17,11 @@ export const MAYA_FEATURES_TITLE = "With your favourite web framework, now";
 export const MAYA_FEATURES = [
   [
     `You can write your app completely in one language - TypeScript.`,
-    `You don't need mutiple (transpilers or pre/post processor) languages like JSX or SCSS to develop a simple app. Besides, unlike JSX, Maya's templating syntax is completely TypeScript and is naturally very similar to HTML.`,
+    `Maya's templating syntax and NoCSS styling source are TypeScript. Brahma generates the browser-ready page scripts and stylesheet.`,
   ],
   [
     `You get dynamic behaviour in your app with a static site structure.`,
-    `Your app is now an MPA (Multi Page Application) and resembles plain old HTML-CSS-JS app which had multiple pages.`,
+    `Your app is an MPA (Multi Page Application) made of static HTML, generated NoCSS, and page-local JavaScript.`,
   ],
   [
     `You get Component Driven Architecture on top of full DOM access.`,

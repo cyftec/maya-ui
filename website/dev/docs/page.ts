@@ -28,10 +28,12 @@ import {
   Create,
   DefaultHtmlPage,
   Install,
+  NoCss,
   Publish,
   Reset,
   Router,
   SignalImplementation,
+  TypeScriptBaseline,
   UiToolkit,
   Uninstall,
   WhyCli,
@@ -64,6 +66,10 @@ const DOCS_CHAPTERS = [
       {
         title: "Karma config",
         article: Karma,
+      },
+      {
+        title: "TypeScript 7.0.2",
+        article: TypeScriptBaseline,
       },
     ],
   },
@@ -122,6 +128,15 @@ const DOCS_CHAPTERS = [
       {
         title: "Page",
         article: Page,
+      },
+    ],
+  },
+  {
+    title: "NoCSS",
+    topics: [
+      {
+        title: "Styling applications",
+        article: NoCss,
       },
     ],
   },

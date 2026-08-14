@@ -19,12 +19,10 @@ export const CODE_EXAMPLES: Record<string, { title: string; code: string }> = {
     title: "HTML",
     code: `<div
   id="container"
-  class="parent-class card"
+  class="center pa3"
 >
   <h3>My Blog Title</h3>
-  <p
-    style="background-color: yellow;"
-  >
+  <p class="bg-yellow">
     Highlighted Paragraph.
   </p>
   <p>Normal Paragraph.</p>
@@ -39,13 +37,15 @@ export const CODE_EXAMPLES: Record<string, { title: string; code: string }> = {
   },
   MAYA: {
     title: "Maya",
-    code: `m.Div({
+    code: `import { css } from "./assets/styles.ts";
+
+m.Div({
   id: "container",
-  class: "parent-class card",
+  class: css("center pa3"),
   children: [
     m.H3("My Blog Title"),
     m.P({
-      style: "background-color: yellow;",
+      class: css("bg-yellow"),
       children: "Highlighted Paragraph.",
     }),
     m.P("Normal Paragraph."),
@@ -74,6 +74,8 @@ export const SYNTAX_RULES = [
   `Besides 'children', the other properties in the object passed in functional Maya Element as argument, are
  nothing but HTML attributes. The key-value pairs of these properties should be the normal HTML
  attribute key-value pairs.`,
+  `Maya application classes are passed through the typed NoCSS css helper. This validates each class and
+ registers it so Brahma can include the matching rule in the generated stylesheet.`,
   `One difference here is that the value of an event attribute should
  not be a string, unlike that in HTML but an actual (event listener) function. For example,
  the equivalent of this HTML code - <button onclick="someFn()">click me</button> in Maya will be - 

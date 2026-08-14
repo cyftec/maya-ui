@@ -4,12 +4,11 @@
 
 **Read with:** [`MAYA_APP_CODING_SPEC.md`](./MAYA_APP_CODING_SPEC.md)
 
-**Use for:** sites, forms, dashboards, content, menus, dialogs, and the DOM
-interface surrounding a canvas game
+**Styling contract:** [`NOCSS_CODING_SPEC.md`](./NOCSS_CODING_SPEC.md)
 
-This profile governs interface rendered as HTML, SVG, or MathML through Maya's
-`m` factories. It does not govern the per-frame contents of an HTML canvas;
-read the canvas-game profile for that.
+**Use for:** sites, forms, dashboards, content, menus, dialogs, and the DOM interface surrounding a canvas game
+
+This profile governs interface rendered as HTML, SVG, or MathML through Maya's `m` factories. It does not govern the per-frame contents of an HTML canvas; read the canvas-game profile for that.
 
 ---
 
@@ -23,15 +22,14 @@ A production Maya UI MUST:
 4. keep reactive reads in signal-aware paths;
 5. use Maya control-flow helpers for reactive child replacement;
 6. use real labels, buttons, links, forms, headings, lists, and landmarks;
-7. keep primary styling in copied CSS;
-8. remain usable at narrow and wide viewports, zoom, keyboard-only input, and
-   reduced motion;
+7. style DOM and SVG through the app's typed NoCSS helper;
+8. remain usable at narrow and wide viewports, zoom, keyboard-only input, and reduced motion;
 9. implement loading, empty, error, disabled, and overflow states that apply;
 10. verify behavior and visual fidelity in a real browser.
 
-Do not translate React syntax mechanically. Maya uses `class`, `for`,
-lowercase `on*` event props, serialized attribute names, node getters, and
-fine-grained signals.
+Do not translate React syntax mechanically. Maya uses `class`, `for`, lowercase `on*` event props, serialized attribute names, node getters, and fine-grained signals.
+
+Examples below assume `css` is imported from the project's configured NoCSS `styles.ts` module. Coding agents must pass every class value through this helper and must not author CSS through another path.
 
 ---
 
@@ -60,11 +58,9 @@ m.Svg({
 });
 ```
 
-SVG collisions use aliases: `m.SvgA`, `m.SvgScript`, `m.SvgStyle`,
-`m.SvgSwitch`, and `m.SvgTitle`.
+SVG collisions use aliases: `m.SvgA`, `m.SvgScript`, `m.SvgStyle`, `m.SvgSwitch`, and `m.SvgTitle`.
 
-Use the type system to discover tag-specific attributes. Do not cast away an
-attribute error until the actual platform requirement has been confirmed.
+Use the type system to discover tag-specific attributes. Do not cast away an attribute error until the actual platform requirement has been confirmed.
 
 ### 2.2 Child rules
 
@@ -79,15 +75,11 @@ m.P({ children: String(42) });
 
 Use `undefined` for an intentionally empty position. Do not use `null`.
 
-Text children are escaped DOM text. `innerHTML` is not a supported composition
-strategy. If trusted rich content is a product requirement, parse it into an
-allowlisted Maya tree outside the rendering sink; never inject arbitrary HTML.
+Text children are escaped DOM text. `innerHTML` is not a supported composition strategy. If trusted rich content is a product requirement, parse it into an allowlisted Maya tree outside the rendering sink; never inject arbitrary HTML.
 
 ### 2.3 Void elements
 
-Elements such as `meta`, `link`, `img`, `input`, `source`, `br`, and `hr` do
-not take children. Give images useful `alt` text, or `alt: ""` when they are
-truly decorative.
+Elements such as `meta`, `link`, `img`, `input`, `source`, `br`, and `hr` do not take children. Give images useful `alt` text, or `alt: ""` when they are truly decorative.
 
 ### 2.4 Mounted references
 
@@ -107,8 +99,7 @@ const input = m.Input({
 });
 ```
 
-Prefer `event.currentTarget` inside events when no retained reference is
-needed.
+Prefer `event.currentTarget` inside events when no retained reference is needed.
 
 ---
 
@@ -126,7 +117,18 @@ type BadgeProps = {
 
 export const Badge = component<BadgeProps>(({ text, tone }) =>
   m.Span({
-    class: tmpl`badge badge--${() => tone?.value ?? "neutral"}`,
+    class: css(
+      "dib br2 ph2 pv1",
+      css.cases(
+        tone,
+        {
+          "bg-light-gray near-black": "neutral",
+          "bg-light-green dark-green": "success",
+          "bg-light-red dark-red": "danger",
+        },
+        "bg-light-gray near-black",
+      ),
+    ),
     children: text,
   }),
 );
@@ -135,21 +137,14 @@ export const Badge = component<BadgeProps>(({ text, tone }) =>
 Use `fragment()` for siblings:
 
 ```ts
-export const Definition = fragment<
-  { term: string; detail: string },
-  Child[]
->(
-  ({ term, detail }) => [
-    m.Dt({ children: term }),
-    m.Dd({ children: detail }),
-  ],
+export const Definition = fragment<{ term: string; detail: string }, Child[]>(
+  ({ term, detail }) => [m.Dt({ children: term }), m.Dd({ children: detail })],
 );
 ```
 
 ### 3.2 State ownership
 
-The owner keeps the mutable source signal. A child receives the value and an
-intent callback:
+The owner keeps the mutable source signal. A child receives the value and an intent callback:
 
 ```ts
 type QuantityProps = {
@@ -161,10 +156,10 @@ type QuantityProps = {
 export const Quantity = component<QuantityProps>(
   ({ value: currentValue, min, onChange }) =>
     m.Div({
-      class: "quantity",
+      class: css("flex items-center"),
       children: [
         m.Output({
-          class: "quantity__value",
+          class: css("dib tc"),
           children: tmpl`${currentValue}`,
         }),
         m.Button({
@@ -183,8 +178,7 @@ export const Quantity = component<QuantityProps>(
 );
 ```
 
-Avoid APIs that accept a caller-owned `SourceSignal` merely so the child can
-mutate it. Explicit intent callbacks preserve ownership and are easier to test.
+Avoid APIs that accept a caller-owned `SourceSignal` merely so the child can mutate it. Explicit intent callbacks preserve ownership and are easier to test.
 
 ### 3.3 Children props
 
@@ -197,9 +191,7 @@ type PanelProps = {
 };
 ```
 
-Child props are special shapes and should be forwarded as children rather than
-blindly reading `.value`. If a component must transform a child collection,
-handle the declared child type deliberately.
+Child props are special shapes and should be forwarded as children rather than blindly reading `.value`. If a component must transform a child collection, handle the declared child type deliberately.
 
 ### 3.4 Snapshot versus reactive read
 
@@ -214,11 +206,17 @@ These preserve updates:
 ```ts
 m.P({ children: label });
 m.P({ children: tmpl`Label: ${label}` });
-m.P({ class: derive(() => `tone-${tone.value}`), children: label });
+m.P({
+  class: css.cases(
+    tone,
+    { "dark-green": "success", "dark-red": "danger" },
+    "near-black",
+  ),
+  children: label,
+});
 ```
 
-Snapshot reads are valid for a one-time setup, but should be visibly
-intentional.
+Snapshot reads are valid for a one-time setup, but should be visibly intentional.
 
 ---
 
@@ -234,29 +232,26 @@ const title = signal("Ready");
 
 m.Button({
   type: "button",
-  class: "action",
+  class: css("pointer"),
   disabled,
   title,
   children: "Run",
 });
 ```
 
-Use CSS classes for visual state:
+Use NoCSS helpers for visual state. They validate the names and ensure every declared outcome is present in generated CSS:
 
 ```ts
 const selected = signal(false);
 
 m.Button({
-  class: selected.when
-    .truthy()
-    .then("tab tab--selected", "tab"),
+  class: css("bb", css.when(selected, "bw2", "")),
   "aria-pressed": derive(() => String(selected.value)),
   children: "Preview",
 });
 ```
 
-ARIA state attributes generally need serialized string values such as
-`"true"` and `"false"` where required by their platform contract.
+ARIA state attributes generally need serialized string values such as `"true"` and `"false"` where required by their platform contract.
 
 ### 4.2 Events
 
@@ -280,8 +275,7 @@ Use the event that matches the semantic control:
 - pointer events only for genuinely pointer-specific interactions;
 - keyboard handlers for custom controls only when no native element fits.
 
-Do not make a clickable `div`. If an action is a button, use `m.Button`; if it
-navigates, use `m.A`.
+Do not make a clickable `div`. If an action is a button, use `m.Button`; if it navigates, use `m.A`.
 
 ---
 
@@ -299,8 +293,7 @@ m.If({
 });
 ```
 
-A signal subject creates reactive output. A missing selected branch currently
-uses a hidden span as a structural placeholder.
+A signal subject creates reactive output. A missing selected branch currently uses a hidden span as a structural placeholder.
 
 ### 5.2 `m.Switch`
 
@@ -319,8 +312,7 @@ m.Switch({
 });
 ```
 
-Normal matching stringifies the subject and compares it with case keys.
-`caseMatcher(subjectValue, caseKey)` can override matching.
+Normal matching stringifies the subject and compares it with case keys. `caseMatcher(subjectValue, caseKey)` can override matching.
 
 ### 5.3 `m.For`
 
@@ -351,7 +343,7 @@ m.Ul({
       const { title, done } = task.props();
 
       return m.Li({
-        class: done.when.truthy().then("task is-done", "task"),
+        class: css("task", css.when(done, "is-done", "")),
         "data-index": tmpl`${index}`,
         children: title,
       });
@@ -360,19 +352,15 @@ m.Ul({
 });
 ```
 
-Keyed mapper arguments are derived signals. Read fields with `item.get("key")`
-or `item.props()`. Maya preserves existing nodes across updates and reorders.
-Keys MUST be present and unique.
+Keyed mapper arguments are derived signals. Read fields with `item.get("key")` or `item.props()`. Maya preserves existing nodes across updates and reorders. Keys MUST be present and unique.
 
-`n` and `nthChild` are an advanced positional-insertion pair. Supply both or
-neither; prefer clear DOM composition first.
+`n` and `nthChild` are an advanced positional-insertion pair. Supply both or neither; prefer clear DOM composition first.
 
 ---
 
 ## 6. Forms
 
-Passing `value: state` updates the input from the signal. It does not update
-the signal when the user types. Write the DOM value back:
+Passing `value: state` updates the input from the signal. It does not update the signal when the user types. Write the DOM value back:
 
 ```ts
 type SignupProps = {
@@ -385,7 +373,7 @@ export const Signup = component<SignupProps>(({ onSubmit }) => {
   const sending = signal(false);
 
   return m.Form({
-    class: "signup",
+    class: css("measure"),
     onsubmit: async (event) => {
       event.preventDefault();
 
@@ -449,9 +437,7 @@ Form requirements:
 
 ## 7. Data and asynchronous states
 
-Start browser requests from an event or lifecycle, not initial tree
-construction. The toolkit `query()` helper is a small GET/request-state
-primitive, not a complete server-state library:
+Start browser requests from an event or lifecycle, not initial tree construction. The toolkit `query()` helper is a small GET/request-state primitive, not a complete server-state library:
 
 ```ts
 const { isLoading, data, error, runQuery, abortQuery } = query<User[]>(
@@ -460,9 +446,7 @@ const { isLoading, data, error, runQuery, abortQuery } = query<User[]>(
 );
 ```
 
-It does not promise comprehensive caching, retry, deduplication, pagination,
-mutation, or background refresh. Use `fetch` plus explicit signals for
-domain-specific behavior. Abort owned requests on unmount.
+It does not promise comprehensive caching, retry, deduplication, pagination, mutation, or background refresh. Use `fetch` plus explicit signals for domain-specific behavior. Abort owned requests on unmount.
 
 Every async view needs appropriate:
 
@@ -482,60 +466,40 @@ Do not let an older request overwrite a newer result.
 
 ### 8.1 Baseline
 
-Put primary styling in copied CSS:
+Author the baseline in the configured NoCSS `styles.ts`, then apply it through the typed helper:
 
-```css
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+```ts
+export const overriddenBaseClasses = {
+  default: {
+    app: "{ color-scheme: light dark; font-family: system-ui, sans-serif; text-size-adjust: 100%; }",
+    "app-body": "{ margin: 0; min-block-size: 100vh; }",
+    control: "{ font: inherit; }",
+    media: "{ display: block; max-inline-size: 100%; }",
+    "focus-ring:focus-visible":
+      "{ outline: .1875rem solid currentColor; outline-offset: .1875rem; }",
+  },
+} as const satisfies AtomicClassOverrides;
 
-html {
-  color-scheme: light dark;
-  font-family: system-ui, sans-serif;
-  text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-  min-block-size: 100vh;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-img,
-svg,
-canvas {
-  display: block;
-  max-inline-size: 100%;
-}
-
-:focus-visible {
-  outline: 0.1875rem solid currentColor;
-  outline-offset: 0.1875rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+export const compoundClasses = {
+  action: "control focus-ring pointer ph3 pv2 br2",
+} as const;
 ```
 
-Use semantic class names and custom properties for repeated tokens. Inline
-styles are acceptable for small safe stateful values, but Maya deliberately
-rejects risky inline style payloads and inline style is not the main system.
+```ts
+m.Html({
+  class: css("app"),
+  children: m.Body({
+    class: css("app-body"),
+    children: m.Button({
+      class: css("action"),
+      type: "button",
+      children: "Continue",
+    }),
+  }),
+});
+```
+
+Use compounds for meaningful, repeated UI roles and overridden atomic classes for capabilities absent from the built-in vocabulary. Coding agents must not fall back to an inline style, a handwritten stylesheet, a style element, or an untyped class string. If the public NoCSS API cannot represent a required CSS feature, report it as a framework capability gap and extend NoCSS only when framework work is within the task's scope.
 
 ### 8.2 Responsive behavior
 
@@ -548,9 +512,7 @@ Layouts MUST survive:
 - short and tall viewports;
 - wide screens without unreadably long text lines.
 
-Prefer intrinsic sizing, wrapping flex/grid, `minmax()`, `clamp()`, logical
-properties, media queries, and container queries. Avoid JavaScript layout
-branching unless browser observation is actually required.
+Prefer NoCSS classes that use intrinsic sizing, wrapping flex/grid, `minmax()`, `clamp()`, and logical properties. Use the `-ns`, `-m`, and `-l` variants or custom rules in the matching NoCSS groups. Avoid JavaScript layout branching unless browser observation is actually required.
 
 ### 8.3 Visual fidelity
 
@@ -586,13 +548,9 @@ Every UI MUST provide:
 - motion that respects `prefers-reduced-motion`;
 - information that does not rely only on color.
 
-For dialogs, menus, tabs, comboboxes, and other composite widgets, follow the
-platform/ARIA interaction pattern completely. A partial custom widget is worse
-than an appropriate native element.
+For dialogs, menus, tabs, comboboxes, and other composite widgets, follow the platform/ARIA interaction pattern completely. A partial custom widget is worse than an appropriate native element.
 
-Canvas fallback UI, game menus, score, pause, settings, and instructions are
-also governed by this profile even when the playfield follows the canvas
-profile.
+Canvas fallback UI, game menus, score, pause, settings, and instructions are also governed by this profile even when the playfield follows the canvas profile.
 
 ---
 
@@ -600,7 +558,8 @@ profile.
 
 ```ts
 import { component, m } from "@cyftec/maya/core";
-import { signal, tmpl } from "@cyftec/maya/signal";
+import { signal, tmpl } from "@cyftec/maya/signals";
+import { css } from "./assets/styles.js";
 
 type CounterProps = {
   label: string;
@@ -610,12 +569,12 @@ const Counter = component<CounterProps>(({ label }) => {
   const count = signal(0);
 
   return m.Section({
-    class: "counter",
+    class: css("center measure pa3"),
     "aria-labelledby": "counter-title",
     children: [
       m.H1({ id: "counter-title", children: label }),
       m.Output({
-        class: "counter__value",
+        class: css("db f2 tc"),
         "aria-live": "polite",
         children: tmpl`${count}`,
       }),
@@ -640,7 +599,7 @@ export default m.Html({
         content: "width=device-width, initial-scale=1",
       }),
       m.Title("Counter"),
-      m.Link({ rel: "stylesheet", href: "styles.css" }),
+      m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
     ]),
     m.Body([
       m.Main({ children: Counter({ label: "Counter" }) }),
@@ -660,28 +619,23 @@ Use keyed `m.For` with a stable unique `itemKey`.
 
 ### A keyed mapper cannot access fields
 
-The item is a derived object signal. Use `item.get("field")` or
-`item.props()`, not direct property access.
+The item is a derived object signal. Use `item.get("field")` or `item.props()`, not direct property access.
 
 ### Input text snaps back
 
-The input has a signal `value` but no `oninput` write-back, or an older async
-result overwrites current state.
+The input has a signal `value` but no `oninput` write-back, or an older async result overwrites current state.
 
 ### A control only works with a mouse
 
-A generic element was used, or keyboard semantics were omitted. Replace it
-with a native button/link/input or implement the complete interaction pattern.
+A generic element was used, or keyboard semantics were omitted. Replace it with a native button/link/input or implement the complete interaction pattern.
 
 ### Content changes but assistive technology is silent
 
-Use a suitable `output`, `role="status"`, `aria-live`, or `role="alert"`
-region. Do not indiscriminately make the whole page live.
+Use a suitable `output`, `role="status"`, `aria-live`, or `role="alert"` region. Do not indiscriminately make the whole page live.
 
 ### Mobile layout overflows
 
-Look for fixed widths, non-wrapping flex children, missing `min-inline-size: 0`,
-unbounded media, long content, and route-level canvas sizing.
+Look for fixed widths, non-wrapping flex children, missing minimum-size rules, unbounded media, long content, and route-level canvas sizing. Correct the relevant NoCSS rules or class composition.
 
 ---
 
@@ -697,7 +651,9 @@ unbounded media, long content, and route-level canvas sizing.
 - [ ] Form values write back on user input.
 - [ ] Native controls, labels, focus, and keyboard behavior are complete.
 - [ ] Async idle/loading/empty/error/success states are implemented.
-- [ ] Primary styling is external, responsive, and reduced-motion aware.
+- [ ] Every class passes through the app's typed NoCSS helper.
+- [ ] No agent-authored stylesheet, inline style, or injected CSS was added.
+- [ ] NoCSS output is responsive and reduced-motion behavior was considered.
 - [ ] Long content, zoom, narrow, and wide layouts were tested.
 - [ ] Visual references were compared at matching viewport sizes.
 - [ ] Browser console and accessibility behavior were checked.

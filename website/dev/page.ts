@@ -545,7 +545,7 @@ export default Page({
                   ],
                 }),
                 m.P(
-                  "Maya’s templating syntax is TypeScript that reads like HTML. There is no JSX dialect or SCSS layer to learn before you can make a useful interface.",
+                  "Maya’s templating syntax and NoCSS styling source are TypeScript. Brahma turns them into static pages, page-local JavaScript, and the generated stylesheet.",
                 ),
               ],
             }),
@@ -562,10 +562,12 @@ export default Page({
                   "page.ts",
                   `import { m } from "@cyftec/maya/core";
 import { signal, tmpl } from "@cyftec/maya/signals";
+import { css } from "./assets/styles.js";
 
 const count = signal(0);
 
 export default m.Button({
+  class: css("pointer ph3 pv2 br2"),
   onclick: () => count.value++,
   children: tmpl\`Count: \${count}\`,
 });`,
@@ -601,7 +603,7 @@ export default m.Button({
                     FeatureHeading(
                       "MULTI-PAGE BY DEFAULT",
                       "Files become pages—not routes in disguise.",
-                      "A Maya app resembles the durable HTML–CSS–JS web: independent static documents with page-local JavaScript and no client router required.",
+                      "A Maya app uses independent static documents, generated NoCSS, and page-local JavaScript with no client router required.",
                     ),
                     RoutingGraphic(),
                   ],
@@ -705,7 +707,7 @@ m.Button({
                     FeatureHeading(
                       "TYPED BROWSER CONTRACTS",
                       "Autocomplete for the platform—not an invented prop API.",
-                      "Tag-specific attribute grammars guide valid values in TypeScript. Runtime sanitizers also reject dangerous href schemes and unsafe inline style expressions.",
+                      "Tag-specific attribute grammars guide valid values in TypeScript. NoCSS validates application classes, while runtime sanitizers reject dangerous href schemes.",
                     ),
                     CodeWindow(
                       "typed-elements.ts",
@@ -717,7 +719,7 @@ m.Button({
 m.Button({ type: "submit" });
 m.Link({ rel: "stylesheet" });
 
-// runtime URL/style sanitizers
+// runtime URL sanitization
 m.A({ href: trustedUrl });`,
                       "compact-code-window typed-code-window",
                     ),
@@ -766,7 +768,7 @@ m.A({ href: trustedUrl });`,
                   ],
                 }),
                 m.P(
-                  "Create, continuously develop, build, and publish Maya apps from one dedicated CLI—with project behavior gathered into one typed configuration file.",
+                  "Create, continuously develop, build, and publish Maya apps from one dedicated CLI—with project behavior and NoCSS generation controlled by typed configuration.",
                 ),
               ],
             }),
@@ -816,18 +818,23 @@ $ brahma publish
                     FeatureHeading(
                       "KARMA.TS",
                       "The configuration center, not another config pile.",
-                      "Build paths, serve behavior, dependencies, Git ignores, and editor settings live together in one project-level TypeScript file.",
+                      "Build paths, NoCSS source, serve behavior, dependencies, TypeScript, Git ignores, and editor settings live in one project-level TypeScript file.",
                     ),
                     CodeWindow(
                       "karma.ts",
                       `export const karma = {
   brahma: {
-    build: { publishDir: "docs" },
+    build: {
+      publishDir: "docs",
+      buildableStylesheetFileName: "styles.ts",
+      assetsDirName: "assets",
+    },
     serve: { port: 3000 },
   },
   maya: {
     appType: "web",
-    dependencies: { "@cyftec/maya": "latest" },
+    dependencies: { "@cyftec/maya": "0.1.4" },
+    devDependencies: { typescript: "7.0.2" },
   },
 };`,
                       "karma-window",
@@ -855,7 +862,7 @@ $ brahma publish
                   ],
                 }),
                 m.P(
-                  "Brahma emits static HTML, CSS, and page-local JavaScript before deployment. Your fully reactive interface can live on a CDN, object storage, or GitHub Pages—without a cloud compute machine running it.",
+                  "Brahma emits static HTML, generated NoCSS, and page-local JavaScript before deployment. The reactive interface is ready for static hosting without an application server.",
                 ),
                 ArrowLink("See the production workflow", "/docs/"),
               ],

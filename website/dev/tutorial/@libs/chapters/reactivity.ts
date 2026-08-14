@@ -25,7 +25,7 @@ export const WhatIsSignal = Article(
   m.H3({ class: "black", children: "A signal is changing state" }),
   Paragraphs(
     "A signal is a small state container with a .value. Read its value to use the current state, and assign a new value to notify the computations that read it.",
-    "Maya re-exports signal helpers from @cyftec/maya/signal, including signal, derive, effect, and tmpl.",
+    "Maya re-exports signal helpers from @cyftec/maya/signals, including signal, derive, effect, and tmpl.",
   ),
   Code(`const name = signal("Ada");
 const greeting = m.P({ children: tmpl\`Hello, \${name}!\` });
