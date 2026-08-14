@@ -11,12 +11,13 @@ export type ProjectFileNames = {
     appSrcDir: string;
     appViewDir: string;
     pageFile: `${string}.ts`;
+    stylesheetFile: `${string}.ts`;
+    assetsDirName: string;
     manifestFile: `${string}.ts`;
   } & FileNamesMap;
   static: {
     publishDir: string;
     dsStoreDir: ".DS_Store";
-    karmaTypesFile: "_karma/types.ts";
   } & FileNamesMap;
   disposable: {
     stagingDir: string;
@@ -43,6 +44,8 @@ export type Karma = {
        */
       ignoreDelimiter: string;
       buildablePageFileName: string;
+      buildableStylesheetFileName: string;
+      assetsDirName: string;
       buildableManifestFileName: string;
       stagingDir: string;
       publishDir: string;
@@ -86,6 +89,13 @@ export type Karma = {
       "files.exclude": {
         [x in string]: boolean;
       };
+    };
+  };
+  zed?: {
+    settings: {
+      file_scan_exclusions: string[];
+      file_scan_inclusions?: string[];
+      [setting: string]: unknown;
     };
   };
   tsconfig?: TsConfig;

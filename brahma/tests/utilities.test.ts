@@ -251,9 +251,9 @@ describe("probe helpers", () => {
       karmaPath,
       `export const karma = { maya: { dependencies: {} } };`,
     );
-    await expect(
-      transformWebKarmaToNonWebKarma("pwa", karmaPath),
-    ).rejects.toBe(`No @cyftec/maya dependency found in '${karmaPath}'.`);
+    await expect(transformWebKarmaToNonWebKarma("pwa", karmaPath)).rejects.toBe(
+      `No @cyftec/maya dependency found in '${karmaPath}'.`,
+    );
     await rm(root, { recursive: true });
   });
 
@@ -380,11 +380,7 @@ describe("zip utility", () => {
     };
 
     await expect(
-      zipTheFolder(
-        "/tmp/source",
-        "/tmp/output.zip",
-        dependencies as never,
-      ),
+      zipTheFolder("/tmp/source", "/tmp/output.zip", dependencies as never),
     ).rejects.toBe(failure);
     expect(archive.directory).toHaveBeenCalledWith("/tmp/source", false);
     expect(archive.pipe).toHaveBeenCalledWith(stream);
@@ -471,7 +467,7 @@ describe("version and process utilities", () => {
     expect(getBrahmaPackageJsonPath()).toBe(
       path.join(getBrahmaRootPath(), "package.json"),
     );
-    expect(await getCurrentBrahmaVersion()).toBe("0.1.4");
+    expect(await getCurrentBrahmaVersion()).toBe("0.2.0");
   });
 
   test("exits for missing or versionless package metadata", async () => {
