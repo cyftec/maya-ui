@@ -66,6 +66,13 @@ export type CssPhrase<
   ClassName extends string = string,
 > = ClassNamesPhrase<Phrase, ClassName>;
 
+declare const cssPhraseValue: unique symbol;
+
+/** A CSS phrase that has already been validated by a NoCSS helper. */
+export type CssPhraseValue = string & {
+  readonly [cssPhraseValue]: true;
+};
+
 /** A plain or signalled class-name phrase. */
 export type CssValue<
   Phrase extends string,

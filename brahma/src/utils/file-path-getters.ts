@@ -9,6 +9,24 @@ export const getAppViewPath = (appRootPath: string, karma: Karma): string => {
   return `${appRootPath}/${karma.brahma.build.appViewDir}`;
 };
 
+const getAssetsDirName = (karma: Karma) => {
+  const { assetsDirName } = karma.brahma.build;
+  if (
+    !assetsDirName ||
+    assetsDirName === "." ||
+    assetsDirName === ".." ||
+    /[\\/]/.test(assetsDirName)
+  ) {
+    throw new Error(
+      "karma.brahma.build.assetsDirName must be a single directory name.",
+    );
+  }
+  return assetsDirName;
+};
+
+export const getAppAssetsDirPath = (appRootPath: string, karma: Karma) =>
+  path.join(getAppViewPath(appRootPath, karma), getAssetsDirName(karma));
+
 export const getPackageJsonPath = (appRootPath: string): string => {
   return `${appRootPath}/package.json`;
 };
@@ -39,18 +57,6 @@ export const getBuildAssetsDirPath = (
   karma: Karma,
   buildProd: boolean,
 ) => {
-  const { assetsDirName } = karma.brahma.build;
-  if (
-    !assetsDirName ||
-    assetsDirName === "." ||
-    assetsDirName === ".." ||
-    /[\\/]/.test(assetsDirName)
-  ) {
-    throw new Error(
-      "karma.brahma.build.assetsDirName must be a single directory name.",
-    );
-  }
-
   return path.join(
     getBuildDirPath(
       appRootPath,
@@ -58,6 +64,6 @@ export const getBuildAssetsDirPath = (
       karma,
       buildProd,
     ),
-    assetsDirName,
+    getAssetsDirName(karma),
   );
 };

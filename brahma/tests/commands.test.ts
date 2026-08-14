@@ -115,7 +115,7 @@ describe("help and create commands", () => {
     expect(await exists(path.join(appRoot, "dev/page.ts"))).toBe(true);
     expect(await exists(path.join(appRoot, "dev/sw.ts"))).toBe(true);
     expect(await exists(path.join(appRoot, "_karma/karma.ts"))).toBe(true);
-    const stylesheetPath = path.join(appRoot, "dev/styles.ts");
+    const stylesheetPath = path.join(appRoot, "dev/assets/styles.ts");
     expect(await exists(stylesheetPath)).toBe(true);
     expect(await Bun.file(stylesheetPath).text()).toContain(
       "export const css = getCss<ClassName>();",
@@ -207,7 +207,8 @@ describe("version and reset commands", () => {
       karmaModuleText(karma),
     );
 
-    const stylesheetPath = path.join(root, "dev/custom-view/theme.ts");
+    const stylesheetPath = path.join(root, "dev/custom-view/assets/theme.ts");
+    await mkdir(path.dirname(stylesheetPath), { recursive: true });
     await writeText(stylesheetPath, "export const corrupted = true;");
     await expectProcessExit(() => resetApp(["--stylesheet"]));
     expect(await Bun.file(stylesheetPath).text()).toContain(

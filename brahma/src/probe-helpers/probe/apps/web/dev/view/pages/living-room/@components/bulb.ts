@@ -1,14 +1,15 @@
 import { component, m } from "@cyftec/maya/core";
 import { tmpl } from "@cyftec/maya/signals";
+import { css, type CssPhraseValue } from "../../../styles";
 
 type BulbProps = {
   isOn: boolean;
-  classNames?: string;
+  classNames?: CssPhraseValue;
 };
 
 export const Bulb = component<BulbProps>(({ isOn, classNames }) =>
   m.Div({
-    class: tmpl`flex flex-column items-center ${() => classNames?.value}`,
+    class: css(`flex flex-column items-center`, classNames),
     children: [
       m.Div({
         class: tmpl`ba--red h4 w3 bw2 ba br3 br--bottom ${() =>

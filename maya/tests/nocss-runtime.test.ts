@@ -36,9 +36,9 @@ describe("no-css helpers", () => {
       "mv2",
     );
 
-    expect(value(classNames)).toBe("bg-light-gray");
+    expect(value(classNames) as string).toBe("bg-light-gray");
     state.value = "on";
-    expect(value(classNames)).toBe("bg-yellow");
+    expect(value(classNames) as string).toBe("bg-yellow");
     expect(usedClassNames).toEqual(
       new Set(["bg-yellow", "bg-light-gray", "mv2"]),
     );
@@ -49,9 +49,31 @@ describe("no-css helpers", () => {
     const colorSignal = signal<"red" | "green">("red");
     const classNames = css(colorSignal);
 
-    expect(value(classNames)).toBe("red");
+    expect(value(classNames) as string).toBe("red");
     colorSignal.value = "green";
-    expect(value(classNames)).toBe("green");
+    expect(value(classNames) as string).toBe("green");
     expect(usedClassNames).toEqual(new Set(["red", "green"]));
+  });
+
+  test("ignores absent nullable class phrases", () => {
+    const css = getCss<"red">();
+
+    expect(value(css("red", null, undefined)) as string).toBe("red");
+    expect(usedClassNames).toEqual(new Set(["red"]));
+  });
+
+  test("uses a static class phrase while a nullable phrase is absent", () => {
+    const css = getCss<"red" | "green">();
+    const color = signal<"red" | "" | null | undefined>(undefined);
+    const classNames = css.ifNullable(color, "green");
+
+    expect(value(classNames) as string).toBe("green");
+    color.value = "";
+    expect(value(classNames) as string).toBe("");
+    color.value = "red";
+    expect(value(classNames) as string).toBe("red");
+    color.value = null;
+    expect(value(classNames) as string).toBe("green");
+    expect(usedClassNames).toEqual(new Set(["green", "red"]));
   });
 });
