@@ -2,6 +2,7 @@ import path from "node:path";
 import {
   transformWebKarmaToNonWebKarma,
   copyBaseKarmaFiles,
+  copyStylesheetProbe,
   type AppMode,
   type KarmaResetMode,
 } from "../probe-helpers";
@@ -25,8 +26,15 @@ export const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
 };
 
 export const resetApp = async (cmdArgs: string[]) => {
-  const resetMode = getResetMode(cmdArgs);
   const appRootPath = getCWD();
+
+  if (cmdArgs.length === 1 && cmdArgs[0] === "--stylesheet") {
+    console.log("Resetting stylesheet probe...");
+    await copyStylesheetProbe(appRootPath, await getKarma(appRootPath));
+    process.exit();
+  }
+
+  const resetMode = getResetMode(cmdArgs);
   let appMode: AppMode = "web";
 
   console.log(`Resetting 'karma.ts' file...`);

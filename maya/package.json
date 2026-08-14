@@ -10,6 +10,7 @@
     "./immut": "./src/re-exports/immut.ts",
     "./nocss": "./src/nocss/index.ts",
     "./nocss/compiler": "./src/nocss/compiler.ts",
+    "./nocss/probe": "./src/nocss/probe.ts",
     "./toolkit": "./src/toolkit/index.ts"
   },
   "dependencies": {

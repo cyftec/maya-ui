@@ -19,8 +19,13 @@ import {
 import type { BunFile } from "bun";
 import type { Karma } from "../probe-helpers/index.ts";
 import { setupBuild } from "./build-setup.ts";
-import { getAppViewPath, getBuildDirPath } from "../utils/file-path-getters.ts";
 import {
+  getAppViewPath,
+  getBuildAssetsDirPath,
+  getBuildDirPath,
+} from "../utils/file-path-getters.ts";
+import {
+  createDirRecursively,
   fileOrDirExists,
   getPathStats,
   readDir,
@@ -35,7 +40,7 @@ type BuildData = {
   deferredStylesheets: DeferredStylesheet[];
 };
 
-type DeferredStylesheet = { sourcePath: string; outputPath: string };
+type DeferredStylesheet = { sourcePath: string };
 
 type NoCssStylesheetConfig = {
   overriddenBaseClasses?: Record<string, Record<string, string>>;
@@ -198,12 +203,8 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
   let filePath: string;
   let fileData: string | BunFile;
 
-  if (srcFilePath.endsWith(stylesheetFileName)) {
-    const fileName = getFileNameFromPath(srcFilePath);
-    buildData.deferredStylesheets.push({
-      sourcePath: srcFilePath,
-      outputPath: `${buildDirPath}/${fileName.slice(0, -3)}.css`,
-    });
+  if (getFileNameFromPath(srcFilePath) === stylesheetFileName) {
+    buildData.deferredStylesheets.push({ sourcePath: srcFilePath });
     return;
   } else if (
     srcFilePath.endsWith(manifestFileName) &&
@@ -256,10 +257,7 @@ export const buildDir = async (dirPath: string): Promise<void> => {
     if (fileStats.isFile()) await buildFile(filePath, buildDirPath);
   }
 
-  const hasDeferredStylesheet = buildData.deferredStylesheets.some(
-    ({ outputPath }) => path.dirname(outputPath) === buildDirPath,
-  );
-  if (!(await readDir(buildDirPath)).length && !hasDeferredStylesheet) {
+  if (!(await readDir(buildDirPath)).length) {
     console.log(`Deleting empty built dir: ${buildDirPath}`);
     await removeFileOrDir(buildDirPath);
   }
@@ -273,18 +271,31 @@ const buildDeferredStylesheets = async () => {
     );
   }
 
+  const assetsDirPath = getBuildAssetsDirPath(
+    buildData.appRootPath,
+    buildData.karma,
+    buildData.isProd,
+  );
+  await createDirRecursively(assetsDirPath);
+  const stylesheetFileName =
+    buildData.karma.brahma.build.buildableStylesheetFileName;
+  const outputPath = path.join(
+    assetsDirPath,
+    `${stylesheetFileName.slice(0, -3)}.css`,
+  );
+
   for (const stylesheet of stylesheets) {
     const css = await buildCssFile(stylesheet.sourcePath);
-    await Bun.write(stylesheet.outputPath, css);
+    await Bun.write(outputPath, css);
     const cssBuild = await Bun.build({
-      entrypoints: [stylesheet.outputPath],
+      entrypoints: [outputPath],
       minify: true,
     });
     const minifiedCss = await cssBuild.outputs[0]?.text();
     if (minifiedCss === undefined) {
-      throw new Error(`Unable to minify CSS '${stylesheet.outputPath}'.`);
+      throw new Error(`Unable to minify CSS '${outputPath}'.`);
     }
-    await Bun.write(stylesheet.outputPath, minifiedCss);
+    await Bun.write(outputPath, minifiedCss);
   }
 };
 

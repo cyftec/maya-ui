@@ -32,6 +32,7 @@ import { ACCEPTED_COMMANDS, DS_STORE_REGEX } from "../src/utils/constants.ts";
 import {
   getAppSrcPath,
   getAppViewPath,
+  getBuildAssetsDirPath,
   getBuildDirPath,
   getKarmaPaths,
   getPackageJsonPath,
@@ -118,6 +119,14 @@ describe("path and common helpers", () => {
     expect(
       getBuildDirPath("/tmp/app", "/tmp/app/dev/view/about", karma, true),
     ).toBe("/tmp/app/prod/about");
+    expect(getBuildAssetsDirPath("/tmp/app", karma, false)).toBe(
+      "/tmp/app/stage/assets",
+    );
+
+    karma.brahma.build.assetsDirName = "../outside";
+    expect(() => getBuildAssetsDirPath("/tmp/app", karma, false)).toThrow(
+      "assetsDirName must be a single directory name",
+    );
   });
 
   test("creates missing directories and tolerates existing directories", async () => {

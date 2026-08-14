@@ -33,3 +33,31 @@ export const getBuildDirPath = (
   const buildDirPath = path.join(buildDirRootPath, subPath);
   return buildDirPath;
 };
+
+export const getBuildAssetsDirPath = (
+  appRootPath: string,
+  karma: Karma,
+  buildProd: boolean,
+) => {
+  const { assetsDirName } = karma.brahma.build;
+  if (
+    !assetsDirName ||
+    assetsDirName === "." ||
+    assetsDirName === ".." ||
+    /[\\/]/.test(assetsDirName)
+  ) {
+    throw new Error(
+      "karma.brahma.build.assetsDirName must be a single directory name.",
+    );
+  }
+
+  return path.join(
+    getBuildDirPath(
+      appRootPath,
+      getAppViewPath(appRootPath, karma),
+      karma,
+      buildProd,
+    ),
+    assetsDirName,
+  );
+};

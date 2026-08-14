@@ -184,7 +184,7 @@ describe("build integration", () => {
     expect(Bun.file(path.join(root, "prod.zip")).size).toBeGreaterThan(100);
   }, 20_000);
 
-  test("writes nocss beside a dynamically located styles.ts without bundling its maps", async () => {
+  test("writes nocss to the configured app-view assets directory", async () => {
     const root = await newRoot();
     const view = path.join(root, "dev/view");
     await writeText(
@@ -218,12 +218,12 @@ describe("build integration", () => {
       `,
     );
 
-    await buildApp(root, makeKarma(), false);
+    await buildApp(root, makeKarma({ assetsDirName: "my-assets" }), false);
 
     const stage = path.join(root, "stage");
     const stylesheetPath = path.join(
       stage,
-      "some-folder/custom-assets/styles.css",
+      "my-assets/styles.css",
     );
     const stylesheet = await Bun.file(stylesheetPath).text();
     const mainJs = await Bun.file(path.join(stage, "main.js")).text();
@@ -231,6 +231,7 @@ describe("build integration", () => {
     expect(stylesheet).toContain(".card,.pa2{padding:.5rem}");
     expect(stylesheet).toContain("@media (min-width:31em){.pa2-ns{padding:.5rem}}");
     expect(await exists(path.join(stage, "some-folder/custom-assets/styles.js"))).toBe(false);
+    expect(await exists(path.join(stage, "some-folder/custom-assets/styles.css"))).toBe(false);
     expect(mainJs).not.toContain("#ee4440");
     expect(mainJs).not.toContain("bg-theme pa2");
     expect(mainJs).not.toContain("31em");

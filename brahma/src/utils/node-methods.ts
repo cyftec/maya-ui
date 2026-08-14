@@ -7,6 +7,9 @@ export const fileOrDirExists = async (dirPath: string) => await exists(dirPath);
 
 export const createDir = async (dirPath: string) => await mkdir(dirPath);
 
+export const createDirRecursively = async (dirPath: string) =>
+  await mkdir(dirPath, { recursive: true });
+
 export const readDir = async (dirPath: string) => await readdir(dirPath);
 
 export const removeFileOrDir = async (fileOrDirPath: string) =>

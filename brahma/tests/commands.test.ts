@@ -75,6 +75,9 @@ describe("help and create commands", () => {
       "Usage: brahma <COMMAND>",
     );
     expect(log.mock.calls.flat().join("\n")).toContain("brahma reset --hard");
+    expect(log.mock.calls.flat().join("\n")).toContain(
+      "brahma reset --stylesheet",
+    );
     log.mockRestore();
   });
 
@@ -112,6 +115,11 @@ describe("help and create commands", () => {
     expect(await exists(path.join(appRoot, "dev/page.ts"))).toBe(true);
     expect(await exists(path.join(appRoot, "dev/sw.ts"))).toBe(true);
     expect(await exists(path.join(appRoot, "_karma/karma.ts"))).toBe(true);
+    const stylesheetPath = path.join(appRoot, "dev/styles.ts");
+    expect(await exists(stylesheetPath)).toBe(true);
+    expect(await Bun.file(stylesheetPath).text()).toContain(
+      "export const css = getCss<ClassName>();",
+    );
     expect(await Bun.file(path.join(appRoot, "_karma/karma.ts")).text()).toContain(
       'appType: "pwa"',
     );
@@ -188,6 +196,27 @@ describe("version and reset commands", () => {
     await writeText(karmaPath, karmaModuleText(karma));
     await expectProcessExit(() => resetApp(["--hard"]));
     expect(await Bun.file(karmaPath).text()).toContain('appType: "web"');
+    expect(commands).toEqual([]);
+  });
+
+  test("restores the configured stylesheet probe when it is changed or missing", async () => {
+    const karma = makeKarma({ appViewDir: "dev/custom-view" });
+    karma.brahma.build.buildableStylesheetFileName = "theme.ts";
+    await writeText(
+      path.join(root, "_karma/karma.ts"),
+      karmaModuleText(karma),
+    );
+
+    const stylesheetPath = path.join(root, "dev/custom-view/theme.ts");
+    await writeText(stylesheetPath, "export const corrupted = true;");
+    await expectProcessExit(() => resetApp(["--stylesheet"]));
+    expect(await Bun.file(stylesheetPath).text()).toContain(
+      "export const css = getCss<ClassName>();",
+    );
+
+    await rm(stylesheetPath);
+    await expectProcessExit(() => resetApp(["--stylesheet"]));
+    expect(await exists(stylesheetPath)).toBe(true);
     expect(commands).toEqual([]);
   });
 });

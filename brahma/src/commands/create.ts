@@ -1,5 +1,10 @@
-import { copyApp, copyBaseKarmaFiles, type AppMode } from "../probe-helpers";
-import { getCWD } from "../utils/common";
+import {
+  copyApp,
+  copyBaseKarmaFiles,
+  copyStylesheetProbe,
+  type AppMode,
+} from "../probe-helpers";
+import { getCWD, getKarma } from "../utils/common";
 import { transformWebKarmaToNonWebKarma } from "../probe-helpers/karma-transformer";
 import path from "node:path";
 import { createDir, fileOrDirExists } from "../utils/node-methods";
@@ -63,6 +68,7 @@ export const createApp = async (cmdArgs: string[]) => {
     const targetKarmaPath = path.join(appRootPath, "_karma", "karma.ts");
     await transformWebKarmaToNonWebKarma(appType, targetKarmaPath);
   }
+  await copyStylesheetProbe(appRootPath, await getKarma(appRootPath));
 
   console.log(`'${appRootDirName}' directory created.`);
   console.log(`

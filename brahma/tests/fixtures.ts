@@ -20,6 +20,7 @@ export const makeKarma = (
   overrides: {
     appType?: Karma["maya"]["appType"];
     appViewDir?: string;
+    assetsDirName?: string;
     reloadPageOnFocus?: boolean;
     skipErrorAndBuildNext?: boolean;
   } = {},
@@ -32,6 +33,7 @@ export const makeKarma = (
       ignoreDelimiter: "@",
       buildablePageFileName: "page.ts",
       buildableStylesheetFileName: "styles.ts",
+      assetsDirName: overrides.assetsDirName || "assets",
       buildableManifestFileName: "manifest.ts",
       stagingDir: "stage",
       publishDir: "prod",
