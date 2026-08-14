@@ -31,6 +31,12 @@ type InvalidWords<
     ? never
     : Phrase;
 
+/** Class names in a phrase that are absent from the configured class maps. */
+export type InvalidClassNames<
+  Phrase extends string,
+  ClassName extends string,
+> = InvalidWords<Phrase, ClassName>;
+
 /**
  * Keeps known classes in editor completions while accepting a phrase during
  * inference. Validation is performed separately by `InvalidWords`.

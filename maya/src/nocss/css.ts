@@ -12,6 +12,7 @@ import type {
   ClassNamesHint,
   ClassNamesPhrase,
   CssPhraseValue,
+  InvalidClassNames,
 } from "./utils";
 
 type CssResult<Phrase extends string> =
@@ -24,6 +25,19 @@ type CssInput<ClassName extends string> =
   | MaybeSignal<ClassNamesHint<ClassName> | null | undefined>
   | MaybeSignal<CssPhraseValue | null | undefined>
   | CssResult<string>;
+
+type UnknownNoCssClassName<ClassName extends string> = {
+  readonly __nocssUnknownClassName: `Unknown NoCSS class name: '${ClassName}'`;
+};
+
+type ValidPhraseInput<Input, ClassNames extends string> =
+  Extract<PlainValue<Input>, string> extends infer Phrase extends string
+    ? [InvalidClassNames<Phrase, ClassNames>] extends [never]
+      ? MaybeSignal<ClassNamesPhrase<Phrase, ClassNames> | null | undefined>
+      : UnknownNoCssClassName<
+          Extract<InvalidClassNames<Phrase, ClassNames>, string>
+        >
+    : never;
 
 // The one inference helper: validate the value of every plain/signal argument.
 type ValidPhrases<
@@ -38,14 +52,7 @@ type ValidPhrases<
           CssPhraseValue | null | undefined
         >
       ? Phrases[Index]
-      : MaybeSignal<
-          | ClassNamesPhrase<
-              Extract<PlainValue<Phrases[Index]>, string>,
-              ClassNames
-            >
-          | null
-          | undefined
-        >;
+      : ValidPhraseInput<Phrases[Index], ClassNames>;
 };
 
 type ValidNullablePhrase<
@@ -68,10 +75,11 @@ type Css<ClassName extends string> = {
     className: AtomicClassName,
   ): StaticCssResult<AtomicClassName>;
   <const Phrases extends readonly CssInput<ClassName>[]>(
-    // The conditional runs after inference, so one bad argument cannot hide
-    // behind the valid arguments in the tuple.
+    // Validate after inference, preserving the rejected word in the error.
     ...phrases: Phrases &
-      ([Phrases] extends [ValidPhrases<Phrases, ClassName>] ? unknown : never)
+      ([Phrases] extends [ValidPhrases<Phrases, ClassName>]
+        ? unknown
+        : ValidPhrases<Phrases, ClassName>)
   ): CssResult<string>;
   when<
     Condition,
