@@ -37,11 +37,12 @@ export const karma: Karma = {
   },
   git: { ignore: ["stage", "node_modules"] },
   vscode: { settings: { "deno.enable": false, "files.exclude": {} } },
+  zed: { settings: { file_scan_exclusions: [] } },
 };`),
   Section(
     "The important distinction",
     Note(
-      "karma.ts is the uber-level source configuration. The package.json, .gitignore, and VS Code settings are generated or synchronized using this file by Brahma commands.",
+      "karma.ts is the uber-level source configuration. The package.json, .gitignore, VS Code settings, and Zed settings are generated or synchronized using this file by Brahma commands.",
     ),
   ),
 );

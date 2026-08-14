@@ -255,6 +255,9 @@ describe("install and uninstall commands", () => {
     expect(
       await Bun.file(path.join(root, ".vscode/settings.json")).json(),
     ).toEqual(karma.vscode.settings);
+    expect(
+      await Bun.file(path.join(root, ".zed/settings.json")).json(),
+    ).toEqual(karma.zed?.settings);
     expect(await Bun.file(path.join(root, ".gitignore")).text()).toBe(
       karma.git.ignore.join("\n"),
     );
@@ -262,6 +265,17 @@ describe("install and uninstall commands", () => {
       karma.tsconfig,
     );
     expect(commands).toContainEqual({ command: "bun i", cwd: root });
+    log.mockRestore();
+  });
+
+  test("supports legacy karma config without Zed settings", async () => {
+    const karma = makeKarma();
+    delete karma.zed;
+    const log = spyOn(console, "log").mockImplementation(() => {});
+    await expectProcessExit(() =>
+      installPackageOrEverything([], karma, runCommand),
+    );
+    expect(await exists(path.join(root, ".zed"))).toBe(false);
     log.mockRestore();
   });
 

@@ -25,7 +25,7 @@ export const BrahmaKarmaMaya = Article(
         Maya runtime`),
   Bullets(
     "Maya: m.* factories, components, lifecycle events, and reactive DOM updates.",
-    "Karma: build paths, route naming, serving options, package metadata, Git, and VS Code settings.",
+    "Karma: build paths, route naming, serving options, package metadata, Git, VS Code settings, and Zed settings.",
     "Brahma: create, install, stage, publish, reset, and uninstall commands.",
   ),
 );
@@ -64,7 +64,7 @@ export const Create = Article(
 export const Install = Article(
   m.H3({ class: "black", children: "brahma install" }),
   Paragraphs(
-    "With no package argument, install uses karma.ts to write package.json, .vscode/settings.json, and .gitignore, then runs bun install. This keeps generated project files aligned with the typed configuration.",
+    "With no package argument, install uses karma.ts to write package.json, .vscode/settings.json, .zed/settings.json, and .gitignore, then runs bun install. This keeps generated project files aligned with the typed configuration.",
     "With a package argument, Brahma adds that package with Bun and synchronizes the resulting dependency back into karma.ts.",
   ),
   Code("brahma install\nbrahma install @cyftec/maya\nbrahma install lodash"),

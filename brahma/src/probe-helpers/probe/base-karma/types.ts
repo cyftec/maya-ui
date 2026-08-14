@@ -89,6 +89,13 @@ export type Karma = {
       };
     };
   };
+  zed?: {
+    settings: {
+      file_scan_exclusions: string[];
+      file_scan_inclusions?: string[];
+      [setting: string]: unknown;
+    };
+  };
   tsconfig?: TsConfig;
 };
 

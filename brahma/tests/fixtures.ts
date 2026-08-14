@@ -40,6 +40,7 @@ export const makeKarma = (
       disposable: [
         "stage",
         ".vscode",
+        ".zed",
         "node_modules",
         "bun.lock",
         "package.json",
@@ -64,7 +65,13 @@ export const makeKarma = (
       "files.exclude": { stage: false, node_modules: true },
     },
   },
-  git: { ignore: ["node_modules", "stage", "package.json"] },
+  zed: {
+    settings: {
+      file_scan_exclusions: ["node_modules"],
+      file_scan_inclusions: ["stage"],
+    },
+  },
+  git: { ignore: ["node_modules", "stage", "package.json", ".zed"] },
 });
 
 export const karmaModuleText = (karma: Karma) =>

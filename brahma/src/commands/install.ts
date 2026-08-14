@@ -18,6 +18,18 @@ const installDotVsCodeDir = async (appRootPath: string, karma: Karma) => {
   );
 };
 
+const installDotZedDir = async (appRootPath: string, karma: Karma) => {
+  if (!karma.zed) return;
+
+  const dotZedPath = `${appRootPath}/.zed`;
+  await createDir(dotZedPath);
+  const settingsPath = `${dotZedPath}/settings.json`;
+  await Bun.write(
+    settingsPath,
+    JSON.stringify(karma.zed.settings, null, "\t"),
+  );
+};
+
 const installGitIgnore = async (appRootPath: string, karma: Karma) => {
   const gitIgnorePath = `${appRootPath}/.gitignore`;
   const gitIgnoreText = karma.git.ignore.join("\n");
@@ -62,6 +74,7 @@ export const installAllConfigsAndPackages = async (
   console.log(`\nInstalling latest config and packages...`);
   await installPackages(appRootPath, karma, runCommand);
   await installDotVsCodeDir(appRootPath, karma);
+  await installDotZedDir(appRootPath, karma);
   await installGitIgnore(appRootPath, karma);
   await installTsConfig(appRootPath, karma);
 };
