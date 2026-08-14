@@ -1,5 +1,5 @@
 import { component, m } from "@cyftec/maya/core";
-import { tmpl } from "@cyftec/maya/signals";
+import { css } from "../../../styles";
 
 type PhotoFrameProps = {
   frameSrc: string;
@@ -10,29 +10,33 @@ type PhotoFrameProps = {
 export const PhotoFrame = component<PhotoFrameProps>(
   ({ frameSrc, photoSrc, isBulbOn }) =>
     m.Div({
-      class: "flex justify-center",
+      class: css("flex justify-center"),
       children: [
         m.Div({
-          class: "absolute",
+          class: css("absolute"),
           children: [
             m.Div({
-              class: tmpl`absolute z-3 ${() =>
-                isBulbOn.value ? "bg-transparent" : "bg-black-90"}`,
+              class: css(
+                "absolute z-3",
+                css.when(isBulbOn, "bg-transparent", "bg-black-90"),
+              ),
               style: "height: 300px; width: 250px; ",
             }),
             m.Img({
-              class: "absolute z-2",
+              class: css("absolute z-2 mw-100"),
               height: "300px",
               width: "300px",
               src: frameSrc,
             }),
             m.Div({
-              class: tmpl`absolute z-1 ${() =>
-                isBulbOn.value ? "bg-transparent" : "bg-black-90"}`,
+              class: css(
+                `absolute z-1`,
+                css.when(isBulbOn, "bg-transparent", "bg-black-90"),
+              ),
               style: "height: 300px; width: 250px; ",
             }),
             m.Img({
-              class: "absolute--fill z-0",
+              class: css("absolute--fill z-0"),
               height: "250px",
               width: "250px",
               src: photoSrc,

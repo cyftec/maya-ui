@@ -8,10 +8,12 @@ const bulbStates = signal(
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, i) => ({ value, i })),
 );
 const filaColor = signal<ClassName>("green");
+const greenColor = css("green");
+const redColor = css("red");
 const changeFilaColor = (e: Event) => {
   e.stopPropagation();
-  if (filaColor.value === "red") filaColor.value = css("green");
-  else filaColor.value = css("red");
+  if (filaColor.value === "red") filaColor.value = greenColor;
+  else filaColor.value = redColor;
 };
 
 type BulbProps = {

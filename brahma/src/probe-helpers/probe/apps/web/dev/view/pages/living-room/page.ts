@@ -27,6 +27,7 @@ export default m.Html({
       ],
     }),
     m.Body({
+      class: css("ma0"),
       children: [
         m.Script({ src: "main.js", defer: true }),
         m.Div({

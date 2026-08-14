@@ -17,6 +17,7 @@ export default m.Html({
           name: "viewport",
           content: "width=device-width, initial-scale=1.0",
         }),
+        m.Link({ rel: "stylesheet", href: "/assets/styles.css" }),
       ],
     }),
     m.Body({
