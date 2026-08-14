@@ -3,8 +3,7 @@ import {
   type AppClassNames,
   type AtomicClassOverrides,
   type BaseClassName,
-  type CheckedCompoundClasses,
-  type CssPhraseValue,
+  type ClassNamesPhrase,
   type MediaConstraintsOverrides,
 } from "@cyftec/maya/nocss";
 
@@ -26,26 +25,14 @@ export const overriddenBaseClasses = {
   },
 } as const satisfies AtomicClassOverrides;
 
-type AtomicClassName = AppClassNames<
-  BaseClassName,
-  typeof overriddenBaseClasses
->;
-
 export const compoundClasses = {
   card: "bg-theme pa2 b--light-silver br4",
 } as const;
 
-type CompoundClassesAreValid = CheckedCompoundClasses<
-  typeof compoundClasses,
-  AtomicClassName
->;
-
+export type { ClassNamesPhrase };
 export type ClassName = AppClassNames<
   BaseClassName,
   typeof overriddenBaseClasses,
   typeof compoundClasses
 >;
-
-export type { CssPhraseValue };
-
 export const css = getCss<ClassName>();

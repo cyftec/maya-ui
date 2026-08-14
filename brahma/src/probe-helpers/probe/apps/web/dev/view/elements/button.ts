@@ -1,9 +1,9 @@
 import { Child, component, m } from "@cyftec/maya/core";
-import { css, type CssPhraseValue } from "../styles";
+import { css, type ClassNamesPhrase } from "../styles";
 
 type ButtonProps = {
-  classNames?: CssPhraseValue;
-  colors?: CssPhraseValue;
+  classNames?: ClassNamesPhrase;
+  colors?: ClassNamesPhrase;
   label: Child;
   onTap: () => void;
 };

@@ -1,9 +1,7 @@
-import type { MaybeSignal } from "@cyftec/signals";
-
 // `keyof` applied directly to a union returns only keys shared by every
 // member. The breakpoint maps have no common utility keys, so distribute the
 // lookup over each member before collecting its keys.
-export type KeysOfUnion<T> = T extends T ? keyof T : never;
+type KeysOfUnion<T> = T extends T ? keyof T : never;
 
 type ClassNameFromSelector<Selector extends string> =
   Selector extends `${infer ClassName}:${string}` ? ClassName : Selector;
@@ -17,73 +15,24 @@ export type ClassNamesFrom<FactoryClasses extends Record<string, object>> =
     "constraints"
   >;
 
-/**
- * CSS class names validation utility types
- */
-type InvalidWords<
+/** Returns the first word in a phrase that is not a configured class. */
+export type InvalidClassName<
   Phrase extends string,
   ClassName extends string,
 > = Phrase extends `${infer Word} ${infer Rest}`
   ? Word extends ClassName
-    ? InvalidWords<Rest, ClassName>
+    ? InvalidClassName<Rest, ClassName>
     : Word
   : Phrase extends ClassName | ""
     ? never
     : Phrase;
 
-/** Class names in a phrase that are absent from the configured class maps. */
-export type InvalidClassNames<
-  Phrase extends string,
-  ClassName extends string,
-> = InvalidWords<Phrase, ClassName>;
-
-/**
- * Keeps known classes in editor completions while accepting a phrase during
- * inference. Validation is performed separately by `InvalidWords`.
- *
- * Avoid constructing `${string} ${ClassName}` here: with the factory map that
- * eagerly materialises thousands of template-literal union members, and the
- * type is subsequently used in generic constraints and `Record` keys.
- */
-export type ClassNamesHint<ClassName extends string> =
-  | ClassName
-  | (string & {});
-
-export type PhraseConstrain<
-  Phrase extends string,
-  ClassName extends string,
-> = ClassNamesHint<ClassName> &
-  ([InvalidWords<Phrase, ClassName>] extends [never] ? unknown : never);
-
-/** A space-separated phrase containing only known class names. */
-export type ClassNamesPhrase<
-  Phrase extends string,
-  ClassName extends string,
-> = string extends Phrase
-  ? never
-  : // Keep the broad hint union intact until TypeScript infers the actual phrase.
-    ClassNamesHint<ClassName> extends Phrase
-    ? Phrase
-    : Phrase & PhraseConstrain<Phrase, ClassName>;
-
-/** A public, readable name for narrowing a class-name phrase variable. */
-export type CssPhrase<
-  Phrase extends string,
-  ClassName extends string = string,
-> = ClassNamesPhrase<Phrase, ClassName>;
-
 declare const cssPhraseValue: unique symbol;
 
 /** A CSS phrase that has already been validated by a NoCSS helper. */
-export type CssPhraseValue = string & {
+export type ClassNamesPhrase = string & {
   readonly [cssPhraseValue]: true;
 };
-
-/** A plain or signalled class-name phrase. */
-export type CssValue<
-  Phrase extends string,
-  ClassName extends string = string,
-> = MaybeSignal<CssPhrase<Phrase, ClassName>>;
 
 export type AtomicClassGroup = "default" | "ns" | "m" | "l";
 
@@ -103,14 +52,14 @@ export type MediaConstraintsOverrides = Partial<{
   [Group in keyof MediaConstraints]: Partial<MediaConstraints[Group]>;
 }>;
 
-/**
- * Combines factory names, app atomic names, and app compound names without
- * importing either map at runtime.
- */
+/** Combines factory, override, and compound names without runtime imports. */
 export type AppClassNames<
   BaseClassNames extends string,
   Overrides extends Record<string, object>,
-  CompoundClasses extends Record<string, string> = {},
+  CompoundClasses extends ValidCompoundClasses<
+    CompoundClasses,
+    BaseClassNames | ClassNamesFrom<Overrides>
+  > = {},
 > =
   | BaseClassNames
   | ClassNamesFrom<Overrides>
@@ -120,20 +69,9 @@ type ValidCompoundClasses<
   CompoundClasses extends Record<string, string>,
   AtomicClassNames extends string,
 > = {
-  [Name in keyof CompoundClasses]: CssPhrase<
-    Extract<CompoundClasses[Name], string>,
-    AtomicClassNames
-  >;
+  [Name in keyof CompoundClasses]: [
+    InvalidClassName<Extract<CompoundClasses[Name], string>, AtomicClassNames>,
+  ] extends [never]
+    ? Extract<CompoundClasses[Name], string>
+    : never;
 };
-
-/**
- * Type-only validation for a compound-class map. It keeps the map out of the
- * browser bundle while ensuring every compound value uses atomic names only.
- */
-export type CheckedCompoundClasses<
-  CompoundClasses extends ValidCompoundClasses<
-    CompoundClasses,
-    AtomicClassNames
-  >,
-  AtomicClassNames extends string,
-> = true;

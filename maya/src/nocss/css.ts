@@ -4,127 +4,104 @@ import {
   valueIsSignal,
   type DerivedSignal,
   type MaybeSignal,
-  type PlainValue,
   type Signal,
 } from "@cyftec/signals";
 import { NoCssRegistry } from "./registry";
-import type {
-  ClassNamesHint,
-  ClassNamesPhrase,
-  CssPhraseValue,
-  InvalidClassNames,
-} from "./utils";
+import type { ClassNamesPhrase, InvalidClassName } from "./utils";
 
-type CssResult<Phrase extends string> =
-  | (Phrase & CssPhraseValue)
-  | DerivedSignal<Phrase & CssPhraseValue>;
+type Nullish = null | undefined;
 
-type StaticCssResult<Phrase extends string> = Phrase & CssPhraseValue;
+type CssResult<Phrase extends string = string> =
+  | (Phrase & ClassNamesPhrase)
+  | DerivedSignal<Phrase & ClassNamesPhrase>;
 
-type CssInput<ClassName extends string> =
-  | MaybeSignal<ClassNamesHint<ClassName> | null | undefined>
-  | MaybeSignal<CssPhraseValue | null | undefined>
-  | CssResult<string>;
+type ClassNameHint<ClassName extends string> = ClassName | (string & {});
+type CssInput = MaybeSignal<string | Nullish>;
 
 type UnknownNoCssClassName<ClassName extends string> = {
   readonly __nocssUnknownClassName: `Unknown NoCSS class name: '${ClassName}'`;
 };
 
-type ValidPhraseInput<Input, ClassNames extends string> =
-  Extract<PlainValue<Input>, string> extends infer Phrase extends string
-    ? [InvalidClassNames<Phrase, ClassNames>] extends [never]
-      ? MaybeSignal<ClassNamesPhrase<Phrase, ClassNames> | null | undefined>
-      : UnknownNoCssClassName<
-          Extract<InvalidClassNames<Phrase, ClassNames>, string>
-        >
-    : never;
-
-// The one inference helper: validate the value of every plain/signal argument.
-type ValidPhrases<
-  Phrases extends readonly CssInput<ClassNames>[],
-  ClassNames extends string,
-> = {
-  [Index in keyof Phrases]: Phrases[Index] extends CssResult<string>
-    ? Phrases[Index]
-    : Phrases[Index] extends MaybeSignal<ClassNames | null | undefined>
-      ? Phrases[Index]
-    : Phrases[Index] extends MaybeSignal<
-          CssPhraseValue | null | undefined
-        >
-      ? Phrases[Index]
-      : ValidPhraseInput<Phrases[Index], ClassNames>;
-};
-
-type ValidNullablePhrase<
-  ClassName extends string,
-  NullablePhrase extends MaybeSignal<
-    ClassNamesHint<ClassName> | null | undefined
-  >,
-> = MaybeSignal<
-  | Extract<PlainValue<NullablePhrase>, null | undefined>
-  | ClassNamesPhrase<Extract<PlainValue<NullablePhrase>, string>, ClassName>
+type PhraseFrom<Input extends CssInput> = Extract<
+  Input extends Signal<infer Phrase> ? Phrase : Input,
+  string
 >;
+
+type Checked<Value, Phrase extends string, ClassName extends string> = [
+  InvalidClassName<Phrase, ClassName>,
+] extends [never]
+  ? Value
+  : UnknownNoCssClassName<Extract<InvalidClassName<Phrase, ClassName>, string>>;
+
+type PhraseInput<Phrase extends string, ClassName extends string> = Phrase &
+  Checked<Phrase, Phrase, ClassName>;
+
+type CheckedInput<Input extends CssInput, ClassName extends string> =
+  Input extends MaybeSignal<ClassNamesPhrase | Nullish>
+    ? Input
+    : Input extends MaybeSignal<ClassName | Nullish>
+      ? Input
+      : Checked<Input, PhraseFrom<Input>, ClassName>;
+
+type CheckedInputs<
+  Inputs extends readonly CssInput[],
+  ClassName extends string,
+> = {
+  [Index in keyof Inputs]: CheckedInput<Inputs[Index], ClassName>;
+};
 
 type CaseValue<Subject> =
   Subject extends Signal<infer Value>
     ? MaybeSignal<Value>
     : MaybeSignal<Subject>;
 
+type CheckedCases<
+  Cases extends Record<string, unknown>,
+  ClassName extends string,
+> = Checked<Cases, Extract<keyof Cases, string>, ClassName>;
+
 type Css<ClassName extends string> = {
   <const AtomicClassName extends ClassName>(
     className: AtomicClassName,
-  ): StaticCssResult<AtomicClassName>;
-  <const Phrases extends readonly CssInput<ClassName>[]>(
+  ): AtomicClassName & ClassNamesPhrase;
+  <const Inputs extends readonly CssInput[]>(
     // Validate after inference, preserving the rejected word in the error.
-    ...phrases: Phrases &
-      ([Phrases] extends [ValidPhrases<Phrases, ClassName>]
+    ...phrases: Inputs &
+      ([Inputs] extends [CheckedInputs<Inputs, ClassName>]
         ? unknown
-        : ValidPhrases<Phrases, ClassName>)
-  ): CssResult<string>;
+        : CheckedInputs<Inputs, ClassName>)
+  ): CssResult;
   when<
     Condition,
-    const TruthyPhrase extends ClassNamesHint<ClassName>,
-    const FalsyPhrase extends ClassNamesHint<ClassName>,
+    const TruthyPhrase extends ClassNameHint<ClassName>,
+    const FalsyPhrase extends ClassNameHint<ClassName>,
   >(
     truthyCondition: Condition,
-    truthyClassNames: ClassNamesPhrase<TruthyPhrase, ClassName>,
-    falsyClassNames: ClassNamesPhrase<FalsyPhrase, ClassName>,
+    truthyClassNames: PhraseInput<TruthyPhrase, ClassName>,
+    falsyClassNames: PhraseInput<FalsyPhrase, ClassName>,
   ): CssResult<TruthyPhrase | FalsyPhrase>;
   cases<
     Subject,
-    const Phrase extends ClassNamesHint<ClassName>,
-    const DefaultPhrase extends ClassNamesHint<ClassName>,
+    const Cases extends Record<string, CaseValue<Subject>>,
+    const DefaultPhrase extends ClassNameHint<ClassName> = "",
   >(
     subject: Subject,
-    cases: {
-      [Key in Phrase]: Key extends ClassNamesPhrase<Key, ClassName>
-        ? CaseValue<Subject>
-        : never;
-    } & Partial<Record<ClassNamesHint<ClassName>, CaseValue<Subject>>>,
-    defaultCase?: ClassNamesPhrase<DefaultPhrase, ClassName>,
-  ): CssResult<Phrase | DefaultPhrase | "">;
-  ifNullable<const StaticPhrase extends ClassNamesHint<ClassName>>(
-    nullableClassNames: MaybeSignal<CssPhraseValue | null | undefined>,
-    staticClassNames: ClassNamesPhrase<StaticPhrase, ClassName>,
-  ): CssResult<CssPhraseValue>;
-  ifNullable<const StaticPhrase extends ClassNamesHint<ClassName>>(
-    nullableClassNames: MaybeSignal<ClassName | null | undefined>,
-    staticClassNames: ClassNamesPhrase<StaticPhrase, ClassName>,
-  ): CssResult<CssPhraseValue>;
+    cases: Cases &
+      ([Cases] extends [CheckedCases<Cases, ClassName>]
+        ? unknown
+        : CheckedCases<Cases, ClassName>),
+    defaultCase?: PhraseInput<DefaultPhrase, ClassName>,
+  ): CssResult<Extract<keyof Cases, string> | DefaultPhrase | "">;
   ifNullable<
-    const NullablePhrase extends MaybeSignal<
-      ClassNamesHint<ClassName> | null | undefined
-    >,
-    const StaticPhrase extends ClassNamesHint<ClassName>,
+    const NullablePhrase extends CssInput,
+    const StaticPhrase extends ClassNameHint<ClassName>,
   >(
     nullableClassNames: NullablePhrase &
-      ([NullablePhrase] extends [
-        ValidNullablePhrase<ClassName, NullablePhrase>,
-      ]
+      ([NullablePhrase] extends [CheckedInput<NullablePhrase, ClassName>]
         ? unknown
-        : never),
-    staticClassNames: ClassNamesPhrase<StaticPhrase, ClassName>,
-  ): CssResult<CssPhraseValue>;
+        : CheckedInput<NullablePhrase, ClassName>),
+    staticClassNames: PhraseInput<StaticPhrase, ClassName>,
+  ): CssResult;
 };
 
 /**
@@ -159,9 +136,9 @@ export const getCss = function <ClassName extends string>() {
     const evaluator = () =>
       value(truthyCondition) ? truthyClasses : falsyClasses;
 
-    return (valueIsSignal(truthyCondition)
-      ? derive(evaluator)
-      : evaluator()) as CssResult<string>;
+    return (
+      valueIsSignal(truthyCondition) ? derive(evaluator) : evaluator()
+    ) as CssResult<string>;
   };
 
   const cases = <Subject>(
@@ -195,7 +172,9 @@ export const getCss = function <ClassName extends string>() {
       valueIsSignal(subject) ||
       registeredCases.some(([, subjectCase]) => valueIsSignal(subjectCase));
 
-    return (isSignalledInput ? derive(evaluator) : evaluator()) as CssResult<string>;
+    return (
+      isSignalledInput ? derive(evaluator) : evaluator()
+    ) as CssResult<string>;
   };
 
   const ifNullable = <NullablePhrase extends string | null | undefined>(
@@ -211,9 +190,9 @@ export const getCss = function <ClassName extends string>() {
         : NoCssRegistry.registerClassName(nullableClasses);
     };
 
-    return (valueIsSignal(nullableClassNames)
-      ? derive(evaluator)
-      : evaluator()) as CssResult<string>;
+    return (
+      valueIsSignal(nullableClassNames) ? derive(evaluator) : evaluator()
+    ) as CssResult<string>;
   };
 
   nocss.when = when as Css<ClassName>["when"];

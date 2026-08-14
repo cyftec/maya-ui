@@ -1,9 +1,9 @@
 import { component, m } from "@cyftec/maya/core";
-import { css, type CssPhraseValue } from "../../../styles";
+import { css, type ClassNamesPhrase } from "../../../styles";
 
 type BulbProps = {
   isOn: boolean;
-  classNames?: CssPhraseValue;
+  classNames?: ClassNamesPhrase;
 };
 
 export const Bulb = component<BulbProps>(({ isOn, classNames }) =>

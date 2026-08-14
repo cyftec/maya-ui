@@ -5,31 +5,16 @@ import type {
   AppClassNames,
   AtomicClassOverrides,
   BaseClassName,
-  CheckedCompoundClasses,
-  CssPhrase,
-  CssPhraseValue,
-  CssValue,
+  ClassNamesPhrase,
 } from "../src/nocss/index";
 
 const overriddenBaseClasses = {
   default: { theme: "", "bg-theme": "" },
 } as const satisfies AtomicClassOverrides;
 
-type AtomicClassName = AppClassNames<
-  BaseClassName,
-  typeof overriddenBaseClasses
->;
-
 const compoundClasses = {
   card: "bg-theme pa2 b--light-silver br4",
 } as const;
-
-type CompoundClassesAreValid = CheckedCompoundClasses<
-  typeof compoundClasses,
-  AtomicClassName
->;
-const compoundClassesAreValid: CompoundClassesAreValid = true;
-void compoundClassesAreValid;
 
 type AppClassName = AppClassNames<
   BaseClassName,
@@ -42,9 +27,14 @@ const css = getCss<AppClassName>();
 css("pa2 bg-theme");
 css("pointer hover-bg-washed-yellow");
 css("card");
+css(null, undefined);
 
 const atomicColor = signal<AppClassName>("bg-theme");
 atomicColor.value = css("bg-theme");
+
+const optionalAtomicClass = signal<AppClassName | undefined>(undefined);
+css(optionalAtomicClass);
+css.ifNullable(optionalAtomicClass, "bg-yellow");
 
 css.when(true, "bg-theme", "bg-yellow");
 css.cases(
@@ -62,47 +52,47 @@ css.ifNullable("red" as "red" | undefined, "bg-green white");
 declare const appClassName: AppClassName | undefined;
 css.ifNullable(appClassName, "bg-yellow");
 
-declare const validatedColor: CssPhraseValue;
+declare const validatedColor: ClassNamesPhrase;
 css.ifNullable(validatedColor, "card");
 
+const optionalPhrase = signal<ClassNamesPhrase | undefined>(undefined);
+css(optionalPhrase);
+css.ifNullable(optionalPhrase, "card");
+
 const ColorButton = component<{
-  classNames?: CssPhraseValue;
+  classNames?: ClassNamesPhrase;
   color?: AppClassName;
 }>(({ classNames, color }) =>
   m.Button({
-    class: css(
-      "pa2",
-      css.ifNullable(color, "bg-yellow"),
-      classNames,
-    ),
+    class: css("pa2", css.ifNullable(color, "bg-yellow"), classNames),
   }),
 );
 ColorButton({
-  classNames: css("card"),
+  classNames: css("card pa2"),
   color: css.when(signal(true), "bg-theme", "bg-yellow"),
 });
 
-const buttonColor = css.when(
-  signal(true),
-  "bg-theme pa2",
-  "bg-yellow pa2",
-);
+const buttonColor = css.when(signal(true), "bg-theme pa2", "bg-yellow pa2");
 // @ts-expect-error Atomic color props do not accept a multi-class phrase.
 ColorButton({ color: buttonColor });
+ColorButton({ classNames: buttonColor });
 
-const color: CssPhrase<"red" | "green"> = "green";
-const colorValue: CssValue<"red" | "green"> = signal(color);
+const colorValue = signal<"red" | "green">("green");
 css(colorValue);
 
 // @ts-expect-error Invalid words in a phrase must be rejected.
 css("pa2 missing");
 // @ts-expect-error Every argument is validated independently.
 css("pa2", "missing");
+declare const unvalidatedClassNames: string;
+// @ts-expect-error Broad strings have not been validated by NoCSS.
+css(unvalidatedClassNames);
 const invalidCompoundClasses = { invalidCard: "card missing" } as const;
-type InvalidCompoundClassesAreRejected = CheckedCompoundClasses<
-  // @ts-expect-error Compound values may contain only atomic class names.
-  typeof invalidCompoundClasses,
-  AtomicClassName
+type InvalidCompoundClassesAreRejected = AppClassNames<
+  BaseClassName,
+  typeof overriddenBaseClasses,
+  // @ts-expect-error Compound values may contain only available atomic classes.
+  typeof invalidCompoundClasses
 >;
 declare const invalidCompoundClassesAreRejected: InvalidCompoundClassesAreRejected;
 void invalidCompoundClassesAreRejected;
