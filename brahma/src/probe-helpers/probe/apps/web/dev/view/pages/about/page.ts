@@ -1,5 +1,6 @@
 import { m } from "@cyftec/maya/core";
 import { Header } from "../../elements";
+import { css } from "../../styles";
 
 export default m.Html({
   lang: "en",
@@ -22,6 +23,7 @@ export default m.Html({
       children: [
         m.Script({ src: "main.js", defer: true }),
         m.Div({
+          class: css("card"),
           children: [Header(), m.H1("About Page")],
         }),
       ],

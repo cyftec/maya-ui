@@ -18,6 +18,8 @@ type CssResult<Phrase extends string> =
   | (Phrase & CssPhraseValue)
   | DerivedSignal<Phrase & CssPhraseValue>;
 
+type StaticCssResult<Phrase extends string> = Phrase & CssPhraseValue;
+
 type CssInput<ClassName extends string> =
   | MaybeSignal<ClassNamesHint<ClassName> | null | undefined>
   | MaybeSignal<CssPhraseValue | null | undefined>
@@ -62,6 +64,9 @@ type CaseValue<Subject> =
     : MaybeSignal<Subject>;
 
 type Css<ClassName extends string> = {
+  <const AtomicClassName extends ClassName>(
+    className: AtomicClassName,
+  ): StaticCssResult<AtomicClassName>;
   <const Phrases extends readonly CssInput<ClassName>[]>(
     // The conditional runs after inference, so one bad argument cannot hide
     // behind the valid arguments in the tuple.

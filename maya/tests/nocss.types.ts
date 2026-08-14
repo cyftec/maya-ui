@@ -42,6 +42,10 @@ const css = getCss<AppClassName>();
 css("pa2 bg-theme");
 css("pointer hover-bg-washed-yellow");
 css("card");
+
+const atomicColor = signal<AppClassName>("bg-theme");
+atomicColor.value = css("bg-theme");
+
 css.when(true, "bg-theme", "bg-yellow");
 css.cases(
   "enabled" as "enabled" | "disabled",
