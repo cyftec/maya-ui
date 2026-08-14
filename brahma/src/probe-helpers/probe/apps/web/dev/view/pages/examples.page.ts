@@ -1,20 +1,23 @@
 import { component, type DomEventValue, m } from "@cyftec/maya/core";
-import { op, signal, tmpl } from "@cyftec/maya/signals";
-import { Header } from "../elements/index.js";
+import { signal, tmpl } from "@cyftec/maya/signals";
+import { Header } from "../elements";
+import { ClassName, css } from "../styles";
 
 const topBulbIsOn = signal(false);
 const bulbStates = signal(
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, i) => ({ value, i })),
 );
-const filaColor = signal("green");
+const filaColor = signal<ClassName>("green");
+const greenColor = css("green");
+const redColor = css("red");
 const changeFilaColor = (e: Event) => {
   e.stopPropagation();
-  if (filaColor.value === "red") filaColor.value = "green";
-  else filaColor.value = "red";
+  if (filaColor.value === "red") filaColor.value = greenColor;
+  else filaColor.value = redColor;
 };
 
 type BulbProps = {
-  fontColor: string;
+  fontColor: ClassName;
   changeFontColor: DomEventValue<"onclick">;
 };
 
@@ -22,10 +25,10 @@ const Bulb = component<BulbProps>(({ fontColor, changeFontColor }) => {
   const isOn = signal(false);
 
   return m.Div({
-    class: tmpl`mv2 pa4 ${op(isOn).then("bg-yellow", "bg-light-gray")}`,
+    class: css(`mv2 pa4`, css.when(isOn, "bg-yellow", "bg-light-gray")),
     onclick: () => (isOn.value = !isOn.value),
     children: m.Div({
-      class: tmpl`pointer hover-bg-washed-yellow ${fontColor}`,
+      class: css(`pointer hover-bg-washed-yellow`, fontColor),
       children: tmpl`${() => (isOn.value ? "ON" : "OFF")}`,
       onclick: changeFontColor,
     }),
@@ -49,7 +52,7 @@ export default m.Html({
         }),
         m.Link({
           rel: "stylesheet",
-          href: "https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css",
+          href: "/assets/styles.css",
         }),
       ],
     }),
@@ -67,20 +70,22 @@ export default m.Html({
               subject: tmpl`${3}`,
               defaultCase: () =>
                 m.Div({
-                  class: `bg-silver pa4`,
+                  class: css(`bg-silver pa4`),
                   children: "DISCONNECTED",
                 }),
               cases: {
                 true: () =>
-                  m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
-                false: () => m.Div({ class: `bg-yellow pa4`, children: "ON" }),
+                  m.Div({ class: css(`bg-light-gray pa4`), children: "OFF" }),
+                false: () =>
+                  m.Div({ class: css(`bg-yellow pa4`), children: "ON" }),
               },
             }),
             m.If({
               subject: topBulbIsOn,
-              isTruthy: () => m.Div({ class: `bg-yellow pa4`, children: "ON" }),
+              isTruthy: () =>
+                m.Div({ class: css(`bg-yellow pa4`), children: "ON" }),
               isFalsy: () =>
-                m.Div({ class: `bg-light-gray pa4`, children: "OFF" }),
+                m.Div({ class: css(`bg-light-gray pa4`), children: "OFF" }),
             }),
             m.Button({
               onclick: () =>

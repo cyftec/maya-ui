@@ -45,6 +45,8 @@ export const showHelp = () => {
                |                      | If 'hard' reset mode is provided, it
                |                      | resets the app to absolute base version
                |                      | of karma, i.e. a karma for 'web' app mode.
+               |                      | Use '--stylesheet' to restore the configured NoCSS
+               |                      | stylesheet probe without changing karma.ts.
   --------------------------------------------------------------------------------
 
 
@@ -59,6 +61,7 @@ export const showHelp = () => {
     - brahma version latest       // upgrades to @cyftec/brahma@latest
     - brahma version 0.1.0        // shifts to @cyftec/brahma@0.1.0
     - brahma reset --hard         // resets the karma for 'web' app mode
+    - brahma reset --stylesheet   // restores the configured NoCSS stylesheet
 `);
 
   process.exit();

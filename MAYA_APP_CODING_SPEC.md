@@ -492,6 +492,7 @@ publishing Maya apps.
 bun add --global @cyftec/brahma
 brahma create my-app --web
 cd my-app
+brahma install
 brahma stage
 ```
 
@@ -508,8 +509,9 @@ Supported application modes are `web` (default), `pwa`, and `ext`.
 | `brahma version` | `brahma v` | Show the installed Brahma and configured Maya versions. |
 | `brahma version --v=<version\|latest>` | `brahma v` | Change the global CLI version. |
 
-`brahma stage` installs generated config and dependencies before building, so
-a separate initial `brahma install` is not required by the current workflow.
+Run `brahma install` before the first `brahma stage` (and whenever you need to
+regenerate the configuration or synchronize dependencies from `karma.ts`).
+`brahma stage` only builds, serves, and watches the installed app.
 
 ### 9.2 App source and view-root layout
 

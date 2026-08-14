@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import { exists, rm } from "node:fs/promises";
 import path from "node:path";
-import { buildApp } from "../src/builder/build.ts";
+import {
+  buildApp,
+  type BuildRuntime,
+} from "../src/builder/build.ts";
 import {
   getBuildFileNames,
   getBuiltJsMethodName,
@@ -16,7 +19,24 @@ const mayaCorePath = path.resolve(
   import.meta.dir,
   "../../maya/src/core/index.ts",
 );
+const mayaNoCssIndexPath = path.resolve(
+  import.meta.dir,
+  "../../maya/src/nocss/index.ts",
+);
 const roots: string[] = [];
+
+const buildRuntime = (
+  overrides: Partial<BuildRuntime> = {},
+): BuildRuntime => ({
+  build: Bun.build,
+  file: Bun.file,
+  write: Bun.write,
+  ...overrides,
+});
+
+const emptyBuildOutput = {
+  outputs: [],
+} as unknown as Awaited<ReturnType<typeof Bun.build>>;
 
 const newRoot = async () => {
   const root = await makeTempDir();
@@ -169,11 +189,69 @@ describe("build integration", () => {
   test("minifies and zips extension production output", async () => {
     const root = await newRoot();
     await writeBuildFixture(root);
+    await writeText(
+      path.join(root, "dev/view/assets/styles.ts"),
+      "export const overriddenBaseClasses = {} as const;",
+    );
     const karma = makeKarma({ appType: "ext", reloadPageOnFocus: true });
     await buildApp(root, karma, true);
     expect(await exists(path.join(root, "prod"))).toBe(false);
     expect(await exists(path.join(root, "prod.zip"))).toBe(true);
     expect(Bun.file(path.join(root, "prod.zip")).size).toBeGreaterThan(100);
+  }, 20_000);
+
+  test("writes nocss to the configured app-view assets directory", async () => {
+    const root = await newRoot();
+    const view = path.join(root, "dev/view");
+    await writeText(
+      path.join(view, "some-folder/custom-assets/styles.ts"),
+      `
+        import { getCss } from ${JSON.stringify(mayaNoCssIndexPath)};
+
+        export const overriddenBaseClasses = {
+          default: { "bg-theme": "{ background-color: #ee4440; }" },
+        } as const;
+        export const overriddenMediaConstraints = {
+          ns: { minWidth: "31em" },
+        } as const;
+        export const compoundClasses = { card: "bg-theme pa2" } as const;
+        export const css = getCss<"card" | "pa2" | "pa2-ns">();
+      `,
+    );
+    await writeText(
+      path.join(view, "page.ts"),
+      `
+        import { m } from ${JSON.stringify(mayaCorePath)};
+        import { css } from "./some-folder/custom-assets/styles";
+
+        export default m.Html({
+          lang: "en",
+          children: [
+            m.Head([m.Title("No CSS")]),
+            m.Body([m.Div({ class: css("card pa2 pa2-ns"), children: "No CSS" })]),
+          ],
+        });
+      `,
+    );
+
+    await buildApp(root, makeKarma({ assetsDirName: "my-assets" }), false);
+
+    const stage = path.join(root, "stage");
+    const stylesheetPath = path.join(
+      stage,
+      "my-assets/styles.css",
+    );
+    const stylesheet = await Bun.file(stylesheetPath).text();
+    const mainJs = await Bun.file(path.join(stage, "main.js")).text();
+    expect(stylesheet).toContain(".card{background-color:#ee4440}");
+    expect(stylesheet).toContain(".card,.pa2{padding:.5rem}");
+    expect(stylesheet).toContain("@media (min-width:31em){.pa2-ns{padding:.5rem}}");
+    expect(await exists(path.join(stage, "some-folder/custom-assets/styles.js"))).toBe(false);
+    expect(await exists(path.join(stage, "some-folder/custom-assets/styles.css"))).toBe(false);
+    expect(mainJs).not.toContain("#ee4440");
+    expect(mainJs).not.toContain("bg-theme pa2");
+    expect(mainJs).not.toContain("31em");
+    expect(mainJs).not.toContain("background-size: cover");
   }, 20_000);
 
   test("skips a page HTML error only when configured", async () => {
@@ -207,5 +285,106 @@ describe("build integration", () => {
     });
     exit.mockRestore();
     log.mockRestore();
+  });
+
+  test("reports a page bundle that contains no JavaScript output", async () => {
+    const root = await newRoot();
+    await writeText(
+      path.join(root, "dev/view/page.ts"),
+      pageSource("Empty bundle", "main.js"),
+    );
+    const log = spyOn(console, "log").mockImplementation(() => {});
+    const build = (async () => emptyBuildOutput) as typeof Bun.build;
+
+    await expect(
+      buildApp(root, makeKarma(), false, buildRuntime({ build })),
+    ).rejects.toThrow("no js");
+    expect(log).toHaveBeenCalledWith(emptyBuildOutput);
+    log.mockRestore();
+  });
+
+  test("rejects an empty page bundle before browser hydration", async () => {
+    const root = await newRoot();
+    await writeText(
+      path.join(root, "dev/view/page.ts"),
+      pageSource("Empty hydration", "main.js"),
+    );
+    let emptiedBundle = false;
+    const write = (async (destination: string, data: unknown) => {
+      if (!emptiedBundle && destination.endsWith("/main.js")) {
+        emptiedBundle = true;
+        return Bun.write(destination, "");
+      }
+      return Bun.write(destination, data as never);
+    }) as typeof Bun.write;
+    const log = spyOn(console, "log").mockImplementation(() => {});
+
+    await expect(
+      buildApp(
+        root,
+        makeKarma({ skipErrorAndBuildNext: true }),
+        false,
+        buildRuntime({ write }),
+      ),
+    ).rejects.toThrow("no js");
+    log.mockRestore();
+  });
+
+  test("reports JavaScript and stylesheet minification failures", async () => {
+    const build = (async (config: Parameters<typeof Bun.build>[0]) =>
+      config.minify ? emptyBuildOutput : Bun.build(config)) as typeof Bun.build;
+
+    const pageRoot = await newRoot();
+    await writeText(
+      path.join(pageRoot, "dev/view/page.ts"),
+      pageSource("Minify failure", "main.js"),
+    );
+    await expect(
+      buildApp(pageRoot, makeKarma(), true, buildRuntime({ build })),
+    ).rejects.toThrow("no js");
+
+    const stylesheetRoot = await newRoot();
+    await writeText(
+      path.join(stylesheetRoot, "dev/view/assets/styles.ts"),
+      "export const overriddenBaseClasses = {} as const;",
+    );
+    await expect(
+      buildApp(
+        stylesheetRoot,
+        makeKarma(),
+        false,
+        buildRuntime({ build }),
+      ),
+    ).rejects.toThrow("Unable to minify CSS");
+  });
+
+  test("reports the destination and data when writing a built asset fails", async () => {
+    const root = await newRoot();
+    await writeText(
+      path.join(root, "dev/view/worker.ts"),
+      "export const worker = true;",
+    );
+    const writeError = new Error("disk unavailable");
+    const write = (async () => {
+      throw writeError;
+    }) as typeof Bun.write;
+    const log = spyOn(console, "log").mockImplementation(() => {});
+
+    await expect(
+      buildApp(root, makeKarma(), false, buildRuntime({ write })),
+    ).rejects.toBe(writeError);
+    expect(log.mock.calls.flat()).toContain(path.join(root, "stage/worker.js"));
+    log.mockRestore();
+  });
+
+  test("rejects more than one NoCSS configuration in an app", async () => {
+    const root = await newRoot();
+    const source = "export const overriddenBaseClasses = {} as const;";
+    await writeText(path.join(root, "dev/view/assets/styles.ts"), source);
+    await writeText(path.join(root, "dev/view/nested/styles.ts"), source);
+
+    await expect(buildApp(root, makeKarma(), false)).rejects.toThrow(
+      "Only one 'styles.ts' nocss configuration file is supported per app.",
+    );
   });
 });

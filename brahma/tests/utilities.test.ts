@@ -32,6 +32,8 @@ import { ACCEPTED_COMMANDS, DS_STORE_REGEX } from "../src/utils/constants.ts";
 import {
   getAppSrcPath,
   getAppViewPath,
+  getAppAssetsDirPath,
+  getBuildAssetsDirPath,
   getBuildDirPath,
   getKarmaPaths,
   getPackageJsonPath,
@@ -118,6 +120,20 @@ describe("path and common helpers", () => {
     expect(
       getBuildDirPath("/tmp/app", "/tmp/app/dev/view/about", karma, true),
     ).toBe("/tmp/app/prod/about");
+    expect(getBuildAssetsDirPath("/tmp/app", karma, false)).toBe(
+      "/tmp/app/stage/assets",
+    );
+    expect(getAppAssetsDirPath("/tmp/app", karma)).toBe(
+      "/tmp/app/dev/view/assets",
+    );
+
+    karma.brahma.build.assetsDirName = "../outside";
+    expect(() => getBuildAssetsDirPath("/tmp/app", karma, false)).toThrow(
+      "assetsDirName must be a single directory name",
+    );
+    expect(() => getAppAssetsDirPath("/tmp/app", karma)).toThrow(
+      "assetsDirName must be a single directory name",
+    );
   });
 
   test("creates missing directories and tolerates existing directories", async () => {
@@ -336,6 +352,32 @@ describe("zip utility", () => {
 
     await rm(root, { recursive: true });
   });
+
+  test("rejects when the archive emits an error", async () => {
+    const { zipTheFolder } = await import("../src/utils/zip-the-folder.ts");
+    const archiveEvents = new EventEmitter();
+    const stream = new EventEmitter();
+    const failure = new Error("archive failed");
+    const archive = Object.assign(archiveEvents, {
+      directory: mock(() => archive),
+      pipe: mock(() => stream),
+      finalize: mock(() => archiveEvents.emit("error", failure)),
+    });
+    const dependencies = {
+      createArchive: mock(() => archive),
+      createWriteStream: mock(() => stream),
+    };
+
+    await expect(
+      zipTheFolder(
+        "/tmp/source",
+        "/tmp/output.zip",
+        dependencies as never,
+      ),
+    ).rejects.toBe(failure);
+    expect(archive.directory).toHaveBeenCalledWith("/tmp/source", false);
+    expect(archive.pipe).toHaveBeenCalledWith(stream);
+  });
 });
 
 describe("debouncer utility", () => {
@@ -394,6 +436,22 @@ describe("debouncer utility", () => {
     expect(log).toHaveBeenCalledWith(expect.stringContaining("Done in"));
     log.mockRestore();
   });
+
+  test("supersedes a pending call when another call resets the delay", async () => {
+    const { debouncer } = await import("../src/utils/debouncer.ts");
+    const callback = mock(async (_value: string) => {});
+    const delay = (milliseconds: number) =>
+      new Promise((resolve) => setTimeout(resolve, milliseconds));
+    const debouncedFn = debouncer(callback, 100, false);
+
+    debouncedFn("first");
+    await delay(50);
+    debouncedFn("second");
+    await delay(110);
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith("second");
+  });
 });
 
 describe("version and process utilities", () => {
@@ -402,7 +460,7 @@ describe("version and process utilities", () => {
     expect(getBrahmaPackageJsonPath()).toBe(
       path.join(getBrahmaRootPath(), "package.json"),
     );
-    expect(await getCurrentBrahmaVersion()).toBe("0.1.3");
+    expect(await getCurrentBrahmaVersion()).toBe("0.1.4");
   });
 
   test("exits for missing or versionless package metadata", async () => {

@@ -1,12 +1,10 @@
 import { buildApp } from "../builder";
-import { runShellCommand } from "../utils/command-runner.ts";
 import { getCWD, getKarma } from "../utils/common.ts";
 import { DS_STORE_REGEX } from "../utils/constants.ts";
 import { debouncer } from "../utils/debouncer.ts";
 import { watchFileChange } from "../utils/file-change-watcher.ts";
 import { runLocalServer } from "../utils/local-server.ts";
 import { startStdinListener } from "../utils/stdin-listener.ts";
-import { installAllConfigsAndPackages } from "./install.ts";
 
 type StageDependencies = {
   buildApp: typeof buildApp;
@@ -15,7 +13,6 @@ type StageDependencies = {
   startStdinListener: typeof startStdinListener;
   getCWD: typeof getCWD;
   getKarma: typeof getKarma;
-  installAllConfigsAndPackages: typeof installAllConfigsAndPackages;
   exit: typeof process.exit;
 };
 
@@ -26,7 +23,6 @@ const defaultDependencies: StageDependencies = {
   startStdinListener,
   getCWD,
   getKarma,
-  installAllConfigsAndPackages,
   exit: process.exit,
 };
 
@@ -39,8 +35,6 @@ export const stageApp = async (
     console.error(`Karma file not found`);
     return false;
   }
-  console.log(`Installing the configs and dependencies...\n`);
-  await dependencies.installAllConfigsAndPackages(cwd, karma, runShellCommand);
   console.log(`Staging app files and starting dev server...\n`);
   const watchDirPath = `${cwd}/${karma.brahma.serve.watchDir}`;
   const serveDirPath = `${cwd}/${karma.brahma.serve.serveDir}`;

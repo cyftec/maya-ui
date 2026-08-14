@@ -19,31 +19,72 @@ import {
 import type { BunFile } from "bun";
 import type { Karma } from "../probe-helpers/index.ts";
 import { setupBuild } from "./build-setup.ts";
-import { getAppViewPath, getBuildDirPath } from "../utils/file-path-getters.ts";
 import {
+  getAppViewPath,
+  getBuildAssetsDirPath,
+  getBuildDirPath,
+} from "../utils/file-path-getters.ts";
+import {
+  createDirRecursively,
   fileOrDirExists,
   getPathStats,
   readDir,
   removeFileOrDir,
 } from "../utils/node-methods.ts";
+import path from "node:path";
 
 type BuildData = {
   appRootPath: string;
   karma: Karma;
   isProd: boolean;
+  deferredStylesheets: DeferredStylesheet[];
+  runtime: BuildRuntime;
 };
+
+export type BuildRuntime = {
+  build: typeof Bun.build;
+  file: typeof Bun.file;
+  write: typeof Bun.write;
+};
+
+const defaultBuildRuntime: BuildRuntime = {
+  build: Bun.build,
+  file: Bun.file,
+  write: Bun.write,
+};
+
+type DeferredStylesheet = { sourcePath: string };
+
+type NoCssStylesheetConfig = {
+  overriddenBaseClasses?: Record<string, Record<string, string>>;
+  overriddenMediaConstraints?: Record<string, Record<string, string>>;
+  compoundClasses?: Record<string, string>;
+};
+
+type NoCssCompiler = {
+  buildNoCssStylesheet: (
+    usedClassNames: Iterable<string>,
+    config: NoCssStylesheetConfig,
+  ) => string;
+  getUsedNoCssClassNames: () => Set<string>;
+  resetNoCssBuildRegistry: () => void;
+};
+
+const noCssCompilerModule = "@cyftec/maya/nocss/compiler";
+const getNoCssCompiler = async () =>
+  (await import(noCssCompilerModule)) as NoCssCompiler;
 
 const buildData: BuildData = {} as BuildData;
 
 const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
   try {
-    const buildJs = await Bun.file(destJsPath).text();
+    const buildJs = await buildData.runtime.file(destJsPath).text();
     const buildJsWithoutExports = buildJs.split("export {")[0];
     const appMethodName = getBuiltJsMethodName(
       getFileNameFromPath(destJsPath),
       buildData.karma,
     );
-    const AsyncFunction = Object.getPrototypeOf(async () => {})
+    const AsyncFunction = Object.getPrototypeOf(buildHtmlFile)
       .constructor as new (body: string) => () => Promise<string | undefined>;
     const buildPageHtml = new AsyncFunction(`
       ${buildJsWithoutExports}
@@ -55,7 +96,7 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
     const pageHtml = await buildPageHtml();
     if (!pageHtml) throw new Error(NO_HTML_ERROR);
     const html = `<!DOCTYPE html>\n${pageHtml}`;
-    await Bun.write(destHtmlPath, html);
+    await buildData.runtime.write(destHtmlPath, html);
   } catch (error) {
     console.log(
       `\x1b[31m%s\x1b[0m`,
@@ -74,10 +115,19 @@ const buildHtmlFile = async (destHtmlPath: string, destJsPath: string) => {
   }
 };
 
+const buildCssFile = async (srcPath: string): Promise<string> => {
+  const config = (await nonCachedImport(srcPath)) as NoCssStylesheetConfig;
+  const compiler = await getNoCssCompiler();
+  return compiler.buildNoCssStylesheet(
+    compiler.getUsedNoCssClassNames(),
+    config,
+  );
+};
+
 const buildSourceTsFile = async (srcPath: string): Promise<Bun.BuildOutput> => {
   const tsConfigFilePath = `${buildData.appRootPath}/tsconfig.json`;
-  const tsconfigExists = await Bun.file(tsConfigFilePath).exists();
-  const jsBuild = await Bun.build({
+  const tsconfigExists = await buildData.runtime.file(tsConfigFilePath).exists();
+  const jsBuild = await buildData.runtime.build({
     entrypoints: [srcPath],
     tsconfig: tsconfigExists ? tsConfigFilePath : undefined,
   });
@@ -97,11 +147,11 @@ const buildJsFile = async (destJsPath: string, srcPagePath: string) => {
     ${buildHtmlFnDef}
   `;
 
-  await Bun.write(destJsPath, sanitizedJs);
+  await buildData.runtime.write(destJsPath, sanitizedJs);
 };
 
 const sanitizeJsFile = async (destJsPath: string) => {
-  const jsWithExports = await Bun.file(destJsPath).text();
+  const jsWithExports = await buildData.runtime.file(destJsPath).text();
   if (!jsWithExports) {
     throw new Error(NO_JS_ERROR);
   }
@@ -120,11 +170,11 @@ const sanitizeJsFile = async (destJsPath: string) => {
     }
   `;
 
-  await Bun.write(destJsPath, sanitizedJs);
+  await buildData.runtime.write(destJsPath, sanitizedJs);
 };
 
 const minifyJsFile = async (destJsPath: string) => {
-  const jsBuild = await Bun.build({
+  const jsBuild = await buildData.runtime.build({
     entrypoints: [destJsPath], // already built (unminified) js file
     minify: true,
   });
@@ -134,7 +184,7 @@ const minifyJsFile = async (destJsPath: string) => {
   if (!minifiedJsCode) {
     throw new Error(NO_JS_ERROR);
   }
-  await Bun.write(destJsPath, minifiedJsCode);
+  await buildData.runtime.write(destJsPath, minifiedJsCode);
 };
 
 const buildFile = async (srcFilePath: string, buildDirPath: string) => {
@@ -158,12 +208,18 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
     return;
   }
 
+  const stylesheetFileName =
+    buildData.karma.brahma.build.buildableStylesheetFileName;
   const manifestFileName =
     buildData.karma.brahma.build.buildableManifestFileName;
   const appSrcPath = getAppViewPath(buildData.appRootPath, buildData.karma);
   let filePath: string;
   let fileData: string | BunFile;
-  if (
+
+  if (getFileNameFromPath(srcFilePath) === stylesheetFileName) {
+    buildData.deferredStylesheets.push({ sourcePath: srcFilePath });
+    return;
+  } else if (
     srcFilePath.endsWith(manifestFileName) &&
     srcFilePath.slice(0, -(manifestFileName.length + 1)) === appSrcPath
   ) {
@@ -178,11 +234,11 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
   } else {
     const fileName = getFileNameFromPath(srcFilePath);
     filePath = `${buildDirPath}/${fileName}`;
-    fileData = Bun.file(srcFilePath);
+    fileData = buildData.runtime.file(srcFilePath);
   }
 
   try {
-    await Bun.write(filePath, fileData);
+    await buildData.runtime.write(filePath, fileData);
   } catch (error) {
     console.log(filePath);
     console.log(fileData);
@@ -190,10 +246,7 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
   }
 };
 
-export const buildDir = async (
-  dirPath: string,
-  isAppViewDir: boolean = false,
-): Promise<void> => {
+export const buildDir = async (dirPath: string): Promise<void> => {
   const buildDirPath = getBuildDirPath(
     buildData.appRootPath,
     dirPath,
@@ -221,13 +274,41 @@ export const buildDir = async (
     console.log(`Deleting empty built dir: ${buildDirPath}`);
     await removeFileOrDir(buildDirPath);
   }
+};
 
-  if (
-    isAppViewDir &&
-    buildData.isProd &&
-    buildData.karma.maya.appType === "ext"
-  ) {
-    await zipAndDeleteDir(buildDirPath, `${buildDirPath}.zip`);
+const buildDeferredStylesheets = async () => {
+  const stylesheets = buildData.deferredStylesheets;
+  if (stylesheets.length > 1) {
+    throw new Error(
+      `Only one '${buildData.karma.brahma.build.buildableStylesheetFileName}' nocss configuration file is supported per app.`,
+    );
+  }
+
+  const assetsDirPath = getBuildAssetsDirPath(
+    buildData.appRootPath,
+    buildData.karma,
+    buildData.isProd,
+  );
+  await createDirRecursively(assetsDirPath);
+  const stylesheetFileName =
+    buildData.karma.brahma.build.buildableStylesheetFileName;
+  const outputPath = path.join(
+    assetsDirPath,
+    `${stylesheetFileName.slice(0, -3)}.css`,
+  );
+
+  for (const stylesheet of stylesheets) {
+    const css = await buildCssFile(stylesheet.sourcePath);
+    await buildData.runtime.write(outputPath, css);
+    const cssBuild = await buildData.runtime.build({
+      entrypoints: [outputPath],
+      minify: true,
+    });
+    const minifiedCss = await cssBuild.outputs[0]?.text();
+    if (minifiedCss === undefined) {
+      throw new Error(`Unable to minify CSS '${outputPath}'.`);
+    }
+    await buildData.runtime.write(outputPath, minifiedCss);
   }
 };
 
@@ -235,11 +316,20 @@ export const buildApp = async (
   appRootPath: string,
   karma: Karma,
   isProd: boolean,
+  runtime: BuildRuntime = defaultBuildRuntime,
 ): Promise<void> => {
   buildData.appRootPath = appRootPath;
   buildData.karma = karma;
   buildData.isProd = isProd;
+  buildData.deferredStylesheets = [];
+  buildData.runtime = runtime;
   await setupBuild();
+  (await getNoCssCompiler()).resetNoCssBuildRegistry();
   const appViewPath = getAppViewPath(appRootPath, karma);
-  return await buildDir(appViewPath, true);
+  await buildDir(appViewPath);
+  await buildDeferredStylesheets();
+  if (isProd && karma.maya.appType === "ext") {
+    const buildDirPath = getBuildDirPath(appRootPath, appViewPath, karma, true);
+    await zipAndDeleteDir(buildDirPath, `${buildDirPath}.zip`);
+  }
 };

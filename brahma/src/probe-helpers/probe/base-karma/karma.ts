@@ -5,6 +5,8 @@ const files = {
     appSrcDir: "dev",
     appViewDir: "dev/view/pages",
     pageFile: "page.ts",
+    stylesheetFile: "styles.ts",
+    assetsDirName: "assets",
     manifestFile: "manifest.ts",
   },
   static: {
@@ -32,6 +34,8 @@ export const karma: Karma = {
       skipErrorAndBuildNext: false,
       ignoreDelimiter: "@",
       buildablePageFileName: files.buildable.pageFile,
+      buildableStylesheetFileName: files.buildable.stylesheetFile,
+      assetsDirName: files.buildable.assetsDirName,
       buildableManifestFileName: files.buildable.manifestFile,
       stagingDir: files.disposable.stagingDir,
       publishDir: files.static.publishDir,

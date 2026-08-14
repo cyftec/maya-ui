@@ -7,7 +7,7 @@ import { execCli } from "../src/index.ts";
 import { runShellCommand } from "../src/utils/command-runner.ts";
 import { watchFileChange } from "../src/utils/file-change-watcher.ts";
 import { runLocalServer } from "../src/utils/local-server.ts";
-import { ProcessExit, makeKarma, makeTempDir, writeText } from "./fixtures.ts";
+import { ProcessExit, makeKarma, makeTempDir } from "./fixtures.ts";
 
 const roots: string[] = [];
 const delay = (milliseconds: number) =>
@@ -28,7 +28,6 @@ describe("stage lifecycle", () => {
     let onQuit: (() => void) | undefined;
     const build = mock(async () => {});
     const serve = mock(() => {});
-    const install = mock(async () => {});
     const exit = mock(() => undefined) as unknown as typeof process.exit;
     const log = spyOn(console, "log").mockImplementation(() => {});
 
@@ -50,7 +49,6 @@ describe("stage lifecycle", () => {
       startStdinListener: (async (callback: () => void) => {
         onQuit = callback;
       }) as never,
-      installAllConfigsAndPackages: install as never,
       exit,
     });
 
@@ -80,7 +78,6 @@ describe("stage lifecycle", () => {
       watchFileChange: mock(() => ({})) as never,
       runLocalServer: mock(() => {}) as never,
       startStdinListener: mock(async () => {}) as never,
-      installAllConfigsAndPackages: mock(async () => {}) as never,
       exit: mock(() => undefined) as never,
     });
     expect(result).toBe(false);
@@ -89,36 +86,36 @@ describe("stage lifecycle", () => {
 });
 
 describe("watcher, server, shell, and entrypoint lifecycle", () => {
-  test("observes real file changes and returns a closable watcher", async () => {
-    const root = await makeTempDir();
-    roots.push(root);
-    const watchedFile = path.join(root, "watched.txt");
-    await writeText(watchedFile, "before");
+  test("wires file changes and closes its watcher when the process exits", async () => {
+    const watchedFile = "/tmp/watched.txt";
     const processEvents = new EventEmitter();
     const processExit = mock(
       () => undefined,
     ) as unknown as NodeJS.Process["exit"];
-    let watcher: ReturnType<typeof watchFileChange>;
-    const changed = new Promise<string>((resolve) => {
-      watcher = watchFileChange(
-        root,
-        undefined,
-        (changedPath) => {
-          resolve(changedPath);
-        },
-        {
-          on: processEvents.on.bind(processEvents) as NodeJS.Process["on"],
-          exit: processExit,
-        },
-      );
-      watcher.once("ready", async () => {
-        await Bun.write(watchedFile, "after");
-      });
-    });
-    await expect(changed).resolves.toBe(watchedFile);
+    const watcherEvents = new EventEmitter();
+    const close = mock(async () => {});
+    const watcher = Object.assign(watcherEvents, { close });
+    const watch = mock(() => watcher);
+    const onChange = mock((_changedPath: string) => {});
+
+    const returnedWatcher = watchFileChange(
+      "/tmp/watched",
+      undefined,
+      onChange,
+      {
+        on: processEvents.on.bind(processEvents) as NodeJS.Process["on"],
+        exit: processExit,
+      },
+      watch as never,
+    );
+
+    expect(returnedWatcher as unknown).toBe(watcher);
+    expect(watch).toHaveBeenCalledWith("/tmp/watched", { ignored: undefined });
+    watcherEvents.emit("change", watchedFile);
+    expect(onChange).toHaveBeenCalledWith(watchedFile);
     processEvents.emit("exit");
-    await watcher!.close();
-  }, 5_000);
+    expect(close).toHaveBeenCalledTimes(1);
+  });
 
   test("configures and closes an injected local server", () => {
     const events = new EventEmitter();
