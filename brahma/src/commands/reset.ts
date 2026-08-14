@@ -11,7 +11,7 @@ import { getKarmaPaths } from "../utils/file-path-getters.ts";
 import { fileOrDirExists, removeFileOrDir } from "../utils/node-methods.ts";
 
 export const getResetMode = (cmdArgs: string[]): KarmaResetMode => {
-  const resetModeSpecifier = cmdArgs.length ? cmdArgs[0] : "--soft";
+  const resetModeSpecifier = cmdArgs[0] ?? "--soft";
   const resetMode = resetModeSpecifier.slice(2) as KarmaResetMode;
   if (
     !resetModeSpecifier.startsWith("--") ||

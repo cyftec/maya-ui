@@ -56,7 +56,7 @@ export const karma: Karma = {
     dependencies: { "@cyftec/maya": "workspace:*" },
     devDependencies: {
       "@types/bun": "^1.3.14",
-      typescript: "^5.0.0",
+      typescript: "7.0.2",
     },
   },
   vscode: {
@@ -120,8 +120,26 @@ export const karma: Karma = {
   },
   tsconfig: {
     compilerOptions: {
-      paths: {},
+      lib: ["ESNext", "DOM", "DOM.Iterable"],
+      target: "ESNext",
+      module: "ESNext",
+      moduleResolution: "Bundler",
+      moduleDetection: "force",
+      allowImportingTsExtensions: true,
+      isolatedModules: true,
+      noEmit: true,
+      strict: true,
+      skipLibCheck: true,
+      forceConsistentCasingInFileNames: true,
+      noErrorTruncation: true,
+      noFallthroughCasesInSwitch: true,
+      noPropertyAccessFromIndexSignature: true,
+      noUncheckedIndexedAccess: true,
+      noUncheckedSideEffectImports: true,
+      noUnusedLocals: true,
+      noUnusedParameters: true,
+      types: ["bun-types"],
     },
-    include: ["dev/**/*"],
+    include: ["_karma/**/*.ts", "dev/**/*.ts"],
   },
 };

@@ -1,22 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
       "@cyftec/signals": ["./tests/type-test-signal.d.ts"],
       "@cyftec/immut": ["./tests/type-test-immut.d.ts"]
     }
-  },
-  "include": [
-    "index.ts",
-    "index.types.ts",
-    "globals.d.ts",
-    "core/**/*.ts",
-    "utils/**/*.ts",
-    "re-exports/**/*.ts",
-    "tests/**/*.ts",
-    "tests/**/*.d.ts"
-  ],
-  "exclude": ["node_modules", "toolkit"]
+  }
 }

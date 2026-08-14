@@ -54,8 +54,8 @@ import {
   writeText,
 } from "./fixtures.ts";
 
-const originalDevMode = process.env.MAYA_DEV_MODE;
-const originalInitCwd = process.env.INIT_CWD;
+const originalDevMode = process.env["MAYA_DEV_MODE"];
+const originalInitCwd = process.env["INIT_CWD"];
 let exitSpy: ReturnType<typeof spyOn> | undefined;
 
 const mockExit = () => {
@@ -72,10 +72,10 @@ beforeEach(() => {
 
 afterEach(() => {
   exitSpy?.mockRestore();
-  if (originalDevMode === undefined) delete process.env.MAYA_DEV_MODE;
-  else process.env.MAYA_DEV_MODE = originalDevMode;
-  if (originalInitCwd === undefined) delete process.env.INIT_CWD;
-  else process.env.INIT_CWD = originalInitCwd;
+  if (originalDevMode === undefined) delete process.env["MAYA_DEV_MODE"];
+  else process.env["MAYA_DEV_MODE"] = originalDevMode;
+  if (originalInitCwd === undefined) delete process.env["INIT_CWD"];
+  else process.env["INIT_CWD"] = originalInitCwd;
 });
 
 describe("command parsing and constants", () => {
@@ -120,6 +120,9 @@ describe("path and common helpers", () => {
     expect(
       getBuildDirPath("/tmp/app", "/tmp/app/dev/view/about", karma, true),
     ).toBe("/tmp/app/prod/about");
+    expect(() =>
+      getBuildDirPath("/tmp/app", "/tmp/outside", karma, false),
+    ).toThrow("is outside the app view");
     expect(getBuildAssetsDirPath("/tmp/app", karma, false)).toBe(
       "/tmp/app/stage/assets",
     );
@@ -164,12 +167,12 @@ describe("path and common helpers", () => {
   });
 
   test("uses process cwd normally and INIT_CWD only in development mode", () => {
-    process.env.MAYA_DEV_MODE = "0";
-    process.env.INIT_CWD = "/tmp/ignored";
+    process.env["MAYA_DEV_MODE"] = "0";
+    process.env["INIT_CWD"] = "/tmp/ignored";
     expect(getCWD()).toBe(process.cwd());
-    process.env.MAYA_DEV_MODE = "1";
+    process.env["MAYA_DEV_MODE"] = "1";
     expect(getCWD()).toBe("/tmp/ignored");
-    delete process.env.INIT_CWD;
+    delete process.env["INIT_CWD"];
     expect(getCWD()).toBe(process.cwd());
   });
 
@@ -243,6 +246,14 @@ describe("probe helpers", () => {
     ).rejects.toBe(
       `Invalid karma path provided - '${path.join(root, "missing.ts")}'`,
     );
+    const karmaPath = path.join(root, "karma.ts");
+    await writeText(
+      karmaPath,
+      `export const karma = { maya: { dependencies: {} } };`,
+    );
+    await expect(
+      transformWebKarmaToNonWebKarma("pwa", karmaPath),
+    ).rejects.toBe(`No @cyftec/maya dependency found in '${karmaPath}'.`);
     await rm(root, { recursive: true });
   });
 

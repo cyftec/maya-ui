@@ -230,7 +230,9 @@ const buildFile = async (srcFilePath: string, buildDirPath: string) => {
     const fileName = getFileNameFromPath(srcFilePath);
     filePath = `${buildDirPath}/${fileName.slice(0, -3)}.js`;
     const jsBuild = await buildSourceTsFile(srcFilePath);
-    fileData = await jsBuild.outputs.map(async (o) => await o.text())[0];
+    const output = jsBuild.outputs[0];
+    if (!output) throw new Error(NO_JS_ERROR);
+    fileData = await output.text();
   } else {
     const fileName = getFileNameFromPath(srcFilePath);
     filePath = `${buildDirPath}/${fileName}`;

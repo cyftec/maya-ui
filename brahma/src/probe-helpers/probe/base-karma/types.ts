@@ -1,7 +1,9 @@
-import type { CompilerOptions } from "typescript";
-
 export type AppMode = "web" | "ext" | "pwa";
 export type KarmaResetMode = "soft" | "hard";
+
+type CompilerOptions = Record<string, unknown> & {
+  paths?: Record<string, string[]>;
+};
 
 type FileNamesMap = Record<string, string>;
 export type ProjectFileNames = {

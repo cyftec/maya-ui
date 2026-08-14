@@ -11,6 +11,8 @@ type Chapter = {
   }[];
 };
 
+type TopicPath = [chapterIndex: number, topicIndex: number];
+
 type ChaptersPageProps = {
   htmlTitle: string;
   pageTitle: string;
@@ -20,21 +22,30 @@ type ChaptersPageProps = {
 
 export const ChaptersPage = component<ChaptersPageProps>(
   ({ htmlTitle, pageTitle, headElements, chapters }) => {
-    const selectedTopicPathIndeces = signal([0, 0]);
+    const selectedTopicPathIndeces = signal<TopicPath>([0, 0]);
     const scrollToTopTrigger = signal(0);
 
+    const getTopicAtPath = ([chapterIndex, topicIndex]: TopicPath) => {
+      const chapter = chapters.value[chapterIndex];
+      const topic = chapter?.topics[topicIndex];
+      if (!chapter || !topic) {
+        throw new Error(
+          `No topic exists at chapter ${chapterIndex}, topic ${topicIndex}.`,
+        );
+      }
+      return { chapter, topic };
+    };
+
     const selectedTopic = derive(() => {
-      const [chapterIndex, topicIndex] = selectedTopicPathIndeces.value;
-      return chapters.value[chapterIndex].topics[topicIndex];
+      return getTopicAtPath(selectedTopicPathIndeces.value).topic;
     });
     const { title: topicTitle, article: TopicArticle } = selectedTopic.props();
 
     const selectedTopicPathNames = derive(() => {
-      const [chapterIndex, topicIndex] = selectedTopicPathIndeces.value;
-      return [
-        chapters.value[chapterIndex].title,
-        chapters.value[chapterIndex].topics[topicIndex].title,
-      ];
+      const { chapter, topic } = getTopicAtPath(
+        selectedTopicPathIndeces.value,
+      );
+      return [chapter.title, topic.title];
     });
 
     const adjacentTopicsPathIndices = derive(() => {
@@ -44,8 +55,9 @@ export const ChaptersPage = component<ChaptersPageProps>(
       let prevTopicIndex = topicIndex - 1;
       if (!chapters.value[prevChapterIndex]?.topics[prevTopicIndex]) {
         prevChapterIndex = chapterIndex - 1;
-        prevTopicIndex =
-          chapters.value[prevChapterIndex]?.topics.length - 1 || -1;
+        const previousTopicCount =
+          chapters.value[prevChapterIndex]?.topics.length ?? 0;
+        prevTopicIndex = previousTopicCount - 1;
       }
 
       let nextChapterIndex = chapterIndex;
@@ -56,42 +68,33 @@ export const ChaptersPage = component<ChaptersPageProps>(
       }
 
       return {
-        prevChapterIndex,
-        prevTopicIndex,
-        nextChapterIndex,
-        nextTopicIndex,
+        previous: [prevChapterIndex, prevTopicIndex] as TopicPath,
+        next: [nextChapterIndex, nextTopicIndex] as TopicPath,
       };
     });
 
     const adjacentTopics = derive(() => {
-      const {
-        prevChapterIndex,
-        prevTopicIndex,
-        nextChapterIndex,
-        nextTopicIndex,
-      } = adjacentTopicsPathIndices.value;
+      const { previous, next } = adjacentTopicsPathIndices.value;
+      const candidates: Array<[isNext: boolean, path: TopicPath]> = [
+        [false, previous],
+        [true, next],
+      ];
 
-      const prevTopic = chapters.value[prevChapterIndex]?.topics[prevTopicIndex]
-        ? {
-            isNext: false,
-            pathIndices: [prevChapterIndex, prevTopicIndex],
-            chapterTitle: chapters.value[prevChapterIndex].title,
-            title:
-              chapters.value[prevChapterIndex].topics[prevTopicIndex].title,
-          }
-        : undefined;
-
-      const nextTopic = chapters.value[nextChapterIndex]?.topics[nextTopicIndex]
-        ? {
-            isNext: true,
-            pathIndices: [nextChapterIndex, nextTopicIndex],
-            chapterTitle: chapters.value[nextChapterIndex].title,
-            title:
-              chapters.value[nextChapterIndex].topics[nextTopicIndex].title,
-          }
-        : undefined;
-
-      return [prevTopic, nextTopic].filter((topic) => !!topic);
+      return candidates.flatMap(([isNext, pathIndices]) => {
+        const [chapterIndex, topicIndex] = pathIndices;
+        const chapter = chapters.value[chapterIndex];
+        const topic = chapter?.topics[topicIndex];
+        return chapter && topic
+          ? [
+              {
+                isNext,
+                pathIndices,
+                chapterTitle: chapter.title,
+                title: topic.title,
+              },
+            ]
+          : [];
+      });
     });
 
     return Page({

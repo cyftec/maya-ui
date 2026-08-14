@@ -1,21 +1,4 @@
 {
-  "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "allowJs": true,
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
-    "noErrorTruncation": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true,
-    "types": ["bun-types"]
-  },
-  "exclude": ["node_modules", "dist", "build"]
+  "extends": "../tsconfig.base.json",
+  "include": ["globals.d.ts", "src/**/*.ts", "tests/**/*.ts", "tests/**/*.d.ts"]
 }

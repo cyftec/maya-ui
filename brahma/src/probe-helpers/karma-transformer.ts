@@ -27,11 +27,12 @@ export async function transformWebKarmaToNonWebKarma(
     .replace(`publishDir: "docs"`, `publishDir: "prod"`);
   await Bun.write(targetKarmaPath, content);
 
-  const currVersion = content
-    .split("dependencies:")[1]
-    .split(`"@cyftec/maya":`)[1]
-    .trim()
-    .split(`"`)[1];
+  const currVersion = content.match(
+    /"@cyftec\/maya"\s*:\s*"([^"]+)"/,
+  )?.[1];
+  if (!currVersion) {
+    throw `No @cyftec/maya dependency found in '${targetKarmaPath}'.`;
+  }
   const baseDeps = { "@cyftec/maya": currVersion };
   const deps = { ...baseDeps, ...appTypeDeps };
   await updateSectionInFile(

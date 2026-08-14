@@ -24,8 +24,8 @@ import {
   writeText,
 } from "./fixtures.ts";
 
-const originalDevMode = process.env.MAYA_DEV_MODE;
-const originalInitCwd = process.env.INIT_CWD;
+const originalDevMode = process.env["MAYA_DEV_MODE"];
+const originalInitCwd = process.env["INIT_CWD"];
 let root = "";
 let commands: Array<{ command: string; cwd?: string }> = [];
 const runCommand: CommandRunner = async (command, cwd) => {
@@ -55,16 +55,16 @@ const expectProcessExit = async (
 beforeEach(async () => {
   root = await makeTempDir();
   commands = [];
-  process.env.MAYA_DEV_MODE = "1";
-  process.env.INIT_CWD = root;
+  process.env["MAYA_DEV_MODE"] = "1";
+  process.env["INIT_CWD"] = root;
 });
 
 afterEach(async () => {
   if (await exists(root)) await rm(root, { recursive: true });
-  if (originalDevMode === undefined) delete process.env.MAYA_DEV_MODE;
-  else process.env.MAYA_DEV_MODE = originalDevMode;
-  if (originalInitCwd === undefined) delete process.env.INIT_CWD;
-  else process.env.INIT_CWD = originalInitCwd;
+  if (originalDevMode === undefined) delete process.env["MAYA_DEV_MODE"];
+  else process.env["MAYA_DEV_MODE"] = originalDevMode;
+  if (originalInitCwd === undefined) delete process.env["INIT_CWD"];
+  else process.env["INIT_CWD"] = originalInitCwd;
 });
 
 describe("help and create commands", () => {

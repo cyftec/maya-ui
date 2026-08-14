@@ -30,7 +30,8 @@ export const getCreateAppCommandArgs = (
 
   if (cmdArgs.length === 2) {
     const appModes: AppMode[] = ["web", "ext", "pwa"];
-    const [arg1, arg2] = cmdArgs;
+    const arg1 = cmdArgs[0]!;
+    const arg2 = cmdArgs[1]!;
     if (
       (arg1.startsWith("--") && arg2.startsWith("--")) ||
       (!arg1.startsWith("--") && !arg2.startsWith("--"))
@@ -49,7 +50,7 @@ export const getCreateAppCommandArgs = (
     return [appRootDirName, appMode];
   }
 
-  const appRootDirName = cmdArgs[0];
+  const appRootDirName = cmdArgs[0]!;
   if (appRootDirName.startsWith("--"))
     throw `ERROR: Incorrect app directory name.`;
   return [appRootDirName];

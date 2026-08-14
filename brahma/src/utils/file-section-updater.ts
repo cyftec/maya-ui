@@ -9,9 +9,13 @@ export const splitText = (
 ): [preTextIncludingSplitter: string, postSplitterText: string] =>
   splittersPathArray.reduce(
     ([preSplitter, postSplitter], splitterMilestone) => {
-      if (!postSplitter.includes(splitterMilestone))
+      const splitterIndex = postSplitter.indexOf(splitterMilestone);
+      if (splitterIndex < 0)
         throw `splitter path milestone '${splitterMilestone}' does not exist in the text.`;
-      const [preText, postText] = postSplitter.split(splitterMilestone);
+      const preText = postSplitter.slice(0, splitterIndex);
+      const postText = postSplitter.slice(
+        splitterIndex + splitterMilestone.length,
+      );
       return [preSplitter + preText + splitterMilestone, postText];
     },
     ["", text],

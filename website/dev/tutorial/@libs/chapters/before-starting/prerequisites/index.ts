@@ -17,18 +17,20 @@ export const Prerequisites = m.Div([
               m.Span(
                 m.For({
                   subject: req.split("##"),
-                  map: (section, i) =>
-                    m.If({
+                  map: (section, i) => {
+                    const [label = "", href = ""] = section.split("|");
+                    return m.If({
                       subject: i % 2 === 0,
                       isTruthy: () => section,
                       isFalsy: () =>
                         Link({
                           colorCss: "theme-col",
                           target: "_blank",
-                          label: section.split("|")[0],
-                          href: section.split("|")[1],
+                          label,
+                          href,
                         }),
-                    }),
+                    });
+                  },
                 }),
               ),
           }),

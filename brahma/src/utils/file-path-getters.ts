@@ -46,7 +46,10 @@ export const getBuildDirPath = (
   const buildDirRootPath = path.join(appRootPath, buildDirNameOrPath);
 
   const appViewPath = getAppViewPath(appRootPath, karma);
-  const subPath = appSrcPath.split(appViewPath)[1];
+  const subPath = path.relative(appViewPath, appSrcPath);
+  if (subPath.startsWith("..") || path.isAbsolute(subPath)) {
+    throw new Error(`Source path '${appSrcPath}' is outside the app view.`);
+  }
 
   const buildDirPath = path.join(buildDirRootPath, subPath);
   return buildDirPath;

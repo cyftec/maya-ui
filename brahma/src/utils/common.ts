@@ -43,8 +43,8 @@ export const getKarma = async (appRootPath: string): Promise<Karma> => {
 // TODO: Revisit 'MAYA_DEV_MODE'
 export const getCWD = () => {
   const cwd =
-    process.env.MAYA_DEV_MODE === "1"
-      ? process.env.INIT_CWD || process.cwd()
+    process.env["MAYA_DEV_MODE"] === "1"
+      ? process.env["INIT_CWD"] || process.cwd()
       : process.cwd();
   return cwd;
 };

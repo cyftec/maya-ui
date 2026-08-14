@@ -52,7 +52,7 @@ export const karma: Karma = {
     dependencies: { "@cyftec/maya": "workspace:*" },
     devDependencies: {
       "@types/bun": "^1.3.14",
-      typescript: "^5.0.0",
+      typescript: "7.0.2",
     },
   },
   vscode: {
@@ -84,6 +84,7 @@ export const karma: Karma = {
     ],
   },
   tsconfig: {
+    extends: "../tsconfig.base.json",
     compilerOptions: {
       paths: {
         "@root-libs/*": ["./dev/@libs/*"],
@@ -91,6 +92,6 @@ export const karma: Karma = {
         "@tutorial-libs/*": ["./dev/tutorial/@libs/*"],
       },
     },
-    include: ["dev/**/*"],
+    include: ["_karma/**/*.ts", "dev/**/*.ts", "../maya/globals.d.ts"],
   },
 };

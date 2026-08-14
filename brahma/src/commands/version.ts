@@ -29,7 +29,7 @@ export const showVersion = async (
     process.exit();
   }
 
-  const [leadingText, versionToShift] = cmdArgs[0].split("--v=");
+  const [leadingText, versionToShift] = cmdArgs[0]!.split("--v=");
   if (!leadingText && versionToShift) {
     console.log(`Shifting to '@cyftec/brahma@${versionToShift}'`);
     try {

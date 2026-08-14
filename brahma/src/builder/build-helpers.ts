@@ -29,9 +29,12 @@ export const getBuiltJsMethodName = (filename: string, karma: Karma) => {
 };
 
 export const getBuildFileNames = (srcPagePath: string, karma: Karma) => {
-  const pathWithoutFileName = srcPagePath.split(
-    karma.brahma.build.buildablePageFileName,
-  )[0];
+  const pageFileName = karma.brahma.build.buildablePageFileName;
+  const pageFileNameIndex = srcPagePath.lastIndexOf(pageFileName);
+  if (pageFileNameIndex < 0) {
+    throw new Error(`Page path does not end with '${pageFileName}'.`);
+  }
+  const pathWithoutFileName = srcPagePath.slice(0, pageFileNameIndex);
   const isPrefixed = pathWithoutFileName.endsWith(".");
   const prefixName = isPrefixed
     ? (pathWithoutFileName.split("/").pop() as string)

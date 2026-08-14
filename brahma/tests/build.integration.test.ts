@@ -105,6 +105,9 @@ describe("builder helpers", () => {
       htmlFileName: "about.html",
       jsFileName: "about.main.js",
     });
+    expect(() => getBuildFileNames("/app/home.ts", karma)).toThrow(
+      "Page path does not end with 'page.ts'",
+    );
     expect(getBuiltJsMethodName("main.js", karma)).toBe("page_default");
     expect(getBuiltJsMethodName("about.main.js", karma)).toBe(
       "about_page_default",

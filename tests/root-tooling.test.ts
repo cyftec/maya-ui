@@ -407,7 +407,7 @@ describe("root publish verification", () => {
         packageDirs: ["maya", "brahma"],
         getPackageInfo: async (dirName) => ({
           name: `@cyftec/${dirName}`,
-          version: versions[dirName],
+          version: versions[dirName]!,
         }),
         getPublishedVersion: async () => "1.2.3",
         exit: exitWithThrow,

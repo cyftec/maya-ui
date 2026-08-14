@@ -8,7 +8,8 @@
     "workbench/*"
   ],
   "scripts": {
-    "test": "bun run test:root && bun run test:maya && bun run test:brahma",
+    "typecheck": "tsc -p tsconfig.json && tsc -p maya/tsconfig.type-tests.json && tsc -p brahma/tsconfig.json && tsc -p website/tsconfig.json",
+    "test": "bun run typecheck && bun run test:root && bun run test:maya && bun run test:brahma",
     "test:root": "bun test ./tests/root-tooling.test.ts --coverage --coverage-skip-test-files tests",
     "test:maya": "bun run --cwd maya test",
     "test:brahma": "bun run --cwd brahma test", 
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "bun-types": "^1.3.14",
-    "@cyftec/brahma": "workspace:*"
+    "@cyftec/brahma": "workspace:*",
+    "typescript": "7.0.2"
   }
 }
