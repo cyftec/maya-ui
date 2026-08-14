@@ -5,7 +5,7 @@
     "maya",
     "brahma",
     "website",
-    "workbench"
+    "workbench/*"
   ],
   "scripts": {
     "test": "bun run test:root && bun run test:maya && bun run test:brahma",
@@ -23,11 +23,11 @@
     "publish": "bun run ./src/publish/index.ts",
     "link": "bun remove -g @cyftec/brahma && cd brahma && bun link",
     "unlink": "cd brahma && bun unlink && bun i -g @cyftec/brahma",
-    "workbench": "bun run clean:install && rm -rf ./workbench && brahma c workbench && cd workbench && brahma i && brahma s",
+    "workbench": "bun run clean:install && mkdir -p ./workbench && rm -rf ./workbench/app && brahma c workbench/app && cd workbench/app && brahma i && brahma s",
     "docs": "bun run clean:install && cd website && brahma p && cd .."
   },
   "devDependencies": {
     "bun-types": "^1.3.14",
-    "@cyftec/brahma": "link:@cyftec/brahma"
+    "@cyftec/brahma": "workspace:*"
   }
 }
