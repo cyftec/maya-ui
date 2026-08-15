@@ -31,19 +31,41 @@ export const sanitizeHref = (input: string) =>
     `The href attribute value starting with one of "javascript:", "data:", "vbscript:" or "file:" is not allowed.`,
   );
 
-export const sanitizeStyle = (input: string) =>
-  baseSanitizer(
+export const isStrictAssetPath = (url: unknown): boolean => {
+  if (typeof url !== "string") return false;
+
+  // Reject spaces, quotes, control chars, query strings (?), hashes (#), schemes (:), and parentheses
+  if (/[\x00-\x20\s\'"()?:#]/.test(url)) return false;
+
+  // Reject protocol-relative and backslash-prefixed paths (//, \\, /\, \/)
+  if (/^[\/\\][\/\\]/.test(url)) return false;
+
+  // Strictly allow only standard path characters: letters, numbers, /, ., _, -
+  return /^[a-zA-Z0-9_\-\.\/]+$/.test(url);
+};
+
+export const sanitizeStyle = (input: string) => {
+  const sanitizedInput = baseSanitizer(
     input,
     [
-      /url\s*\(/i,
       /expression\s*\(/i,
       /javascript\s*:/i,
       /data\s*:/i,
       /vbscript\s*:/i,
       /file\s*:/i,
     ],
-    `The style attribute value starting with one of "url(..", "expression(..", "javascript:", "data:", "vbscript:" or "file:" is not allowed.`,
+    `The style attribute value starting with one of "expression(..", "javascript:", "data:", "vbscript:" or "file:" is not allowed.`,
   );
+
+  const url =
+    /url\s*\(/i.test(sanitizedInput) &&
+    sanitizedInput.split("url(").pop()?.split(")").shift()?.slice(1, -1);
+
+  if (url && !isStrictAssetPath(url))
+    throw `Only relative import is allowed in "url(..".`;
+
+  return input;
+};
 
 export const sanitizeAttributeValue = (
   attribKey: string,

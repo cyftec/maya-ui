@@ -85,9 +85,9 @@ describe("native Maya elements", () => {
     expect(() => m.A({ href: "javascript:alert(1)" })()).toThrow(
       "href attribute value",
     );
-    expect(() => m.Div({ style: "background:url(/secret)" })()).toThrow(
-      "style attribute value",
-    );
+    expect(() =>
+      m.Div({ style: `background:expression("url(/secret)")` })(),
+    ).toThrow("style attribute value");
   });
 
   test("dispatches DOM events, prevents keypress defaults, and ignores undefined listeners", () => {

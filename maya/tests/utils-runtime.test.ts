@@ -8,6 +8,7 @@ import {
 import { idGen } from "../src/core/utils/id-generator.ts";
 import { phase } from "../src/core/utils/phase-helpers.ts";
 import {
+  isStrictAssetPath,
   sanitizeAttributeValue,
   sanitizeHref,
   sanitizeStyle,
@@ -59,7 +60,6 @@ describe("decoders and sanitizers", () => {
       expect(() => sanitizeHref(unsafeHref)).toThrow("href attribute value");
     }
     for (const unsafeStyle of [
-      "background: url(/pixel)",
       "width: expression(alert(1))",
       "javascript:alert(1)",
       "data:text/css,body{}",
@@ -74,6 +74,93 @@ describe("decoders and sanitizers", () => {
     expect(() => sanitizeAttributeValue("style", false)).toThrow(
       "should not be a boolean",
     );
+  });
+});
+
+describe("isStrictAssetPath", () => {
+  test("allows clean local asset paths", () => {
+    const validPaths = [
+      "/assets/image.png",
+      "current-route/drawing.bmp",
+      "./images/foo.jpg",
+      "../bar.png",
+      "image.png",
+      "/static/media/icon_v2-final.svg",
+      "subfolder/nested/deep/file.webp",
+    ];
+
+    for (const path of validPaths) {
+      expect(isStrictAssetPath(path)).toBe(true);
+    }
+  });
+
+  describe("blocks query parameters, fragments, and URL features", () => {
+    test("rejects query strings (even for cache busting)", () => {
+      expect(isStrictAssetPath("/assets/image.png?v=123")).toBe(false);
+      expect(isStrictAssetPath("image.png?redirect=https://evil.com")).toBe(
+        false,
+      );
+      expect(isStrictAssetPath("drawing.bmp?")).toBe(false);
+    });
+
+    test("rejects hash fragments", () => {
+      expect(isStrictAssetPath("/assets/sprite.svg#icon-user")).toBe(false);
+      expect(isStrictAssetPath("image.png#main")).toBe(false);
+    });
+
+    test("rejects combined query strings and hashes", () => {
+      expect(isStrictAssetPath("/img.png?v=1#top")).toBe(false);
+    });
+  });
+
+  describe("blocks sneaky CSS injection & protocol bypasses", () => {
+    test("blocks quotes, parentheses, and spaces (CSS url(...) break-outs)", () => {
+      expect(isStrictAssetPath("image.png')/*")).toBe(false);
+      expect(isStrictAssetPath('image.png"); background: url("evil')).toBe(
+        false,
+      );
+      expect(isStrictAssetPath("image.png); alert(1);")).toBe(false);
+      expect(isStrictAssetPath("image .png")).toBe(false);
+    });
+
+    test("blocks absolute and inline schemes", () => {
+      expect(isStrictAssetPath("http://evil.com/image.png")).toBe(false);
+      expect(isStrictAssetPath("https://evil.com/image.png")).toBe(false);
+      expect(isStrictAssetPath("javascript:alert(1)")).toBe(false);
+      expect(isStrictAssetPath("JAVASCRIPT:alert(1)")).toBe(false);
+      expect(isStrictAssetPath("data:image/png;base64,iVBORw0KGgo...")).toBe(
+        false,
+      );
+      expect(isStrictAssetPath("blob:https://example.com/uuid")).toBe(false);
+    });
+
+    test("blocks protocol-relative & backslash redirect tricks", () => {
+      expect(isStrictAssetPath("//evil.com/image.png")).toBe(false);
+      expect(isStrictAssetPath("\\\\evil.com\\image.png")).toBe(false);
+      expect(isStrictAssetPath("/\\evil.com/image.png")).toBe(false);
+      expect(isStrictAssetPath("\\/evil.com/image.png")).toBe(false);
+    });
+
+    test("blocks whitespace and control character injection attempts", () => {
+      expect(isStrictAssetPath("java\nscript:alert(1)")).toBe(false);
+      expect(isStrictAssetPath("java\rscript:alert(1)")).toBe(false);
+      expect(isStrictAssetPath("java\tscript:alert(1)")).toBe(false);
+      expect(isStrictAssetPath("java\0script:alert(1)")).toBe(false);
+      expect(isStrictAssetPath("   /assets/image.png?v=1")).toBe(false);
+    });
+
+    test("blocks windows paths, unc paths, and odd schemes", () => {
+      expect(isStrictAssetPath("C:\\Windows\\System32\\cmd.exe")).toBe(false);
+      expect(isStrictAssetPath("c:image.png")).toBe(false);
+      expect(isStrictAssetPath("file:///etc/passwd")).toBe(false);
+    });
+
+    test("gracefully rejects non-string inputs", () => {
+      expect(isStrictAssetPath(null as any)).toBe(false);
+      expect(isStrictAssetPath(undefined as any)).toBe(false);
+      expect(isStrictAssetPath(12345 as any)).toBe(false);
+      expect(isStrictAssetPath({} as any)).toBe(false);
+    });
   });
 });
 
