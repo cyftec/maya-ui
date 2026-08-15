@@ -48,7 +48,7 @@ When repository implementation and prose disagree, the checked-in package and te
 13. Include the route's exact generated script in its HTML: `page.ts` loads `main.js`; `name.page.ts` loads `name.main.js`.
 14. Keep authored source and assets out of Karma's `disposable` list.
 15. A task is not complete because it type-checks. Build the production output and verify the mounted app in a real browser.
-16. Coding agents **MUST** author CSS-based styling only through NoCSS, import the app's typed `css` helper, and pass every class value through it. They **MUST NOT** write stylesheets, inline CSS, injected CSS, or raw class strings. This agent-only restriction does not apply to humans.
+16. Coding agents **MUST** author CSS-based styling only through NoCSS, import the app's typed `css` helper, and pass every class value through it. They **MUST NOT** write stylesheets, inline CSS, injected CSS, or raw class strings. This agent-only restriction does not limit Maya applications: human authors may use a deliberately scoped hybrid alongside NoCSS, including third-party asset styles.
 
 ---
 
@@ -510,7 +510,7 @@ Reusable modules may also live outside `appViewDir` but inside `appSrcDir`, such
 
 ### 9.3 NoCSS styling and build contract
 
-NoCSS is the application styling path. Its configured TypeScript module exports the base overrides, media-constraint overrides, compound classes, complete `ClassName` type, and the app's `css` helper. Components import that helper and use it for every `class` attribute, including single static classes:
+NoCSS is Maya's recommended atomic path for an application's own elemental styling. Its configured TypeScript module exports the base overrides, media-constraint overrides, compound classes, complete `ClassName` type, and the app's `css` helper. Components that use NoCSS import that helper and use it for every NoCSS-managed `class` attribute, including single static classes:
 
 ```ts
 import { css } from "../assets/styles.js";
@@ -522,7 +522,7 @@ m.Main({
 
 Brahma resets the usage registry, statically builds the pages, collects the classes registered by `css`, imports the one configured `styles.ts`, emits only the used rules, applies responsive media groups, and writes a minified `styles.css` to the output assets directory. `css.when` and `css.cases` register all declared runtime outcomes during the build; use them instead of dynamic class interpolation.
 
-The generated CSS is output, not authored source. Coding agents must not create or edit `.css` files, inline CSS, style elements, injected CSS, or raw class strings. The restriction applies to coding agents, not human contributors. Canvas drawing properties are rendering commands rather than DOM styling, but the canvas element and surrounding DOM still use NoCSS.
+The generated CSS is output, not authored source. Maya permits a hybrid when a human author deliberately retains or introduces a separate owner, such as an icon set, syntax-highlighting theme, or library widget stylesheet; keep that ownership clear and test the resulting cascade. Coding agents remain restricted to NoCSS and must not create or edit `.css` files, inline CSS, style elements, injected CSS, or raw class strings. Canvas drawing properties are rendering commands rather than DOM styling.
 
 Read [`NOCSS_CODING_SPEC.md`](./NOCSS_CODING_SPEC.md) for the complete helper API, configuration types, responsive groups, compounds, reset behavior, and verification checklist.
 
@@ -685,7 +685,7 @@ Before running commands, verify:
 - reusable Maya UI uses `component()` or `fragment()`;
 - non-UI game/domain code remains plain TypeScript;
 - no browser globals or nondeterminism run during tree construction;
-- all DOM styling is authored through NoCSS and every class is registered by the app's typed helper;
+- every agent-authored first-party elemental class is registered by the app's typed NoCSS helper, while any hybrid style source has explicit ownership;
 - private modules and public assets respect the configured ignore delimiter;
 - every page script name matches its output;
 - cleanup exists for every mounted resource.

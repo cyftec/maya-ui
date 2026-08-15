@@ -125,8 +125,9 @@ export const TypeScriptBaseline = Article(
 export const NoCss = Article(
   m.H3({ children: "NoCSS is the application styling system" }),
   Paragraphs(
-    "The configured styles.ts is the single authored stylesheet source. It exports application overrides, responsive constraints, compound classes, a complete ClassName type, and the app's typed css helper.",
+    "NoCSS is Maya's recommended atomic styling system for first-party element rules. Its configured styles.ts source exports application overrides, responsive constraints, compound classes, a complete ClassName type, and the app's typed css helper.",
     "Brahma clears the class registry, statically renders every page, collects atomic names passed through css, and emits only matching atomic rules as a minified styles.css in the output assets directory. Compound names expand before either HTML or CSS is produced.",
+    "It is not Maya's only styling option. A human application author may deliberately combine NoCSS with an icon package, syntax-highlighting theme, or another library-owned stylesheet when that source is the right owner.",
   ),
   Code(`import {
   defineCompoundClasses,
@@ -181,13 +182,21 @@ m.Button({
     ),
   ),
   Section(
+    "Choose atoms before compounds",
+    ...Paragraphs(
+      "For one visual concern, first check the atomic vocabulary. Use a matching atom; override an existing atom when its declaration does not fit the application; create a narrowly scoped atom when none exists.",
+      "For a repeated combination, use an existing compound when it matches. Otherwise resolve each concern as an atom first, then define one flat compound from those atoms.",
+      "Keep third-party presentation in the source that owns it. NoCSS can coexist with library styles; avoid competing rules for the same property on the same element unless the intended cascade is explicit and tested.",
+    ),
+  ),
+  Section(
     "Mandatory rule for coding agents",
     ...Paragraphs(
       "Coding agents must author CSS-based application styles only through NoCSS. They must pass every class through the app's typed css helper and must not create or edit a stylesheet, inline style, style element, injected CSS, or an additional styling dependency.",
-      "This restriction is for coding agents, not human contributors. Existing human-authored CSS may remain when unrelated, but an agent changing a style must move that behavior into NoCSS. Canvas drawing commands remain valid for canvas pixels; the canvas element and surrounding DOM use NoCSS.",
+      "This restriction is for coding agents, not human contributors. A human author may retain or add a deliberate hybrid styling source; an agent changing first-party elemental styling must use NoCSS. Canvas drawing commands remain valid for canvas pixels.",
     ),
     Note(
-      "If the public NoCSS API cannot represent a requirement, treat that as a framework capability gap. Do not silently bypass the framework with another styling approach.",
+      "Use NoCSS for features that belong in its atomic model. Do not force a third-party asset or a genuinely global concern into that model merely to avoid a deliberate hybrid.",
     ),
   ),
 );

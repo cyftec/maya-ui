@@ -22,14 +22,14 @@ A production Maya UI MUST:
 4. keep reactive reads in signal-aware paths;
 5. use Maya control-flow helpers for reactive child replacement;
 6. use real labels, buttons, links, forms, headings, lists, and landmarks;
-7. style DOM and SVG through the app's typed NoCSS helper;
+7. give each DOM and SVG style rule a clear owner; use the app's typed NoCSS helper for its first-party elemental styles;
 8. remain usable at narrow and wide viewports, zoom, keyboard-only input, and reduced motion;
 9. implement loading, empty, error, disabled, and overflow states that apply;
 10. verify behavior and visual fidelity in a real browser.
 
 Do not translate React syntax mechanically. Maya uses `class`, `for`, lowercase `on*` event props, serialized attribute names, node getters, and fine-grained signals.
 
-Examples below assume `css` is imported from the project's configured NoCSS `styles.ts` module. Coding agents must pass every class value through this helper and must not author CSS through another path.
+Examples below assume `css` is imported from the project's configured NoCSS `styles.ts` module. NoCSS is the recommended atomic baseline for first-party element styling, while a human author may deliberately retain or add a scoped third-party stylesheet for a library-owned concern. Coding agents must pass every class value they author through this helper and must not author CSS through another path.
 
 ---
 
@@ -466,9 +466,18 @@ Do not let an older request overwrite a newer result.
 
 ### 8.1 Baseline
 
-Author the baseline in the configured NoCSS `styles.ts`, then apply it through the typed helper:
+For first-party elemental styles, author the baseline in the configured NoCSS `styles.ts`, then apply it through the typed helper:
 
 ```ts
+import {
+  defineCompoundClasses,
+  getCss,
+  type AppAtomicClassNames,
+  type AppClassNames,
+  type AtomicClassName,
+  type AtomicClassOverrides,
+} from "@cyftec/maya/nocss";
+
 export const atomicClassOverrides = {
   default: {
     app: "{ color-scheme: light dark; font-family: system-ui, sans-serif; text-size-adjust: 100%; }",
@@ -480,9 +489,22 @@ export const atomicClassOverrides = {
   },
 } as const satisfies AtomicClassOverrides;
 
-export const compoundClasses = {
+type AppAtomicClassName = AppAtomicClassNames<
+  AtomicClassName,
+  typeof atomicClassOverrides
+>;
+
+export const compoundClasses = defineCompoundClasses<AppAtomicClassName>()({
   action: "control focus-ring pointer ph3 pv2 br2",
-} as const;
+});
+
+export type ClassName = AppClassNames<
+  AtomicClassName,
+  typeof atomicClassOverrides,
+  typeof compoundClasses
+>;
+
+export const css = getCss<ClassName, typeof compoundClasses>(compoundClasses);
 ```
 
 ```ts
@@ -499,7 +521,7 @@ m.Html({
 });
 ```
 
-Use compounds for meaningful, repeated UI roles and overridden atomic classes for capabilities absent from the built-in vocabulary. Coding agents must not fall back to an inline style, a handwritten stylesheet, a style element, or an untyped class string. If the public NoCSS API cannot represent a required CSS feature, report it as a framework capability gap and extend NoCSS only when framework work is within the task's scope.
+Use the atomic-first decision tree: use an existing atom when it matches; override it when its declaration does not match; create a narrowly scoped atom when one is absent; then use or create a compound for a repeated combination. NoCSS is the preferred owner for this first-party elemental work. A human author may deliberately combine it with an icon, syntax-highlighting, editor, chart, or other third-party stylesheet when that source owns the concern; avoid unintentional cascade overlap. Coding agents must not introduce or extend that second styling system unless the user explicitly authorizes it.
 
 ### 8.2 Responsive behavior
 
@@ -651,7 +673,7 @@ Look for fixed widths, non-wrapping flex children, missing minimum-size rules, u
 - [ ] Form values write back on user input.
 - [ ] Native controls, labels, focus, and keyboard behavior are complete.
 - [ ] Async idle/loading/empty/error/success states are implemented.
-- [ ] Every class passes through the app's typed NoCSS helper.
+- [ ] Every first-party elemental class owned by NoCSS passes through the app's typed helper, and each hybrid style source has explicit ownership.
 - [ ] No agent-authored stylesheet, inline style, or injected CSS was added.
 - [ ] NoCSS output is responsive and reduced-motion behavior was considered.
 - [ ] Long content, zoom, narrow, and wide layouts were tested.
