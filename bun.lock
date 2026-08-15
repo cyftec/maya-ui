@@ -12,7 +12,7 @@
     },
     "brahma": {
       "name": "@cyftec/brahma",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "bin": {
         "brahma": "./src/index.ts",
       },
@@ -34,7 +34,7 @@
     },
     "maya": {
       "name": "@cyftec/maya",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "dependencies": {
         "@cyftec/immut": "0.1.0",
         "@cyftec/signals": "0.0.5",

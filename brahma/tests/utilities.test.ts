@@ -467,7 +467,7 @@ describe("version and process utilities", () => {
     expect(getBrahmaPackageJsonPath()).toBe(
       path.join(getBrahmaRootPath(), "package.json"),
     );
-    expect(await getCurrentBrahmaVersion()).toBe("0.2.1");
+    expect(await getCurrentBrahmaVersion()).toBe("0.2.2");
   });
 
   test("exits for missing or versionless package metadata", async () => {

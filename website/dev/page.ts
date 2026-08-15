@@ -833,7 +833,7 @@ $ brahma publish
   },
   maya: {
     appType: "web",
-    dependencies: { "@cyftec/maya": "0.2.1" },
+    dependencies: { "@cyftec/maya": "0.2.2" },
     devDependencies: { typescript: "7.0.2" },
   },
 };`,
