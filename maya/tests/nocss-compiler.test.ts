@@ -44,6 +44,32 @@ describe("no-css compiler", () => {
     expect(stylesheet).not.toContain(".bg-yellow{");
   });
 
+  test("emits only the used native-control atoms and their owned selectors", () => {
+    const stylesheet = buildNoCssStylesheet(["accent-current", "input-reset"]);
+
+    expect(stylesheet).toBe(
+      ".accent-current{ accent-color: currentColor; }" +
+        ".input-reset{ -webkit-appearance: none; -moz-appearance: none; appearance: none; }" +
+        ".input-reset::-moz-focus-inner{ border: 0; padding: 0; }",
+    );
+  });
+
+  test("rejects unknown accent atoms through the standard compiler path", () => {
+    expect(() => buildNoCssStylesheet(["accent-blue"])).toThrow(
+      "Unknown NoCSS atomic class 'accent-blue'.",
+    );
+  });
+
+  test("emits the backdrop-blur scale", () => {
+    const levels = ["none", "blur( 4px )", "blur( 8px )", "blur( 16px )"];
+
+    for (const [level, value] of levels.entries()) {
+      const className = `backdrop-blur-${level}`;
+      const rule = `.${className}{ -webkit-backdrop-filter: ${value}; backdrop-filter: ${value}; }`;
+      expect(buildNoCssStylesheet([className])).toBe(rule);
+    }
+  });
+
   test("replaces factory declarations and adds custom classes in every group", () => {
     const stylesheet = buildNoCssStylesheet(
       ["pa2", "app", "app-ns", "app-m", "app-l"],

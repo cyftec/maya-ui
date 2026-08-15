@@ -34,6 +34,7 @@ type AppAtomicClassName = AppAtomicClassNames<
 const compoundClasses = defineCompoundClasses<AppAtomicClassName>()({
   card: "bg-theme pa2 b--light-silver br4",
   action: "pointer hover-bg-washed-yellow",
+  "native-control-accent": "dark-blue accent-current",
 });
 
 type AppClassName = AppClassNames<
@@ -47,6 +48,8 @@ const css = getCss<AppClassName, typeof compoundClasses>(compoundClasses);
 // Configuration-derived names include factory, override, pseudo-selector,
 // responsive, and compound sources while remaining atomic.
 const factoryClassName: AppClassName = "pa2";
+const nativeAccentAtomicClassName: AtomicClassName = "accent-current";
+const backdropBlurClassName: AppClassName = "backdrop-blur-2";
 const overriddenClassName: AppClassName = "bg-theme";
 const overriddenPseudoClassName: AppClassName = "focus-theme";
 const responsiveOverrideClassName: AppClassName = "theme-m";
@@ -54,6 +57,8 @@ const compoundClassName: AppClassName = "card";
 void [
   mediaConstraintsOverrides,
   factoryClassName,
+  nativeAccentAtomicClassName,
+  backdropBlurClassName,
   overriddenClassName,
   overriddenPseudoClassName,
   responsiveOverrideClassName,
@@ -64,7 +69,9 @@ void [
 css();
 css("");
 css("pa2");
+css("accent-current");
 css("pa2 bg-theme");
+css("native-control-accent");
 css("pointer hover-bg-washed-yellow");
 css("card", "action");
 css(null, undefined);
@@ -169,6 +176,8 @@ StyledButton({ color: phraseCases });
 // Every direct input is checked, including unions and signals.
 // @ts-expect-error Unknown atomic class name.
 css("missing");
+// @ts-expect-error Unknown accent atoms use the standard unknown-class path.
+css("accent-blue");
 // @ts-expect-error Unknown word at the end of a phrase.
 css("pa2 missing");
 // @ts-expect-error Unknown word at the start of a phrase.

@@ -4,6 +4,7 @@
   "description": "Maya core implementation",
   "author": "Chandan Kumar (Cyfer Tech)",
   "license": "MIT",
+  "sideEffects": false,
   "exports": {
     "./core": "./src/core/index.ts",
     "./signals": "./src/re-exports/signals.ts",

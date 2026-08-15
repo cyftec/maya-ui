@@ -340,6 +340,24 @@ export const factoryAtomicClasses = {
     "shadow-5": "{ box-shadow: 4px 4px 8px 0 rgba( 0, 0, 0, .2 ); }",
     /*
 
+  BACKDROP BLUR
+
+  Media Query Extensions:
+   -ns = not-small
+   -m  = medium
+   -l  = large
+
+ */
+    "backdrop-blur-0":
+      "{ -webkit-backdrop-filter: none; backdrop-filter: none; }",
+    "backdrop-blur-1":
+      "{ -webkit-backdrop-filter: blur( 4px ); backdrop-filter: blur( 4px ); }",
+    "backdrop-blur-2":
+      "{ -webkit-backdrop-filter: blur( 8px ); backdrop-filter: blur( 8px ); }",
+    "backdrop-blur-3":
+      "{ -webkit-backdrop-filter: blur( 16px ); backdrop-filter: blur( 16px ); }",
+    /*
+
    CODE
 
 */
@@ -607,9 +625,11 @@ export const factoryAtomicClasses = {
    FORMS
    
 */
-    "input-reset": "{ -webkit-appearance: none; -moz-appearance: none; }",
+    "input-reset":
+      "{ -webkit-appearance: none; -moz-appearance: none; appearance: none; }",
     "button-reset::-moz-focus-inner": "{ border: 0; padding: 0; }",
     "input-reset::-moz-focus-inner": "{ border: 0; padding: 0; }",
+    "accent-current": "{ accent-color: currentColor; }",
     /*
 
    HEIGHTS
