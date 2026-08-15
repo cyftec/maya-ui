@@ -469,7 +469,7 @@ Do not let an older request overwrite a newer result.
 Author the baseline in the configured NoCSS `styles.ts`, then apply it through the typed helper:
 
 ```ts
-export const overriddenBaseClasses = {
+export const atomicClassOverrides = {
   default: {
     app: "{ color-scheme: light dark; font-family: system-ui, sans-serif; text-size-adjust: 100%; }",
     "app-body": "{ margin: 0; min-block-size: 100vh; }",

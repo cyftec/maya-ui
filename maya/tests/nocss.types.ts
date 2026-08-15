@@ -1,20 +1,21 @@
 import { signal } from "@cyftec/signals";
 import { component, m } from "../src/core";
-import { getCss } from "../src/nocss/css";
+import { defineCompoundClasses, getCss } from "../src/nocss";
 import type {
+  AppAtomicClassNames,
   AppClassNames,
   AtomicClassOverrides,
-  BaseClassName,
+  AtomicClassName,
   ClassNamesPhrase,
   MediaConstraintsOverrides,
-} from "../src/nocss/index";
+} from "../src/nocss";
 
-const overriddenMediaConstraints = {
+const mediaConstraintsOverrides = {
   ns: { minWidth: "31em" },
   m: { maxWidth: "59em" },
 } as const satisfies MediaConstraintsOverrides;
 
-const overriddenBaseClasses = {
+const atomicClassOverrides = {
   default: {
     theme: "{ color: #ee4440; }",
     "bg-theme": "{ background-color: #ee4440; }",
@@ -25,18 +26,23 @@ const overriddenBaseClasses = {
   l: { "theme-l": "{ color: #ee4440; }" },
 } as const satisfies AtomicClassOverrides;
 
-const compoundClasses = {
+type AppAtomicClassName = AppAtomicClassNames<
+  AtomicClassName,
+  typeof atomicClassOverrides
+>;
+
+const compoundClasses = defineCompoundClasses<AppAtomicClassName>()({
   card: "bg-theme pa2 b--light-silver br4",
   action: "pointer hover-bg-washed-yellow",
-} as const;
+});
 
 type AppClassName = AppClassNames<
-  BaseClassName,
-  typeof overriddenBaseClasses,
+  AtomicClassName,
+  typeof atomicClassOverrides,
   typeof compoundClasses
 >;
 
-const css = getCss<AppClassName>();
+const css = getCss<AppClassName, typeof compoundClasses>(compoundClasses);
 
 // Configuration-derived names include factory, override, pseudo-selector,
 // responsive, and compound sources while remaining atomic.
@@ -46,7 +52,7 @@ const overriddenPseudoClassName: AppClassName = "focus-theme";
 const responsiveOverrideClassName: AppClassName = "theme-m";
 const compoundClassName: AppClassName = "card";
 void [
-  overriddenMediaConstraints,
+  mediaConstraintsOverrides,
   factoryClassName,
   overriddenClassName,
   overriddenPseudoClassName,
@@ -94,10 +100,14 @@ css(atomicWhen, phraseWhen);
 type Status = "enabled" | "disabled" | "unknown";
 const status = signal<Status>("disabled");
 const enabledCase = signal<Status>("enabled");
-const atomicCases = css.cases(status, {
-  "bg-theme": "enabled",
-  "bg-yellow": "disabled",
-}, "bg-theme");
+const atomicCases = css.cases(
+  status,
+  {
+    "bg-theme": "enabled",
+    "bg-yellow": "disabled",
+  },
+  "bg-theme",
+);
 const phraseCases = css.cases(
   status,
   {
@@ -138,6 +148,9 @@ StyledButton({ classNames: phraseCases });
 StyledButton({ color: css("bg-theme") });
 StyledButton({ color: atomicWhen });
 StyledButton({ color: atomicCases });
+const expandedCompound = css("card");
+// @ts-expect-error A compound expands to a multi-class phrase, not one atom.
+StyledButton({ color: expandedCompound });
 
 // Atomic/phrase separation is intentional and enforced at consumers.
 // @ts-expect-error A raw string has not been validated as a class phrase.
@@ -216,28 +229,22 @@ css.ifNullable(signal<"bg-theme" | null>(null), null);
 // @ts-expect-error Nullable values still have to be CSS phrases.
 css.ifNullable(42, "bg-theme");
 
-// Compound definitions must be literal phrases of known atomic classes.
-const invalidCompoundClasses = {
-  invalidCard: "bg-theme missing",
-} as const;
-type InvalidCompoundClassesAreRejected = AppClassNames<
-  BaseClassName,
-  typeof overriddenBaseClasses,
+// Compound definitions are checked where they are declared.
+defineCompoundClasses<AppAtomicClassName>()({
   // @ts-expect-error Compound values may contain only available atomic classes.
-  typeof invalidCompoundClasses
->;
-declare const invalidCompoundClassesAreRejected: InvalidCompoundClassesAreRejected;
-void invalidCompoundClassesAreRejected;
-
+  invalidCard: "bg-theme missing",
+});
+defineCompoundClasses<AppAtomicClassName>()({
+  // @ts-expect-error A compound must combine at least two atomic classes.
+  invalidCard: "bg-theme",
+});
+defineCompoundClasses<AppAtomicClassName>()({
+  // @ts-expect-error A compound may not shadow an atomic class name.
+  pa2: "bg-theme br4",
+});
 const widenedCompoundClasses: Record<string, string> = { card: "pa2" };
-type WidenedCompoundClassesAreRejected = AppClassNames<
-  BaseClassName,
-  typeof overriddenBaseClasses,
-  // @ts-expect-error Compound values must remain literal so they can be checked.
-  typeof widenedCompoundClasses
->;
-declare const widenedCompoundClassesAreRejected: WidenedCompoundClassesAreRejected;
-void widenedCompoundClassesAreRejected;
+// @ts-expect-error Compound values must remain literal so they can be checked.
+defineCompoundClasses<AppAtomicClassName>()(widenedCompoundClasses);
 
 // Public config types reject malformed maps while allowing partial media
 // overrides.

@@ -126,16 +126,18 @@ export const NoCss = Article(
   m.H3({ children: "NoCSS is the application styling system" }),
   Paragraphs(
     "The configured styles.ts is the single authored stylesheet source. It exports application overrides, responsive constraints, compound classes, a complete ClassName type, and the app's typed css helper.",
-    "Brahma clears the class registry, statically renders every page, collects names passed through css, and emits only the matching rules as a minified styles.css in the output assets directory.",
+    "Brahma clears the class registry, statically renders every page, collects atomic names passed through css, and emits only matching atomic rules as a minified styles.css in the output assets directory. Compound names expand before either HTML or CSS is produced.",
   ),
   Code(`import {
+  defineCompoundClasses,
   getCss,
+  type AppAtomicClassNames,
   type AppClassNames,
   type AtomicClassOverrides,
-  type BaseClassName,
+  type AtomicClassName,
 } from "@cyftec/maya/nocss";
 
-export const overriddenBaseClasses = {
+export const atomicClassOverrides = {
   default: {
     theme: "{ color: #ee4440; }",
     "focus-ring:focus-visible":
@@ -143,17 +145,22 @@ export const overriddenBaseClasses = {
   },
 } as const satisfies AtomicClassOverrides;
 
-export const compoundClasses = {
+type AppAtomicClassName = AppAtomicClassNames<
+  AtomicClassName,
+  typeof atomicClassOverrides
+>;
+
+export const compoundClasses = defineCompoundClasses<AppAtomicClassName>()({
   action: "theme focus-ring pointer ph3 pv2 br2",
-} as const;
+});
 
 export type ClassName = AppClassNames<
-  BaseClassName,
-  typeof overriddenBaseClasses,
+  AtomicClassName,
+  typeof atomicClassOverrides,
   typeof compoundClasses
 >;
 
-export const css = getCss<ClassName>();`),
+export const css = getCss<ClassName, typeof compoundClasses>(compoundClasses);`),
   Section(
     "Apply and collect classes",
     Code(`import { css } from "./assets/styles.js";

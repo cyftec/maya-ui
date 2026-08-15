@@ -1,10 +1,7 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import { exists, rm } from "node:fs/promises";
 import path from "node:path";
-import {
-  buildApp,
-  type BuildRuntime,
-} from "../src/builder/build.ts";
+import { buildApp, type BuildRuntime } from "../src/builder/build.ts";
 import {
   getBuildFileNames,
   getBuiltJsMethodName,
@@ -25,9 +22,7 @@ const mayaNoCssIndexPath = path.resolve(
 );
 const roots: string[] = [];
 
-const buildRuntime = (
-  overrides: Partial<BuildRuntime> = {},
-): BuildRuntime => ({
+const buildRuntime = (overrides: Partial<BuildRuntime> = {}): BuildRuntime => ({
   build: Bun.build,
   file: Bun.file,
   write: Bun.write,
@@ -194,7 +189,7 @@ describe("build integration", () => {
     await writeBuildFixture(root);
     await writeText(
       path.join(root, "dev/view/assets/styles.ts"),
-      "export const overriddenBaseClasses = {} as const;",
+      "export const atomicClassOverrides = {} as const;",
     );
     const karma = makeKarma({ appType: "ext", reloadPageOnFocus: true });
     await buildApp(root, karma, true);
@@ -209,16 +204,18 @@ describe("build integration", () => {
     await writeText(
       path.join(view, "some-folder/custom-assets/styles.ts"),
       `
-        import { getCss } from ${JSON.stringify(mayaNoCssIndexPath)};
+        import { defineCompoundClasses, getCss } from ${JSON.stringify(mayaNoCssIndexPath)};
 
-        export const overriddenBaseClasses = {
+        export const atomicClassOverrides = {
           default: { "bg-theme": "{ background-color: #ee4440; }" },
         } as const;
-        export const overriddenMediaConstraints = {
+        export const mediaConstraintsOverrides = {
           ns: { minWidth: "31em" },
         } as const;
-        export const compoundClasses = { card: "bg-theme pa2" } as const;
-        export const css = getCss<"card" | "pa2" | "pa2-ns">();
+        export const compoundClasses = defineCompoundClasses<"bg-theme" | "pa2" | "pa2-ns">()({
+          card: "bg-theme pa2",
+        });
+        export const css = getCss<"card" | "bg-theme" | "pa2" | "pa2-ns", typeof compoundClasses>(compoundClasses);
       `,
     );
     await writeText(
@@ -240,19 +237,26 @@ describe("build integration", () => {
     await buildApp(root, makeKarma({ assetsDirName: "my-assets" }), false);
 
     const stage = path.join(root, "stage");
-    const stylesheetPath = path.join(
-      stage,
-      "my-assets/styles.css",
-    );
+    const stylesheetPath = path.join(stage, "my-assets/styles.css");
     const stylesheet = await Bun.file(stylesheetPath).text();
+    const indexHtml = await Bun.file(path.join(stage, "index.html")).text();
     const mainJs = await Bun.file(path.join(stage, "main.js")).text();
-    expect(stylesheet).toContain(".card{background-color:#ee4440}");
-    expect(stylesheet).toContain(".card,.pa2{padding:.5rem}");
-    expect(stylesheet).toContain("@media (min-width:31em){.pa2-ns{padding:.5rem}}");
-    expect(await exists(path.join(stage, "some-folder/custom-assets/styles.js"))).toBe(false);
-    expect(await exists(path.join(stage, "some-folder/custom-assets/styles.css"))).toBe(false);
+    expect(indexHtml).toContain('class="bg-theme pa2 pa2 pa2-ns"');
+    expect(indexHtml).not.toContain('class="card');
+    expect(stylesheet).toContain(".bg-theme{background-color:#ee4440}");
+    expect(stylesheet).toContain(".pa2{padding:.5rem}");
+    expect(stylesheet).not.toContain(".card{");
+    expect(stylesheet).toContain(
+      "@media (min-width:31em){.pa2-ns{padding:.5rem}}",
+    );
+    expect(
+      await exists(path.join(stage, "some-folder/custom-assets/styles.js")),
+    ).toBe(false);
+    expect(
+      await exists(path.join(stage, "some-folder/custom-assets/styles.css")),
+    ).toBe(false);
     expect(mainJs).not.toContain("#ee4440");
-    expect(mainJs).not.toContain("bg-theme pa2");
+    expect(mainJs).toContain('card: "bg-theme pa2"');
     expect(mainJs).not.toContain("31em");
     expect(mainJs).not.toContain("background-size: cover");
   }, 20_000);
@@ -349,15 +353,10 @@ describe("build integration", () => {
     const stylesheetRoot = await newRoot();
     await writeText(
       path.join(stylesheetRoot, "dev/view/assets/styles.ts"),
-      "export const overriddenBaseClasses = {} as const;",
+      "export const atomicClassOverrides = {} as const;",
     );
     await expect(
-      buildApp(
-        stylesheetRoot,
-        makeKarma(),
-        false,
-        buildRuntime({ build }),
-      ),
+      buildApp(stylesheetRoot, makeKarma(), false, buildRuntime({ build })),
     ).rejects.toThrow("Unable to minify CSS");
   });
 
@@ -382,7 +381,7 @@ describe("build integration", () => {
 
   test("rejects more than one NoCSS configuration in an app", async () => {
     const root = await newRoot();
-    const source = "export const overriddenBaseClasses = {} as const;";
+    const source = "export const atomicClassOverrides = {} as const;";
     await writeText(path.join(root, "dev/view/assets/styles.ts"), source);
     await writeText(path.join(root, "dev/view/nested/styles.ts"), source);
 

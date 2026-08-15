@@ -118,7 +118,7 @@ describe("help and create commands", () => {
     const stylesheetPath = path.join(appRoot, "dev/assets/styles.ts");
     expect(await exists(stylesheetPath)).toBe(true);
     expect(await Bun.file(stylesheetPath).text()).toContain(
-      "export const css = getCss<ClassName>();",
+      "export const css = getCss<ClassName, typeof compoundClasses>(compoundClasses);",
     );
     expect(await Bun.file(path.join(appRoot, "_karma/karma.ts")).text()).toContain(
       'appType: "pwa"',
@@ -225,7 +225,7 @@ describe("version and reset commands", () => {
     await writeText(stylesheetPath, "export const corrupted = true;");
     await expectProcessExit(() => resetApp(["--stylesheet"]));
     expect(await Bun.file(stylesheetPath).text()).toContain(
-      "export const css = getCss<ClassName>();",
+      "export const css = getCss<ClassName, typeof compoundClasses>(compoundClasses);",
     );
 
     await rm(stylesheetPath);

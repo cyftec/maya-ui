@@ -8,29 +8,36 @@ export const NoCss = Article(
     "The stylesheet filename and assets directory come from _karma/karma.ts. In the standard web scaffold, the source is dev/view/pages/assets/styles.ts and the generated asset is stage/assets/styles.css.",
   ),
   Code(`import {
+  defineCompoundClasses,
   getCss,
+  type AppAtomicClassNames,
   type AppClassNames,
   type AtomicClassOverrides,
-  type BaseClassName,
+  type AtomicClassName,
 } from "@cyftec/maya/nocss";
 
-export const overriddenBaseClasses = {
+export const atomicClassOverrides = {
   default: {
     theme: "{ color: #ee4440; }",
   },
 } as const satisfies AtomicClassOverrides;
 
-export const compoundClasses = {
+type AppAtomicClassName = AppAtomicClassNames<
+  AtomicClassName,
+  typeof atomicClassOverrides
+>;
+
+export const compoundClasses = defineCompoundClasses<AppAtomicClassName>()({
   card: "theme pa3 br3 shadow-1",
-} as const;
+});
 
 export type ClassName = AppClassNames<
-  BaseClassName,
-  typeof overriddenBaseClasses,
+  AtomicClassName,
+  typeof atomicClassOverrides,
   typeof compoundClasses
 >;
 
-export const css = getCss<ClassName>();`),
+export const css = getCss<ClassName, typeof compoundClasses>(compoundClasses);`),
   Section(
     "Use the typed helper",
     Code(`import { css } from "./assets/styles.js";

@@ -1,8 +1,10 @@
 export { getCss } from "./css";
 export type {
+  AppAtomicClassNames,
   AppClassNames,
   AtomicClassOverrides,
   ClassNamesPhrase,
   MediaConstraintsOverrides,
 } from "./utils";
-export type { BaseClassName } from "./factory";
+export { defineCompoundClasses } from "./utils";
+export type { AtomicClassName } from "./factory";

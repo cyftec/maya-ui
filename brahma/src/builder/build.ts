@@ -56,8 +56,8 @@ const defaultBuildRuntime: BuildRuntime = {
 type DeferredStylesheet = { sourcePath: string };
 
 type NoCssStylesheetConfig = {
-  overriddenBaseClasses?: Record<string, Record<string, string>>;
-  overriddenMediaConstraints?: Record<string, Record<string, string>>;
+  atomicClassOverrides?: Record<string, Record<string, string>>;
+  mediaConstraintsOverrides?: Record<string, Record<string, string>>;
   compoundClasses?: Record<string, string>;
 };
 
@@ -126,7 +126,9 @@ const buildCssFile = async (srcPath: string): Promise<string> => {
 
 const buildSourceTsFile = async (srcPath: string): Promise<Bun.BuildOutput> => {
   const tsConfigFilePath = `${buildData.appRootPath}/tsconfig.json`;
-  const tsconfigExists = await buildData.runtime.file(tsConfigFilePath).exists();
+  const tsconfigExists = await buildData.runtime
+    .file(tsConfigFilePath)
+    .exists();
   const jsBuild = await buildData.runtime.build({
     entrypoints: [srcPath],
     tsconfig: tsconfigExists ? tsConfigFilePath : undefined,

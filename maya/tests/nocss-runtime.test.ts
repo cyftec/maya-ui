@@ -59,6 +59,17 @@ describe("css", () => {
       new Set(["mv2", "bg-yellow", "bg-light-gray"]),
     );
   });
+
+  test("expands compounds before updating the DOM class value or registry", () => {
+    const compoundClasses = { card: "red green" } as const;
+    const css = getCss<"card" | "red" | "green", typeof compoundClasses>(
+      compoundClasses,
+    );
+
+    expect(readClassNames(css("card"))).toBe("red green");
+    expect(readClassNames(css("card", "red"))).toBe("red green red");
+    expect(getUsedNoCssClassNames()).toEqual(new Set(["red", "green"]));
+  });
 });
 
 describe("css.when", () => {
@@ -87,6 +98,20 @@ describe("css.when", () => {
 
     enabled.value = true;
     expect(readClassNames(classNames)).toBe("green");
+  });
+
+  test("expands compound outcomes eagerly", () => {
+    const compoundClasses = { card: "red green" } as const;
+    const css = getCss<"card" | "red" | "green", typeof compoundClasses>(
+      compoundClasses,
+    );
+    const enabled = signal(false);
+    const classNames = css.when(enabled, "card", "green");
+
+    expect(readClassNames(classNames)).toBe("green");
+    enabled.value = true;
+    expect(readClassNames(classNames)).toBe("red green");
+    expect(getUsedNoCssClassNames()).toEqual(new Set(["red", "green"]));
   });
 });
 
@@ -144,6 +169,18 @@ describe("css.cases", () => {
     redCase.value = "on";
     expect(readClassNames(classNames)).toBe("red");
   });
+
+  test("expands compound case keys", () => {
+    const compoundClasses = { card: "red green" } as const;
+    const css = getCss<"card" | "red" | "green", typeof compoundClasses>(
+      compoundClasses,
+    );
+
+    expect(readClassNames(css.cases("card", { card: "card" }))).toBe(
+      "red green",
+    );
+    expect(getUsedNoCssClassNames()).toEqual(new Set(["red", "green"]));
+  });
 });
 
 describe("css.ifNullable", () => {
@@ -171,6 +208,20 @@ describe("css.ifNullable", () => {
     color.value = null;
     expect(readClassNames(classNames)).toBe("green");
     expect(getUsedNoCssClassNames()).toEqual(new Set(["green", "red"]));
+  });
+
+  test("expands compound nullable values and fallbacks", () => {
+    const compoundClasses = { card: "red green" } as const;
+    const css = getCss<"card" | "red" | "green", typeof compoundClasses>(
+      compoundClasses,
+    );
+    const optional = signal<"card" | null>(null);
+    const classNames = css.ifNullable(optional, "card");
+
+    expect(readClassNames(classNames)).toBe("red green");
+    optional.value = "card";
+    expect(readClassNames(classNames)).toBe("red green");
+    expect(getUsedNoCssClassNames()).toEqual(new Set(["red", "green"]));
   });
 });
 

@@ -6,7 +6,7 @@ type KeysOfUnion<T> = T extends T ? keyof T : never;
 type ClassNameFromSelector<Selector extends string> =
   Selector extends `${infer ClassName}:${string}` ? ClassName : Selector;
 
-/** Derives HTML class names from every group in an factory-classes map. */
+/** Derives HTML atomic class names from every group in a factory map. */
 export type ClassNamesFrom<FactoryClasses extends Record<string, object>> =
   Exclude<
     ClassNameFromSelector<
@@ -52,26 +52,56 @@ export type MediaConstraintsOverrides = Partial<{
   [Group in keyof MediaConstraints]: Partial<MediaConstraints[Group]>;
 }>;
 
-/** Combines factory, override, and compound names without runtime imports. */
+/** Combines factory atoms with application atomic overrides. */
+export type AppAtomicClassNames<
+  BaseAtomicClassNames extends string,
+  Overrides extends Record<string, object>,
+> = BaseAtomicClassNames | ClassNamesFrom<Overrides>;
+
+/** Combines application atomic and compound names without runtime imports. */
 export type AppClassNames<
-  BaseClassNames extends string,
+  AtomicClassNames extends string,
   Overrides extends Record<string, object>,
   CompoundClasses extends ValidCompoundClasses<
     CompoundClasses,
-    BaseClassNames | ClassNamesFrom<Overrides>
+    AppAtomicClassNames<AtomicClassNames, Overrides>
   > = {},
 > =
-  | BaseClassNames
-  | ClassNamesFrom<Overrides>
+  | AppAtomicClassNames<AtomicClassNames, Overrides>
   | Extract<keyof CompoundClasses, string>;
 
 type ValidCompoundClasses<
   CompoundClasses extends Record<string, string>,
   AtomicClassNames extends string,
 > = {
-  [Name in keyof CompoundClasses]: [
-    InvalidClassName<Extract<CompoundClasses[Name], string>, AtomicClassNames>,
-  ] extends [never]
-    ? Extract<CompoundClasses[Name], string>
+  [Name in keyof CompoundClasses]: Name extends string
+    ? Name extends AtomicClassNames
+      ? never
+      : ValidCompoundClassValue<
+            Extract<CompoundClasses[Name], string>,
+            AtomicClassNames
+          >
     : never;
 };
+
+type ValidCompoundClassValue<
+  Phrase extends string,
+  AtomicClassNames extends string,
+> = [InvalidClassName<Phrase, AtomicClassNames>] extends [never]
+  ? Phrase extends `${string} ${infer Rest}`
+    ? Rest extends ""
+      ? never
+      : Phrase
+    : never
+  : never;
+
+/**
+ * Defines a typed map from a meaningful UI role to two or more atomic names.
+ * The resulting map is passed to getCss(), which expands roles before writing
+ * the DOM class attribute or registering names for stylesheet generation.
+ */
+export const defineCompoundClasses = <AtomicClassNames extends string>() =>
+  <const CompoundClasses extends Record<string, string>>(
+    compoundClasses: CompoundClasses &
+      ValidCompoundClasses<CompoundClasses, AtomicClassNames>,
+  ): CompoundClasses => compoundClasses;

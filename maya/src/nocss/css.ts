@@ -50,20 +50,27 @@ type CheckedInputs<
   [Index in keyof Inputs]: CheckedInput<Inputs[Index], ClassName>;
 };
 
-type CaseValue<Subject> =
-  [Subject] extends [Signal<infer Value>]
-    ? MaybeSignal<Value>
-    : MaybeSignal<Subject>;
+type CaseValue<Subject> = [Subject] extends [Signal<infer Value>]
+  ? MaybeSignal<Value>
+  : MaybeSignal<Subject>;
 
 type CheckedCases<
   Cases extends Record<string, unknown>,
   ClassName extends string,
 > = Checked<Cases, Extract<keyof Cases, string>, ClassName>;
 
-type Css<ClassName extends string> = {
-  <const AtomicClassName extends ClassName>(
-    className: AtomicClassName,
-  ): AtomicClassName & ClassNamesPhrase;
+type CompoundClassName<CompoundClasses extends Record<string, string>> =
+  Extract<keyof CompoundClasses, string>;
+
+type Css<
+  ClassName extends string,
+  CompoundClasses extends Record<string, string>,
+> = {
+  <const SingleClassName extends ClassName>(
+    className: SingleClassName,
+  ): SingleClassName extends CompoundClassName<CompoundClasses>
+    ? ClassNamesPhrase
+    : SingleClassName & ClassNamesPhrase;
   <const Inputs extends readonly CssInput[]>(
     // Validate after inference, preserving the rejected word in the error.
     ...phrases: Inputs &
@@ -108,14 +115,30 @@ type Css<ClassName extends string> = {
  * Creates a typed class helper. `when` and `cases` register every declared
  * outcome during a static build; direct signal values register when evaluated.
  */
-export const getCss = function <ClassName extends string>() {
+export const getCss = function <
+  ClassName extends string,
+  CompoundClasses extends Record<string, string> = {},
+>(compoundClasses: CompoundClasses = {} as CompoundClasses) {
+  const registerClassNames = (classNames: string) =>
+    NoCssRegistry.registerClassName(
+      classNames
+        .split(" ")
+        .filter(Boolean)
+        .flatMap((className) =>
+          Object.hasOwn(compoundClasses, className)
+            ? (compoundClasses[className] ?? "").split(" ").filter(Boolean)
+            : className,
+        )
+        .join(" "),
+    );
+
   const nocss = ((...phrases: MaybeSignal<string | null | undefined>[]) => {
     const evaluator = () =>
       phrases
         .reduce((array, phrase) => {
           const plainPhrase = value(phrase) as string | null | undefined;
           if (plainPhrase === null || plainPhrase === undefined) return array;
-          const phraseValue = NoCssRegistry.registerClassName(plainPhrase);
+          const phraseValue = registerClassNames(plainPhrase);
           const clasNamesArray = phraseValue.split(" ").filter((n) => !!n);
           array.push(...clasNamesArray);
           return array;
@@ -124,15 +147,15 @@ export const getCss = function <ClassName extends string>() {
 
     const isSignalledInput = phrases.some((phrase) => valueIsSignal(phrase));
     return isSignalledInput ? derive(evaluator) : evaluator();
-  }) as Css<ClassName>;
+  }) as Css<ClassName, CompoundClasses>;
 
   const when = <Condition>(
     truthyCondition: Condition,
     truthyClassNames: string,
     falsyClassNames: string,
   ): CssResult<string> => {
-    const truthyClasses = NoCssRegistry.registerClassName(truthyClassNames);
-    const falsyClasses = NoCssRegistry.registerClassName(falsyClassNames);
+    const truthyClasses = registerClassNames(truthyClassNames);
+    const falsyClasses = registerClassNames(falsyClassNames);
     const evaluator = () =>
       value(truthyCondition) ? truthyClasses : falsyClasses;
 
@@ -151,26 +174,28 @@ export const getCss = function <ClassName extends string>() {
       CaseValue<Subject>,
     ][];
 
-    registeredCases.forEach(([classNames]) => {
-      NoCssRegistry.registerClassName(classNames);
-    });
-
-    if (defaultCase) {
-      NoCssRegistry.registerClassName(defaultCase);
-    }
+    const registeredCasePhrases = registeredCases.map(
+      ([classNamesPhrase, possibleCase]) =>
+        [registerClassNames(classNamesPhrase), possibleCase] as const,
+    );
+    const registeredDefaultCase = defaultCase
+      ? registerClassNames(defaultCase)
+      : "";
 
     const evaluator = () => {
-      for (const [classNamesPhrase, possibleCase] of registeredCases) {
+      for (const [classNamesPhrase, possibleCase] of registeredCasePhrases) {
         if (value(possibleCase) === value(subject)) {
           return classNamesPhrase;
         }
       }
-      return defaultCase || "";
+      return registeredDefaultCase;
     };
 
     const isSignalledInput =
       valueIsSignal(subject) ||
-      registeredCases.some(([, subjectCase]) => valueIsSignal(subjectCase));
+      registeredCasePhrases.some(([, subjectCase]) =>
+        valueIsSignal(subjectCase),
+      );
 
     return (
       isSignalledInput ? derive(evaluator) : evaluator()
@@ -182,12 +207,12 @@ export const getCss = function <ClassName extends string>() {
     staticClassNames: string,
   ): CssResult<string> => {
     const registeredStaticClasses =
-      NoCssRegistry.registerClassName(staticClassNames);
+      registerClassNames(staticClassNames);
     const evaluator = () => {
       const nullableClasses = value(nullableClassNames);
       return nullableClasses === null || nullableClasses === undefined
         ? registeredStaticClasses
-        : NoCssRegistry.registerClassName(nullableClasses);
+        : registerClassNames(nullableClasses);
     };
 
     return (
@@ -195,9 +220,9 @@ export const getCss = function <ClassName extends string>() {
     ) as CssResult<string>;
   };
 
-  nocss.when = when as Css<ClassName>["when"];
-  nocss.cases = cases as Css<ClassName>["cases"];
-  nocss.ifNullable = ifNullable as Css<ClassName>["ifNullable"];
+  nocss.when = when as Css<ClassName, CompoundClasses>["when"];
+  nocss.cases = cases as Css<ClassName, CompoundClasses>["cases"];
+  nocss.ifNullable = ifNullable as Css<ClassName, CompoundClasses>["ifNullable"];
 
   return nocss;
 };

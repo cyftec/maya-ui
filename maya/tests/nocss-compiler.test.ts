@@ -10,9 +10,14 @@ import { getCss } from "../src/nocss/css.ts";
 beforeEach(resetNoCssBuildRegistry);
 
 describe("no-css compiler", () => {
-  test("returns empty CSS for empty or unknown class-name collections", () => {
+  test("returns empty CSS for an empty class-name collection", () => {
     expect(buildNoCssStylesheet([])).toBe("");
-    expect(buildNoCssStylesheet(["not-in-the-repository"])).toBe("");
+  });
+
+  test("rejects unknown class names instead of silently omitting their CSS", () => {
+    expect(() => buildNoCssStylesheet(["not-in-the-repository"])).toThrow(
+      "Unknown NoCSS atomic class 'not-in-the-repository'.",
+    );
   });
 
   test("accepts any iterable and emits duplicate used names only once", () => {
@@ -27,10 +32,7 @@ describe("no-css compiler", () => {
   });
 
   test("emits only used atomic rules, including every pseudo selector", () => {
-    const stylesheet = buildNoCssStylesheet([
-      "pa2",
-      "hover-bg-washed-yellow",
-    ]);
+    const stylesheet = buildNoCssStylesheet(["pa2", "hover-bg-washed-yellow"]);
 
     expect(stylesheet).toContain(".pa2{ padding: .5rem; }");
     expect(stylesheet).toContain(
@@ -46,7 +48,7 @@ describe("no-css compiler", () => {
     const stylesheet = buildNoCssStylesheet(
       ["pa2", "app", "app-ns", "app-m", "app-l"],
       {
-        overriddenBaseClasses: {
+        atomicClassOverrides: {
           default: {
             pa2: "{ padding: 2rem; }",
             app: "{ display: block; }",
@@ -69,7 +71,7 @@ describe("no-css compiler", () => {
 
   test("merges media overrides and converts constraint names to CSS syntax", () => {
     const stylesheet = buildNoCssStylesheet(["pa2-ns", "pa2-m", "pa2-l"], {
-      overriddenMediaConstraints: {
+      mediaConstraintsOverrides: {
         ns: { minWidth: "31em" },
         m: { minWidth: "32em", maxWidth: "59em" },
         l: { minWidth: "61em" },
@@ -83,50 +85,81 @@ describe("no-css compiler", () => {
     );
   });
 
-  test("compiles compound aliases with atomic, pseudo, and responsive rules", () => {
-    const stylesheet = buildNoCssStylesheet(["button"], {
+  test("emits only atomic selectors for compound helper output", () => {
+    const compoundClasses = {
+      button: "pa2 hover-bg-washed-yellow pa2-m",
+    } as const;
+    const css = getCss<
+      "button" | "pa2" | "hover-bg-washed-yellow" | "pa2-m",
+      typeof compoundClasses
+    >(compoundClasses);
+    expect(String(css("button"))).toBe("pa2 hover-bg-washed-yellow pa2-m");
+
+    const stylesheet = buildNoCssStylesheet(getUsedNoCssClassNames(), {
       compoundClasses: {
         button: "pa2 hover-bg-washed-yellow pa2-m",
       },
     });
 
     expect(stylesheet).toBe(
-      ".button{ padding: .5rem; }" +
-        ".button:hover{ background-color: #fffceb; }" +
-        ".button:focus{ background-color: #fffceb; }" +
-        "@media (min-width:30em) and (max-width:60em){.button{ padding: .5rem; }}",
+      ".pa2{ padding: .5rem; }" +
+        ".hover-bg-washed-yellow:hover{ background-color: #fffceb; }" +
+        ".hover-bg-washed-yellow:focus{ background-color: #fffceb; }" +
+        "@media (min-width:30em) and (max-width:60em){.pa2-m{ padding: .5rem; }}",
+    );
+    expect(stylesheet).not.toContain(".button");
+  });
+
+  test("rejects compounds that are not flat atomic maps", () => {
+    expect(() =>
+      buildNoCssStylesheet([], {
+        compoundClasses: { card: "pa2 missing" },
+      }),
+    ).toThrow("Unknown NoCSS atomic class 'missing' in compound class 'card'.");
+
+    expect(() =>
+      buildNoCssStylesheet([], {
+        compoundClasses: { card: "pa2" },
+      }),
+    ).toThrow(
+      "NoCSS compound class 'card' must contain at least two atomic classes.",
+    );
+
+    expect(() =>
+      buildNoCssStylesheet([], {
+        compoundClasses: { surface: "pa2 br4", card: "surface pa2" },
+      }),
+    ).toThrow(
+      "NoCSS compound class 'card' must not contain compound class 'surface'.",
+    );
+
+    expect(() =>
+      buildNoCssStylesheet([], {
+        compoundClasses: { pa2: "br4 ba" },
+      }),
+    ).toThrow("NoCSS compound class 'pa2' conflicts with an atomic class.");
+  });
+
+  test("rejects compound names that reach the stylesheet compiler", () => {
+    expect(() =>
+      buildNoCssStylesheet(["card"], {
+        compoundClasses: { card: "pa2 br4" },
+      }),
+    ).toThrow(
+      "NoCSS compound class 'card' reached the stylesheet compiler. Pass compoundClasses to getCss() so it expands to atomic classes first.",
     );
   });
 
-  test("recursively expands nested compound aliases", () => {
-    const stylesheet = buildNoCssStylesheet(["card"], {
-      overriddenBaseClasses: {
+  test("emits atomics from a compound with application overrides", () => {
+    const stylesheet = buildNoCssStylesheet(["bg-theme", "pa2", "br4"], {
+      atomicClassOverrides: {
         default: { "bg-theme": "{ background: tomato; }" },
-      },
-      compoundClasses: {
-        surface: "bg-theme pa2",
-        card: "surface br4",
       },
     });
 
-    expect(stylesheet).toContain(".card{ background: tomato; }");
-    expect(stylesheet).toContain(".card{ padding: .5rem; }");
-    expect(stylesheet).toContain(".card{ border-radius: 1rem; }");
-    expect(stylesheet).not.toContain(".surface{");
-  });
-
-  test("rejects direct and indirect compound cycles", () => {
-    expect(() =>
-      buildNoCssStylesheet(["card"], {
-        compoundClasses: { card: "card" },
-      }),
-    ).toThrow("Circular nocss compound class: 'card'.");
-
-    expect(() =>
-      buildNoCssStylesheet(["card"], {
-        compoundClasses: { card: "panel", panel: "card" },
-      }),
-    ).toThrow("Circular nocss compound class: 'card'.");
+    expect(stylesheet).toContain(".bg-theme{ background: tomato; }");
+    expect(stylesheet).toContain(".pa2{ padding: .5rem; }");
+    expect(stylesheet).toContain(".br4{ border-radius: 1rem; }");
   });
 
   test("compiles every declared helper outcome collected during rendering", () => {
@@ -140,9 +173,7 @@ describe("no-css compiler", () => {
 
     expect(stylesheet).toContain(".pa2{ padding: .5rem; }");
     expect(stylesheet).toContain(".bg-yellow{ background-color: #ffd700; }");
-    expect(stylesheet).toContain(
-      ".bg-light-gray{ background-color: #eee; }",
-    );
+    expect(stylesheet).toContain(".bg-light-gray{ background-color: #eee; }");
     expect(stylesheet).toContain(".dn{ display: none; }");
   });
 });

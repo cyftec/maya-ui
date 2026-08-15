@@ -4,20 +4,13 @@
 
 **Read with:** [`MAYA_APP_CODING_SPEC.md`](./MAYA_APP_CODING_SPEC.md)
 
-**Also read:** [`MAYA_UI_CODING_SPEC.md`](./MAYA_UI_CODING_SPEC.md) for menus,
-HUD, settings, forms, and other DOM interface
+**Also read:** [`MAYA_UI_CODING_SPEC.md`](./MAYA_UI_CODING_SPEC.md) for menus, HUD, settings, forms, and other DOM interface
 
 **Styling contract:** [`NOCSS_CODING_SPEC.md`](./NOCSS_CODING_SPEC.md)
 
-This profile is for real-time games whose playfield is rendered into
-`m.Canvas(...)`. Maya owns the document, route, canvas element, lifecycle, and
-DOM interface. A plain TypeScript game session owns the simulation, input
-state, animation loop, and canvas drawing.
+This profile is for real-time games whose playfield is rendered into `m.Canvas(...)`. Maya owns the document, route, canvas element, lifecycle, and DOM interface. A plain TypeScript game session owns the simulation, input state, animation loop, and canvas drawing.
 
-Canvas is an imperative rendering surface. Do not force thousands of
-per-frame objects through Maya components or signals. Equally, do not abandon
-Maya's deterministic build/mount contract just because the pixels are
-imperative.
+Canvas is an imperative rendering surface. Do not force thousands of per-frame objects through Maya components or signals. Equally, do not abandon Maya's deterministic build/mount contract just because the pixels are imperative.
 
 ---
 
@@ -38,15 +31,11 @@ A Maya canvas game MUST:
 11. pause or safely suspend on visibility/focus loss;
 12. unlock audio only from a user gesture;
 13. keep menus, instructions, settings, and important status accessible in DOM;
-14. preload assets, expose loading/error state, and never begin from a
-    half-loaded implicit state;
+14. preload assets, expose loading/error state, and never begin from a half-loaded implicit state;
 15. test deterministic game logic separately from browser rendering;
 16. verify gameplay in a real browser at multiple sizes and input modes.
 
-Coding agents use NoCSS for the canvas element and every DOM surface. Canvas
-context properties such as `fillStyle` and `strokeStyle` are pixel-rendering
-commands and remain valid inside the renderer; they are not an alternative way
-to style the DOM.
+Coding agents use NoCSS for the canvas element and every DOM surface. Canvas context properties such as `fillStyle` and `strokeStyle` are pixel-rendering commands and remain valid inside the renderer; they are not an alternative way to style the DOM.
 
 ---
 
@@ -76,13 +65,11 @@ The boundaries are deliberate:
 - **Renderer:** draws a read-only view of state.
 - **DOM UI:** accessible menus, score, status, help, and settings.
 
-Do not put `requestAnimationFrame` in a global module initializer. Do not make
-each sprite a Maya component. Do not let the renderer mutate simulation state.
+Do not put `requestAnimationFrame` in a global module initializer. Do not make each sprite a Maya component. Do not let the renderer mutate simulation state.
 
 ### 2.2 Scaffold-friendly game layout
 
-With the repository's current web scaffold,
-`appViewDir: "dev/view/pages"` and `ignoreDelimiter: "@"`:
+With the repository's current web scaffold, `appViewDir: "dev/view/pages"` and `ignoreDelimiter: "@"`:
 
 ```text
 dev/
@@ -104,10 +91,7 @@ dev/
         └── page.ts
 ```
 
-In this layout `dev/view/pages` is the emitted route tree. The reusable
-`GameCanvas` component and the game implementation live inside `appSrcDir`
-but outside `appViewDir`, so Brahma bundles them when the page imports them
-without scanning or emitting them as standalone route output.
+In this layout `dev/view/pages` is the emitted route tree. The reusable `GameCanvas` component and the game implementation live inside `appSrcDir` but outside `appViewDir`, so Brahma bundles them when the page imports them without scanning or emitting them as standalone route output.
 
 Colocation inside the route tree is also valid for small route-local games:
 
@@ -127,28 +111,17 @@ dev/view/pages/
 └── page.ts
 ```
 
-In the colocated layout, `@game` is private bundled source inside the emitted
-route tree: Brahma skips it as direct output, but Bun bundles imports from it
-into the page. `assets` is public copied output and MUST NOT use the ignore
-prefix.
+In the colocated layout, `@game` is private bundled source inside the emitted route tree: Brahma skips it as direct output, but Bun bundles imports from it into the page. `assets` is public copied output and MUST NOT use the ignore prefix.
 
-For PWA and extension scaffolds, Karma is transformed to use
-`appViewDir: "dev"` because the current probe apps are simpler and emit
-mode-specific files from `dev`. That scaffold detail is not a canvas-game
-architecture rule. For larger PWA, extension, or web games, prefer a focused
-view root when the project can support it; otherwise use `ignoreDelimiter` for
-private modules that must sit inside the configured app-view root.
+For PWA and extension scaffolds, Karma is transformed to use `appViewDir: "dev"` because the current probe apps are simpler and emit mode-specific files from `dev`. That scaffold detail is not a canvas-game architecture rule. For larger PWA, extension, or web games, prefer a focused view root when the project can support it; otherwise use `ignoreDelimiter` for private modules that must sit inside the configured app-view root.
 
-Tests can live outside `appViewDir` when the project setup supports that, or in
-an ignored private directory. Never place tests where Brahma will emit them as
-public standalone scripts unless that is intentional.
+Tests can live outside `appViewDir` when the project setup supports that, or in an ignored private directory. Never place tests where Brahma will emit them as public standalone scripts unless that is intentional.
 
 ---
 
 ## 3. Canvas as a Maya component
 
-Use a component for the DOM/lifecycle boundary and a plain function for the
-session:
+Use a component for the DOM/lifecycle boundary and a plain function for the session:
 
 ```ts
 import { component, m } from "@cyftec/maya/core";
@@ -183,10 +156,7 @@ export const GameCanvas = component<GameCanvasProps>(
       onmount: (node) => {
         if (unmounted) return;
         try {
-          session = mountGame(
-            node as unknown as HTMLCanvasElement,
-            onScore,
-          );
+          session = mountGame(node as unknown as HTMLCanvasElement, onScore);
         } catch (cause) {
           onError(
             cause instanceof Error
@@ -216,17 +186,13 @@ Rules:
 - `onScore` and `onError` are callbacks and are called directly.
 - The session owns everything it creates and exposes one idempotent `dispose`.
 - The `unmounted` guard handles Maya's deferred mount callback.
-- Canvas fallback children are useful but are not a complete accessible
-  equivalent for a complex game.
+- Canvas fallback children are useful but are not a complete accessible equivalent for a complex game.
 
-For a decorative, noninteractive canvas, omit `tabindex` and use the correct
-decorative accessibility treatment. A playable canvas needs a visible focus
-style and an explicit interaction model.
+For a decorative, noninteractive canvas, omit `tabindex` and use the correct decorative accessibility treatment. A playable canvas needs a visible focus style and an explicit interaction model.
 
 ### 3.1 Route shell with DOM status
 
-The route remains a complete Maya document. Keep instructions and important
-status outside the bitmap:
+The route remains a complete Maya document. Keep instructions and important status outside the bitmap:
 
 ```ts
 import { m } from "@cyftec/maya/core";
@@ -256,8 +222,7 @@ export default m.Html({
           m.H1("Skyway"),
           m.P({
             id: "game-help",
-            children:
-              "Focus the playfield. Use Left and Right Arrow to move.",
+            children: "Focus the playfield. Use Left and Right Arrow to move.",
           }),
           m.Output({
             class: css("game-score"),
@@ -272,8 +237,7 @@ export default m.Html({
           m.Div({
             class: css("game-frame"),
             children: GameCanvas({
-              label:
-                "Skyway playfield. Use Left and Right Arrow to move.",
+              label: "Skyway playfield. Use Left and Right Arrow to move.",
               onScore: (nextScore) => {
                 if (nextScore !== score.value) score.value = nextScore;
               },
@@ -290,9 +254,7 @@ export default m.Html({
 });
 ```
 
-Update DOM-facing signals only when their value changes. If score changes very
-rapidly, do not mark it as an always-live announcement; announce milestones or
-requested status instead.
+Update DOM-facing signals only when their value changes. If score changes very rapidly, do not mark it as an always-live announcement; announce milestones or requested status instead.
 
 ---
 
@@ -349,14 +311,11 @@ The update function SHOULD:
 - avoid allocating avoidable temporary objects in hot paths;
 - produce the same result for the same state/input sequence.
 
-Mutable state is appropriate inside a tightly owned real-time loop. Purity at
-the boundary means deterministic inputs and results, not mandatory immutable
-allocation every tick.
+Mutable state is appropriate inside a tightly owned real-time loop. Purity at the boundary means deterministic inputs and results, not mandatory immutable allocation every tick.
 
 ### 4.2 Randomness
 
-Never call `Math.random()` while building the Maya tree. For gameplay,
-prefer an injected seeded pseudo-random generator:
+Never call `Math.random()` while building the Maya tree. For gameplay, prefer an injected seeded pseudo-random generator:
 
 ```ts
 export type RandomSource = {
@@ -364,9 +323,7 @@ export type RandomSource = {
 };
 ```
 
-Store the seed for replay/debugging. All authoritative random decisions should
-flow through the injected source; cosmetic-only randomness may use a separate
-stream so it cannot change game outcomes.
+Store the seed for replay/debugging. All authoritative random decisions should flow through the injected source; cosmetic-only randomness may use a separate stream so it cannot change game outcomes.
 
 ### 4.3 Units and coordinate systems
 
@@ -378,8 +335,7 @@ Define coordinate spaces explicitly:
 - **backing pixels:** CSS pixels multiplied by device pixel ratio;
 - **asset pixels:** source texture/sprite coordinates.
 
-Do not mix `clientX`, backing-store width, and world X in one formula. Put
-conversion functions in one module and test them.
+Do not mix `clientX`, backing-store width, and world X in one formula. Put conversion functions in one module and test them.
 
 ---
 
@@ -410,20 +366,14 @@ export const startLoop = ({ update, render }: LoopHooks) => {
     if (disposed) return;
 
     if (previousTime === undefined) previousTime = now;
-    const elapsed = Math.min(
-      (now - previousTime) / 1_000,
-      MAX_FRAME_DELTA,
-    );
+    const elapsed = Math.min((now - previousTime) / 1_000, MAX_FRAME_DELTA);
     previousTime = now;
 
     if (!paused) {
       accumulator += elapsed;
       let steps = 0;
 
-      while (
-        accumulator >= FIXED_STEP &&
-        steps < MAX_STEPS_PER_FRAME
-      ) {
+      while (accumulator >= FIXED_STEP && steps < MAX_STEPS_PER_FRAME) {
         update(FIXED_STEP);
         accumulator -= FIXED_STEP;
         steps += 1;
@@ -465,23 +415,17 @@ Why:
 - pause resets timing instead of applying one giant resume step;
 - disposal is idempotent.
 
-Variable-step simulation is acceptable for a small non-physical game when
-documented and tested, but movement still MUST use elapsed time rather than
-“pixels per frame.”
+Variable-step simulation is acceptable for a small non-physical game when documented and tested, but movement still MUST use elapsed time rather than “pixels per frame.”
 
 ### 5.2 Simulation versus presentation
 
-`update(dt)` advances authoritative state. `render(alpha)` reads state and
-draws. Rendering may interpolate between previous/current transforms, but it
-must not decide collisions, scoring, spawns, or other authoritative outcomes.
+`update(dt)` advances authoritative state. `render(alpha)` reads state and draws. Rendering may interpolate between previous/current transforms, but it must not decide collisions, scoring, spawns, or other authoritative outcomes.
 
-Do not update DOM signals on every animation frame. Publish score, phase,
-health, and status only when their semantic value changes.
+Do not update DOM signals on every animation frame. Publish score, phase, health, and status only when their semantic value changes.
 
 ### 5.3 Pause and visibility
 
-Listen for `visibilitychange`; pause when `document.hidden` is true. Also clear
-held input on blur/focus loss so a released key cannot remain stuck.
+Listen for `visibilitychange`; pause when `document.hidden` is true. Also clear held input on blur/focus loss so a released key cannot remain stuck.
 
 Choose and document one policy:
 
@@ -495,15 +439,13 @@ For most games, remaining paused until user intent is safest.
 
 ## 6. Responsive and high-DPI canvas
 
-CSS display size and backing resolution are separate. Coding agents declare
-the display rules in the configured NoCSS source:
+CSS display size and backing resolution are separate. Coding agents declare the display rules in the configured NoCSS source:
 
 ```ts
-export const overriddenBaseClasses = {
+export const atomicClassOverrides = {
   default: {
     game: "{ min-block-size: 100vh; }",
-    "game-frame":
-      "{ inline-size: min(100%, 80rem); margin-inline: auto; }",
+    "game-frame": "{ inline-size: min(100%, 80rem); margin-inline: auto; }",
     "game-canvas":
       "{ display: block; inline-size: 100%; aspect-ratio: 16 / 9; background: #10131a; touch-action: none; }",
     "game-canvas:focus-visible":
@@ -514,10 +456,7 @@ export const overriddenBaseClasses = {
 } as const satisfies AtomicClassOverrides;
 ```
 
-The route and component examples pass `game`, `game-frame`, `game-canvas`,
-`game-score`, and `game-error` through `css`, so Brahma collects and emits
-these rules. Do not place the same declarations in a handwritten stylesheet or
-inline style.
+The route and component examples pass `game`, `game-frame`, `game-canvas`, `game-score`, and `game-error` through `css`, so Brahma collects and emits these rules. Do not place the same declarations in a handwritten stylesheet or inline style.
 
 Synchronize the backing store after mount:
 
@@ -553,18 +492,13 @@ export const fitCanvas = (
 };
 ```
 
-Use a `ResizeObserver` on the canvas or its frame and call `fitCanvas` when its
-CSS size changes. Cap DPR deliberately; uncapped DPR can multiply fill cost
-and memory on large/high-density screens.
+Use a `ResizeObserver` on the canvas or its frame and call `fitCanvas` when its CSS size changes. Cap DPR deliberately; uncapped DPR can multiply fill cost and memory on large/high-density screens.
 
-Changing `canvas.width` or `canvas.height` clears the bitmap and resets context
-state. Reapply transforms, smoothing mode, text settings, compositing, and
-other required context state after a resize.
+Changing `canvas.width` or `canvas.height` clears the bitmap and resets context state. Reapply transforms, smoothing mode, text settings, compositing, and other required context state after a resize.
 
 ### 6.1 Stable logical viewport
 
-For a fixed 16:9 world such as 1280 × 720, compute a uniform scale and
-letterbox/pillarbox:
+For a fixed 16:9 world such as 1280 × 720, compute a uniform scale and letterbox/pillarbox:
 
 ```ts
 export const getViewTransform = (
@@ -573,10 +507,7 @@ export const getViewTransform = (
   worldWidth: number,
   worldHeight: number,
 ) => {
-  const scale = Math.min(
-    cssWidth / worldWidth,
-    cssHeight / worldHeight,
-  );
+  const scale = Math.min(cssWidth / worldWidth, cssHeight / worldHeight);
 
   return {
     scale,
@@ -594,9 +525,7 @@ At render time:
 4. scale by the world scale;
 5. draw in stable world units.
 
-Choose a policy for very narrow/tall screens: letterbox, crop with a safe
-region, alter the camera, or use a responsive world. Do not accidentally
-stretch the world.
+Choose a policy for very narrow/tall screens: letterbox, crop with a safe region, alter the camera, or use a responsive world. Do not accidentally stretch the world.
 
 ---
 
@@ -614,8 +543,7 @@ type Actions = {
 };
 ```
 
-An input adapter maps keyboard keys, pointer/touch regions, and gamepad buttons
-to those actions. This makes remapping, testing, and alternate input possible.
+An input adapter maps keyboard keys, pointer/touch regions, and gamepad buttons to those actions. This makes remapping, testing, and alternate input possible.
 
 Distinguish:
 
@@ -623,8 +551,7 @@ Distinguish:
 - **pressed:** true for one simulation tick on the transition down;
 - **released:** true for one tick on transition up.
 
-Consume edge-triggered flags after the simulation tick, not after every render
-frame.
+Consume edge-triggered flags after the simulation tick, not after every render frame.
 
 ### 7.2 Keyboard
 
@@ -635,29 +562,37 @@ const held = new Set<string>();
 const listeners = new AbortController();
 const options = { signal: listeners.signal };
 
-canvas.addEventListener("keydown", (event) => {
-  if (["ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
-    event.preventDefault();
-    held.add(event.code);
-  }
-}, options);
+canvas.addEventListener(
+  "keydown",
+  (event) => {
+    if (["ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
+      event.preventDefault();
+      held.add(event.code);
+    }
+  },
+  options,
+);
 
-canvas.addEventListener("keyup", (event) => {
-  held.delete(event.code);
-}, options);
+canvas.addEventListener(
+  "keyup",
+  (event) => {
+    held.delete(event.code);
+  },
+  options,
+);
 
-canvas.addEventListener("blur", () => {
-  held.clear();
-}, options);
+canvas.addEventListener(
+  "blur",
+  () => {
+    held.clear();
+  },
+  options,
+);
 ```
 
-Use `event.code` for physical gameplay positions and `event.key` for
-text/meaningful character commands. Prevent defaults only for keys the active
-game owns. Never block browser shortcuts wholesale.
+Use `event.code` for physical gameplay positions and `event.key` for text/meaningful character commands. Prevent defaults only for keys the active game owns. Never block browser shortcuts wholesale.
 
-If listeners are on `window`, enable them only while gameplay is active and
-remove them on teardown. Provide DOM buttons for essential actions where
-appropriate.
+If listeners are on `window`, enable them only while gameplay is active and remove them on teardown. Provide DOM buttons for essential actions where appropriate.
 
 ### 7.3 Pointer and touch
 
@@ -688,15 +623,11 @@ const pointerToWorld = (
 };
 ```
 
-Do not multiply `clientX` by DPR when the view transform is defined in CSS
-pixels. DPR belongs to backing-store drawing, not event coordinates.
+Do not multiply `clientX` by DPR when the view transform is defined in CSS pixels. DPR belongs to backing-store drawing, not event coordinates.
 
 ### 7.4 Gamepad
 
-Poll `navigator.getGamepads()` once per simulation/frame boundary; gamepad
-state does not use ordinary DOM events for all changes. Apply dead zones to
-axes, normalize actions, and detect pressed edges from the previous snapshot.
-Controller support must not be the only way to start or recover from a game.
+Poll `navigator.getGamepads()` once per simulation/frame boundary; gamepad state does not use ordinary DOM events for all changes. Apply dead zones to axes, normalize actions, and detect pressed edges from the previous snapshot. Controller support must not be the only way to start or recover from a game.
 
 ---
 
@@ -716,9 +647,7 @@ if (!context) {
 }
 ```
 
-Choose 2D, WebGL, or another context deliberately. This profile's examples use
-2D canvas. For WebGL, the same Maya lifecycle applies, plus shader/resource
-cleanup and context-loss recovery.
+Choose 2D, WebGL, or another context deliberately. This profile's examples use 2D canvas. For WebGL, the same Maya lifecycle applies, plus shader/resource cleanup and context-loss recovery.
 
 ### 8.2 Frame rendering
 
@@ -729,15 +658,12 @@ A renderer SHOULD:
 - balance every `save()` with `restore()`;
 - batch by texture/style where beneficial;
 - avoid DOM reads inside sprite loops;
-- avoid per-frame image decoding, gradient creation, and text measurement when
-  cacheable;
+- avoid per-frame image decoding, gradient creation, and text measurement when cacheable;
 - draw from loaded handles, not asset URLs;
 - render in a documented layer order;
 - handle resize/context reset.
 
-Use `imageSmoothingEnabled = false` for intentionally pixelated scaled art;
-use the default smoothing for ordinary illustration. Align pixel art to its
-logical grid to avoid shimmering.
+Use `imageSmoothingEnabled = false` for intentionally pixelated scaled art; use the default smoothing for ordinary illustration. Align pixel art to its logical grid to avoid shimmering.
 
 ### 8.3 DOM HUD versus canvas HUD
 
@@ -750,12 +676,9 @@ Use DOM for:
 - controls that must be keyboard/screen-reader operable;
 - long or localized text.
 
-Use canvas for tightly integrated visual presentation. A canvas-drawn score
-can coexist with a visually hidden or visible DOM `output` updated only when
-the score changes.
+Use canvas for tightly integrated visual presentation. A canvas-drawn score can coexist with a visually hidden or visible DOM `output` updated only when the score changes.
 
-Do not duplicate rapid announcements into an `aria-live` region. Announce
-meaningful milestones, game state changes, and user-requested status.
+Do not duplicate rapid announcements into an `aria-live` region. Announce meaningful milestones, game state changes, and user-requested status.
 
 ---
 
@@ -773,8 +696,7 @@ export const ASSETS = {
 } as const;
 ```
 
-Paths are relative to generated route output. A nested route needs adjusted or
-root-relative URLs. Verify direct route loading.
+Paths are relative to generated route output. A nested route needs adjusted or root-relative URLs. Verify direct route loading.
 
 ### 9.2 Preloading
 
@@ -785,12 +707,9 @@ Preload before entering playable state:
 - fonts via `document.fonts.load()` when canvas text metrics depend on them;
 - level data via `fetch` with validation.
 
-Represent `idle`, `loading`, `ready`, and `error` explicitly in DOM UI. Track
-loaded count/bytes when useful. A failed required asset must produce a visible
-retry or fallback, not a blank canvas.
+Represent `idle`, `loading`, `ready`, and `error` explicitly in DOM UI. Track loaded count/bytes when useful. A failed required asset must produce a visible retry or fallback, not a blank canvas.
 
-Start loading from `onmount` or a user event. Abort fetches and ignore late
-results after disposal.
+Start loading from `onmount` or a user event. Abort fetches and ignore late results after disposal.
 
 ### 9.3 Sprite atlases
 
@@ -807,15 +726,13 @@ type SpriteFrame = {
 };
 ```
 
-Validate frame bounds at load/test time. Keep animation timing in seconds or
-ticks, not assumptions about display frames.
+Validate frame bounds at load/test time. Keep animation timing in seconds or ticks, not assumptions about display frames.
 
 ---
 
 ## 10. Audio
 
-Browsers generally require a user gesture before audible playback or resuming
-an `AudioContext`.
+Browsers generally require a user gesture before audible playback or resuming an `AudioContext`.
 
 Requirements:
 
@@ -829,8 +746,7 @@ Requirements:
 - handle rejected playback promises;
 - do not make sound the only cue for required information.
 
-Page visibility policy should cover audio: suspend/mute while hidden unless the
-product explicitly requires background audio and the platform permits it.
+Page visibility policy should cover audio: suspend/mute while hidden unless the product explicitly requires background audio and the platform permits it.
 
 ---
 
@@ -848,8 +764,7 @@ type SaveEnvelope = {
 };
 ```
 
-Validate shape, ranges, and version before use. Provide migrations or discard
-incompatible data safely. Storage failure/private mode must not prevent play.
+Validate shape, ranges, and version before use. Provide migrations or discard incompatible data safely. Storage failure/private mode must not prevent play.
 
 For deterministic replay/debugging, record:
 
@@ -887,15 +802,13 @@ Use browser performance tools to check:
 - memory after repeated restart;
 - slow-device and high-DPR behavior.
 
-A game that holds 60 FPS on a developer laptop but leaks on each restart is
-not complete.
+A game that holds 60 FPS on a developer laptop but leaks on each restart is not complete.
 
 ---
 
 ## 13. Accessibility and reduced motion
 
-Canvas pixels do not expose a semantic tree. Provide an equivalent interaction
-strategy appropriate to the game:
+Canvas pixels do not expose a semantic tree. Provide an equivalent interaction strategy appropriate to the game:
 
 - visible DOM title and concise instructions;
 - keyboard controls and remapping where feasible;
@@ -916,20 +829,15 @@ strategy appropriate to the game:
 - reducing camera acceleration;
 - offering a non-twitch or turn-based accommodation when product scope allows.
 
-Do not default to `role="application"` on the canvas. It changes assistive
-technology behavior substantially. Use it only after testing a complete custom
-interaction model. A clear label, focus strategy, DOM controls, and documented
-instructions are the safer baseline.
+Do not default to `role="application"` on the canvas. It changes assistive technology behavior substantially. Use it only after testing a complete custom interaction model. A clear label, focus strategy, DOM controls, and documented instructions are the safer baseline.
 
-For photosensitive safety, avoid rapid high-contrast flashing and test effects
-that can cover a substantial portion of the screen.
+For photosensitive safety, avoid rapid high-contrast flashing and test effects that can cover a substantial portion of the screen.
 
 ---
 
 ## 14. Complete session skeleton
 
-This is the minimum shape of an owned 2D session. Domain-specific update and
-render code can replace the placeholders without changing lifecycle:
+This is the minimum shape of an owned 2D session. Domain-specific update and render code can replace the placeholders without changing lifecycle:
 
 ```ts
 type Session = {
@@ -981,27 +889,14 @@ export const mountGame = (
 
   function update(dt: number) {
     const direction =
-      Number(held.has("ArrowRight")) -
-      Number(held.has("ArrowLeft"));
+      Number(held.has("ArrowRight")) - Number(held.has("ArrowLeft"));
     world.playerX += direction * 180 * dt;
   }
 
   function render() {
-    context.setTransform(
-      viewport.dpr,
-      0,
-      0,
-      viewport.dpr,
-      0,
-      0,
-    );
+    context.setTransform(viewport.dpr, 0, 0, viewport.dpr, 0, 0);
     context.fillStyle = "#10131a";
-    context.fillRect(
-      0,
-      0,
-      viewport.cssWidth,
-      viewport.cssHeight,
-    );
+    context.fillRect(0, 0, viewport.cssWidth, viewport.cssHeight);
     context.fillStyle = "#7dd3fc";
     context.fillRect(world.playerX, 100, 32, 32);
   }
@@ -1030,31 +925,51 @@ export const mountGame = (
     frameId = requestAnimationFrame(frame);
   }
 
-  canvas.addEventListener("keydown", (event) => {
-    if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
-      event.preventDefault();
-      held.add(event.code);
-    }
-  }, { signal: abort.signal });
+  canvas.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
+        event.preventDefault();
+        held.add(event.code);
+      }
+    },
+    { signal: abort.signal },
+  );
 
-  canvas.addEventListener("keyup", (event) => {
-    held.delete(event.code);
-  }, { signal: abort.signal });
+  canvas.addEventListener(
+    "keyup",
+    (event) => {
+      held.delete(event.code);
+    },
+    { signal: abort.signal },
+  );
 
-  canvas.addEventListener("blur", () => {
-    held.clear();
-  }, { signal: abort.signal });
+  canvas.addEventListener(
+    "blur",
+    () => {
+      held.clear();
+    },
+    { signal: abort.signal },
+  );
 
-  canvas.addEventListener("pointerdown", () => {
-    canvas.focus();
-  }, { signal: abort.signal });
+  canvas.addEventListener(
+    "pointerdown",
+    () => {
+      canvas.focus();
+    },
+    { signal: abort.signal },
+  );
 
-  document.addEventListener("visibilitychange", () => {
-    hidden = document.hidden;
-    held.clear();
-    previousTime = undefined;
-    accumulator = 0;
-  }, { signal: abort.signal });
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      hidden = document.hidden;
+      held.clear();
+      previousTime = undefined;
+      accumulator = 0;
+    },
+    { signal: abort.signal },
+  );
 
   resizeObserver.observe(canvas);
   resize();
@@ -1074,9 +989,7 @@ export const mountGame = (
 };
 ```
 
-Production additions normally include an explicit ready/start/pause state,
-asset preload, pointer/controller adapters, resize-aware world transform,
-audio owner, error reporting, and testable domain modules.
+Production additions normally include an explicit ready/start/pause state, asset preload, pointer/controller adapters, resize-aware world transform, audio owner, error reporting, and testable domain modules.
 
 ---
 
@@ -1096,8 +1009,7 @@ Test plain TypeScript without a canvas:
 - save parsing and migration;
 - replay determinism.
 
-Avoid snapshotting huge world objects when targeted assertions explain the
-contract better.
+Avoid snapshotting huge world objects when targeted assertions explain the contract better.
 
 ### 15.2 Session tests
 
@@ -1130,8 +1042,7 @@ Verify:
 - restart does not create a second loop or leak listeners/audio;
 - performance remains acceptable during worst-case gameplay.
 
-Use browser automation for repeatable smoke paths, but also play manually.
-Timing, feel, audio, focus, and touch defects are not fully covered by JSDOM.
+Use browser automation for repeatable smoke paths, but also play manually. Timing, feel, audio, focus, and touch defects are not fully covered by JSDOM.
 
 ---
 
@@ -1139,8 +1050,7 @@ Timing, feel, audio, focus, and touch defects are not fully covered by JSDOM.
 
 ### Canvas is blank in generated HTML
 
-That is expected before mount if all pixels are drawn by browser code. The DOM
-must still expose loading/fallback/status, and the route script must mount.
+That is expected before mount if all pixels are drawn by browser code. The DOM must still expose loading/fallback/status, and the route script must mount.
 
 ### Build crashes on `getContext`, `Image`, `Audio`, or `devicePixelRatio`
 
@@ -1148,34 +1058,27 @@ Browser work ran during tree construction. Create the session in `onmount`.
 
 ### Game runs twice or speeds up after restart
 
-Multiple animation loops survived. Keep one frame ID per session, make
-`dispose` idempotent, and dispose before replacing the session.
+Multiple animation loops survived. Keep one frame ID per session, make `dispose` idempotent, and dispose before replacing the session.
 
 ### Movement is faster on high-refresh displays
 
-Movement is expressed per frame. Multiply by elapsed seconds and preferably
-use a fixed update step.
+Movement is expressed per frame. Multiply by elapsed seconds and preferably use a fixed update step.
 
 ### The player teleports after returning to the tab
 
-The loop applied a huge hidden-tab delta. Cap deltas, pause on visibility
-loss, and reset previous time/accumulator.
+The loop applied a huge hidden-tab delta. Cap deltas, pause on visibility loss, and reset previous time/accumulator.
 
 ### Canvas looks blurry
 
-Only CSS dimensions were set. Resize the backing store using DPR, then restore
-the context transform/state.
+Only CSS dimensions were set. Resize the backing store using DPR, then restore the context transform/state.
 
 ### Pointer hits are offset
 
-Coordinates mixed page, CSS, backing, camera, or world spaces. Convert from
-`clientX/Y` through the canvas rect and view transform; do not blindly apply
-DPR.
+Coordinates mixed page, CSS, backing, camera, or world spaces. Convert from `clientX/Y` through the canvas rect and view transform; do not blindly apply DPR.
 
 ### Arrow/space keys scroll the page
 
-The focused game did not prevent default for the specific owned keys, or the
-canvas is not focusable/focused.
+The focused game did not prevent default for the specific owned keys, or the canvas is not focusable/focused.
 
 ### A key remains held after switching tabs
 
@@ -1183,18 +1086,15 @@ Clear input on blur and visibility change.
 
 ### Audio works only after several clicks or logs a rejected promise
 
-Create/resume playback directly inside a trusted Start/Play gesture and handle
-the playback promise.
+Create/resume playback directly inside a trusted Start/Play gesture and handle the playback promise.
 
 ### FPS degrades over time
 
-Profile allocation, retained sessions/listeners, uncapped particles, audio
-voices, DPR, and repeated asset/context creation.
+Profile allocation, retained sessions/listeners, uncapped particles, audio voices, DPR, and repeated asset/context creation.
 
 ### Screen reader users receive no game state
 
-Important information exists only as pixels. Add DOM instructions, controls,
-phase/score/status, and an appropriate alternative interaction strategy.
+Important information exists only as pixels. Add DOM instructions, controls, phase/score/status, and an appropriate alternative interaction strategy.
 
 ---
 
@@ -1202,8 +1102,7 @@ phase/score/status, and an appropriate alternative interaction strategy.
 
 - [ ] Shared Maya application specification also followed.
 - [ ] UI profile followed for DOM menus/HUD/settings.
-- [ ] Game engine/source modules live outside emitted route output, or under an
-      ignored route-local directory by deliberate choice.
+- [ ] Game engine/source modules live outside emitted route output, or under an ignored route-local directory by deliberate choice.
 - [ ] Canvas/context creation happens after mount.
 - [ ] One plain `GameSession` owns loop, input, observers, assets, and audio.
 - [ ] `dispose()` is complete and idempotent.
@@ -1212,8 +1111,7 @@ phase/score/status, and an appropriate alternative interaction strategy.
 - [ ] Simulation uses elapsed time and capped fixed-step catch-up.
 - [ ] Render does not mutate authoritative game state.
 - [ ] NoCSS display size, backing size, DPR, and world transforms are explicit.
-- [ ] Every canvas/DOM class passes through the typed NoCSS helper; no
-      agent-authored stylesheet or inline DOM style was added.
+- [ ] Every canvas/DOM class passes through the typed NoCSS helper; no agent-authored stylesheet or inline DOM style was added.
 - [ ] Pointer coordinates are converted through named coordinate spaces.
 - [ ] Keyboard held/pressed/released state and blur clearing are correct.
 - [ ] Pointer cancel/capture and touch behavior are handled.

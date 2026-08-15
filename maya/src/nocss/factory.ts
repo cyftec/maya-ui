@@ -13,7 +13,7 @@ import type { ClassNamesFrom, MediaConstraints } from "./utils";
  *                                 /____/
  */
 
-export const mediaConstraints: MediaConstraints = {
+export const factoryMediaConstraints: MediaConstraints = {
   ns: { minWidth: "30em" },
   m: { minWidth: "30em", maxWidth: "60em" },
   l: { minWidth: "60em" },
@@ -21,9 +21,9 @@ export const mediaConstraints: MediaConstraints = {
 
 /**
  * Compiler-only factory definitions. Application code receives the derived
- * `BaseClassName` type, never this runtime map.
+ * `AtomicClassName` type, never this runtime map.
  */
-export const factoryClasses = {
+export const factoryAtomicClasses = {
   default: {
     /* Modules */
 
@@ -1754,7 +1754,7 @@ export const factoryClasses = {
 
   Tips on extending:
   There might be a time worth using negative z-index values.
-  Or if you are using factoryClasses with another project, you might need to
+  Or if you are using factoryAtomicClasses with another project, you might need to
   adjust these values to suit your needs.
 
 */
@@ -3134,5 +3134,5 @@ export const factoryClasses = {
   },
 } as const;
 
-/** Built-in HTML class names. This type is erased from application bundles. */
-export type BaseClassName = ClassNamesFrom<typeof factoryClasses>;
+/** Built-in HTML atomic class names. This type is erased from application bundles. */
+export type AtomicClassName = ClassNamesFrom<typeof factoryAtomicClasses>;
