@@ -35,7 +35,7 @@ export const karma: Karma = {
   maya: {
     name: "hello-maya",
     appType: "web",
-    dependencies: { "@cyftec/maya": "0.2.0" },
+    dependencies: { "@cyftec/maya": "0.2.1" },
     devDependencies: {
       "@types/bun": "^1.3.14",
       typescript: "7.0.2",

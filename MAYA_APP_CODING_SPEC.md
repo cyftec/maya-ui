@@ -4,7 +4,7 @@
 
 **Audience:** coding agents and engineers building Maya applications
 
-**Verified against:** `@cyftec/maya` 0.2.0, `@cyftec/brahma` 0.2.0, NoCSS, and TypeScript 7.0.2 in this repository
+**Verified against:** `@cyftec/maya` 0.2.1, `@cyftec/brahma` 0.2.1, NoCSS, and TypeScript 7.0.2 in this repository
 
 **Required companion:** choose one profile below
 

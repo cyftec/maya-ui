@@ -12,7 +12,7 @@
     },
     "brahma": {
       "name": "@cyftec/brahma",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "bin": {
         "brahma": "./src/index.ts",
       },
@@ -34,7 +34,7 @@
     },
     "maya": {
       "name": "@cyftec/maya",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "dependencies": {
         "@cyftec/immut": "0.1.0",
         "@cyftec/signals": "0.0.5",
@@ -375,7 +375,7 @@
 
     "ieee754": ["ieee754@1.2.1", "", {}, "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="],
 
-    "immutable": ["immutable@3.8.3", "", {}, "sha512-AUY/VyX0E5XlibOmWt10uabJzam1zlYjwiEgQSDc5+UIkFNaF9WM0JxXKaNMGf+F/ffUF+7kRKXM9A7C0xXqMg=="],
+    "immutable": ["immutable@3.8.4", "", {}, "sha512-ZQv17KolYrYmsDoDB8N67zhIKsNi9mGYlk96y/yuxyAqJB2hLzSGSM7k/sB0/ZvO4kx27U9+fBeD/XlLGh/uXQ=="],
 
     "inherits": ["inherits@2.0.4", "", {}, "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ=="],
 
