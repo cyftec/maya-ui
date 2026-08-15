@@ -368,7 +368,7 @@ m.Div({ children: document.createElement("span") });
 
 Attributes use serialized HTML names: `class`, `for`, `tabindex`, `http-equiv`, and `aria-*`, not React spellings. Boolean attributes are present when true and removed when false. The input `value` path updates the DOM property.
 
-The current runtime rejects dangerous `href` protocols and inline `style` values containing URL/expression-like payloads. Coding agents do not use inline styles at all: use the typed NoCSS helper and do not attempt to bypass these checks. Never put untrusted text into executable code, HTML, CSS, storage keys, or asset URLs without validation appropriate to the sink.
+The current runtime rejects dangerous `href` protocols and unsafe inline `style` payloads such as `expression(...)` and executable or data URL schemes. A `url(...)` in a style value is permitted only when it names a strict local asset path, for example `url("./images/logo.svg")`, `url("../shared/icon.svg")`, or `url("/assets/logo.svg")`. Those paths may contain only letters, numbers, `/`, `.`, `_`, and `-`; URLs with schemes, protocol-relative prefixes, backslashes, whitespace, quotes outside the URL syntax, query strings, fragments, or parentheses are rejected. Coding agents do not use inline styles at all: use the typed NoCSS helper and do not attempt to bypass these checks. Never put untrusted text into executable code, HTML, CSS, storage keys, or asset URLs without validation appropriate to the sink.
 
 ---
 
